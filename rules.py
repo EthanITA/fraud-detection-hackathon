@@ -1,10 +1,8 @@
-# %% imports & shared types
+#%% imports & shared types
 from __future__ import annotations
-
 import json
-from datetime import datetime, timezone
-from enum import Enum
 from typing import TypedDict
+from enum import Enum
 
 from langchain.tools import tool
 
@@ -21,164 +19,204 @@ class RiskResult(TypedDict):
 
 
 class CompositeResult(TypedDict):
-    score: int  # 0–10
+    score: int          # 0–10
     risk_level: RiskLevel
     summary: str
 
 
-_RISK_SCORES: dict[RiskLevel, int] = {
-    RiskLevel.HIGH: 3,
-    RiskLevel.MEDIUM: 1,
-    RiskLevel.LOW: 0,
-}
+_RISK_SCORES: dict[RiskLevel, int] = {RiskLevel.HIGH: 3, RiskLevel.MEDIUM: 1, RiskLevel.LOW: 0}
 
 # Reporting limits — amounts just below these are structuring signals
 _STRUCTURING_LIMITS = [5_000, 10_000, 15_000]
 
 
-# %% check_velocity
+#%% ── TIME SIGNALS ────────────────────────────────────────────────────────────
+
 @tool
 def check_velocity(txn_json: str, history_json: str) -> str:
     """
-    Detect anomalous transaction velocity for the sender.
-    High: avg gap between recent txns < 60s.
-    Medium: avg gap < 300s.
+    Detect anomalous transaction burst rate for the sender.
+      HIGH   — avg gap between recent txns < 60s
+      MEDIUM — avg gap < 300s
 
-    txn_json: JSON-serialized Transaction (needs: timestamp)
-    history_json: JSON-serialized list[Transaction] — last 20 from same sender
-    Returns: JSON RiskResult
+    txn_json:     Transaction (needs: timestamp)
+    history_json: list[Transaction] — last 20 from same sender
     """
-    history = json.loads(history_json)
-
-    if len(history) < 2:
-        return json.dumps({"risk": "low", "reason": "insufficient history"})
-
-    times = sorted(t["timestamp"] for t in history)
-    gaps = [times[i + 1] - times[i] for i in range(len(times) - 1)]
-    avg_gap = sum(gaps) / len(gaps)
-
-    if avg_gap < 60:
-        return json.dumps({"risk": "high", "reason": f"burst: avg gap {avg_gap:.0f}s"})
-    if avg_gap < 300:
-        return json.dumps(
-            {"risk": "medium", "reason": f"high frequency: avg gap {avg_gap:.0f}s"}
-        )
-    return json.dumps({"risk": "low", "reason": "normal velocity"})
+    return json.dumps({"risk": RiskLevel.LOW, "reason": "TODO"})
 
 
-# %% check_amount_anomaly
-@tool
-def check_amount_anomaly(txn_json: str, profile_json: str) -> str:
-    """
-    Detect amount-based fraud signals: statistical outlier, round number >€1k,
-    or structuring near €5k / €10k / €15k reporting thresholds.
-
-    txn_json: JSON-serialized Transaction (needs: amount)
-    profile_json: JSON-serialized AccountProfile (needs: avg_amount, std_amount)
-    Returns: JSON RiskResult
-    """
-    txn = json.loads(txn_json)
-    profile = json.loads(profile_json)
-    amount = txn["amount"]
-    avg, std = profile["avg_amount"], profile["std_amount"]
-
-    if std > 0 and amount > avg + 3 * std:
-        return json.dumps(
-            {
-                "risk": "high",
-                "reason": f"outlier: €{amount} > avg+3σ (€{avg + 3 * std:.0f})",
-            }
-        )
-    if amount > 1_000 and amount % 100 == 0:
-        return json.dumps({"risk": "high", "reason": f"suspiciously round: €{amount}"})
-    if any(t - 200 <= amount < t for t in _STRUCTURING_LIMITS):
-        return json.dumps(
-            {"risk": "medium", "reason": f"near reporting threshold: €{amount}"}
-        )
-    return json.dumps({"risk": "low", "reason": "amount within normal range"})
-
-
-# %% check_balance_drain
-@tool
-def check_balance_drain(txn_json: str, profile_json: str) -> str:
-    """
-    Detect balance drain: txn draining >90% of sender balance (high)
-    or >70% (medium).
-
-    txn_json: JSON-serialized Transaction (needs: amount)
-    profile_json: JSON-serialized AccountProfile (needs: balance)
-    Returns: JSON RiskResult
-    """
-    txn = json.loads(txn_json)
-    profile = json.loads(profile_json)
-    amount = txn["amount"]
-    balance = profile.get("balance", 0)
-
-    if balance <= 0:
-        return json.dumps({"risk": "low", "reason": "balance unavailable"})
-
-    ratio = amount / balance
-    if ratio > 0.9:
-        return json.dumps({"risk": "high", "reason": f"drains {ratio:.0%} of balance"})
-    if ratio > 0.7:
-        return json.dumps(
-            {"risk": "medium", "reason": f"drains {ratio:.0%} of balance"}
-        )
-    return json.dumps({"risk": "low", "reason": f"drains {ratio:.0%} of balance"})
-
-
-# %% check_counterparty
-@tool
-def check_counterparty(txn_json: str, graph_json: str) -> str:
-    """
-    Detect suspicious counterparty patterns:
-    - New account receiving large amount (>€1k) → high
-    - Receiver with high fan-in (many senders converging) → high
-
-    txn_json: JSON-serialized Transaction (needs: receiver_id, amount)
-    graph_json: JSON {nodes: [{id, is_new, in_degree, ...}], edges: [...]}
-                — 2-hop subgraph from build_relationship_graph
-    Returns: JSON RiskResult
-    """
-    txn = json.loads(txn_json)
-    graph = json.loads(graph_json)
-    receiver_id = txn["receiver_id"]
-    amount = txn["amount"]
-
-    receiver = next((n for n in graph["nodes"] if n["id"] == receiver_id), {})
-    is_new = receiver.get("is_new", False)
-    in_degree = receiver.get("in_degree", 0)
-
-    if is_new and amount > 1_000:
-        return json.dumps({"risk": "high", "reason": f"new account receives €{amount}"})
-    if in_degree > 10:
-        return json.dumps(
-            {"risk": "high", "reason": f"fan-in: {in_degree} senders → receiver"}
-        )
-    return json.dumps({"risk": "low", "reason": "counterparty looks normal"})
-
-
-# %% check_temporal_pattern
 @tool
 def check_temporal_pattern(txn_json: str) -> str:
     """
-    Flag off-hours transactions (00:00–05:00 UTC) as medium risk.
+    Flag off-hours activity (00:00–05:00 UTC) as medium risk.
+      MEDIUM — transaction hour in [0, 5)
 
-    txn_json: JSON-serialized Transaction (needs: timestamp — Unix epoch)
-    Returns: JSON RiskResult
+    txn_json: Transaction (needs: timestamp — Unix epoch)
     """
-    txn = json.loads(txn_json)
-    hour = datetime.fromtimestamp(txn["timestamp"], tz=timezone.utc).hour
-
-    if 0 <= hour < 5:
-        return json.dumps({"risk": "medium", "reason": f"off-hours: {hour:02d}:xx UTC"})
-    return json.dumps({"risk": "low", "reason": "normal hours"})
+    return json.dumps({"risk": RiskLevel.LOW, "reason": "TODO"})
 
 
-# %% compute_composite_risk  (called in Python, not a LangChain tool)
+@tool
+def check_card_testing(txn_json: str, history_json: str) -> str:
+    """
+    Detect card-testing pattern: a sequence of rapid micro-transactions
+    (< €10) immediately preceding a large transaction.
+      HIGH   — 3+ micro-txns in last 5 min followed by current large txn (> €500)
+      MEDIUM — 1–2 micro-txns before a large txn
+
+    txn_json:     Transaction (needs: amount, timestamp)
+    history_json: list[Transaction] — last 20 from same sender
+    """
+    return json.dumps({"risk": RiskLevel.LOW, "reason": "TODO"})
+
+
+#%% ── AMOUNT SIGNALS ──────────────────────────────────────────────────────────
+
+@tool
+def check_amount_anomaly(txn_json: str, profile_json: str) -> str:
+    """
+    Detect amount-based fraud signals.
+      HIGH   — amount > avg + 3σ (statistical outlier)
+      HIGH   — round number > €1k (e.g. €5,000.00)
+      MEDIUM — amount within €200 below a reporting limit (structuring)
+
+    txn_json:    Transaction (needs: amount)
+    profile_json: AccountProfile (needs: avg_amount, std_amount)
+    """
+    return json.dumps({"risk": RiskLevel.LOW, "reason": "TODO"})
+
+
+@tool
+def check_balance_drain(txn_json: str, profile_json: str) -> str:
+    """
+    Detect near-total balance wipeout.
+      HIGH   — txn drains > 90% of sender balance
+      MEDIUM — txn drains > 70% of sender balance
+
+    txn_json:     Transaction (needs: amount)
+    profile_json: AccountProfile (needs: balance)
+    """
+    return json.dumps({"risk": RiskLevel.LOW, "reason": "TODO"})
+
+
+@tool
+def check_first_large(txn_json: str, profile_json: str) -> str:
+    """
+    Flag an account's first-ever unusually large transaction.
+      HIGH   — amount > 5× profile.max_amount AND txn_count > 5
+               (enough history to establish a baseline, then sudden spike)
+      MEDIUM — amount > 3× profile.max_amount
+
+    txn_json:     Transaction (needs: amount)
+    profile_json: AccountProfile (needs: max_amount, txn_count)
+    """
+    return json.dumps({"risk": RiskLevel.LOW, "reason": "TODO"})
+
+
+#%% ── BEHAVIORAL SIGNALS ──────────────────────────────────────────────────────
+
+@tool
+def check_new_payee(txn_json: str, profile_json: str) -> str:
+    """
+    Detect a large transaction sent to a counterparty never seen before.
+      HIGH   — receiver not in profile.known_counterparties AND amount > €1k
+      MEDIUM — receiver not in known_counterparties AND amount > €200
+
+    txn_json:     Transaction (needs: receiver_id, amount)
+    profile_json: AccountProfile (needs: known_counterparties: list[str])
+    """
+    return json.dumps({"risk": RiskLevel.LOW, "reason": "TODO"})
+
+
+@tool
+def check_dormant_reactivation(txn_json: str, profile_json: str) -> str:
+    """
+    Flag an account that was silent for a long period and suddenly transacts.
+      HIGH   — days since last txn > 180 AND amount > profile.avg_amount
+      MEDIUM — days since last txn > 90
+
+    txn_json:     Transaction (needs: timestamp)
+    profile_json: AccountProfile (needs: last_seen — Unix epoch)
+    """
+    return json.dumps({"risk": RiskLevel.LOW, "reason": "TODO"})
+
+
+@tool
+def check_frequency_shift(txn_json: str, history_json: str, profile_json: str) -> str:
+    """
+    Detect a sudden spike in transaction rate vs. the account's historical baseline.
+      HIGH   — recent rate (last 1h) > 10× profile.avg_time_between_txns baseline
+      MEDIUM — recent rate > 5× baseline
+
+    txn_json:     Transaction (needs: timestamp)
+    history_json: list[Transaction] — last 20 from same sender
+    profile_json: AccountProfile (needs: avg_time_between_txns)
+    """
+    return json.dumps({"risk": RiskLevel.LOW, "reason": "TODO"})
+
+
+#%% ── GRAPH FLOW SIGNALS ──────────────────────────────────────────────────────
+
+@tool
+def check_fan_in(txn_json: str, graph_json: str) -> str:
+    """
+    Detect a money-mule aggregation node: many distinct senders converging
+    on one receiver account.
+      HIGH   — receiver.in_degree > 10
+      MEDIUM — receiver.in_degree > 5
+
+    txn_json:  Transaction (needs: receiver_id)
+    graph_json: subgraph {nodes: [{id, in_degree, ...}], edges: [...]}
+    """
+    return json.dumps({"risk": RiskLevel.LOW, "reason": "TODO"})
+
+
+@tool
+def check_fan_out(txn_json: str, graph_json: str) -> str:
+    """
+    Detect rapid distribution from one account to many recipients
+    (money-mule payout node).
+      HIGH   — sender.out_degree > 10 in last 24h
+      MEDIUM — sender.out_degree > 5
+
+    txn_json:   Transaction (needs: sender_id)
+    graph_json: subgraph {nodes: [{id, out_degree, ...}], edges: [...]}
+    """
+    return json.dumps({"risk": RiskLevel.LOW, "reason": "TODO"})
+
+
+@tool
+def check_mule_chain(txn_json: str, graph_json: str) -> str:
+    """
+    Detect a mule-chain hop: A→B→C where the intermediate node B
+    forwarded funds within a short window after receiving them.
+      HIGH   — receiver forwarded ≥ 70% of received amount within 30 min
+      MEDIUM — receiver forwarded ≥ 50% within 2h
+
+    txn_json:   Transaction (needs: receiver_id, amount, timestamp)
+    graph_json: 2-hop subgraph with edge timestamps and amounts
+    """
+    return json.dumps({"risk": RiskLevel.LOW, "reason": "TODO"})
+
+
+@tool
+def check_circular_flow(txn_json: str, graph_json: str) -> str:
+    """
+    Detect circular money flow where funds eventually return to the origin
+    account (wash trading / network testing).
+      HIGH   — a path from receiver back to sender exists within 3 hops
+
+    txn_json:   Transaction (needs: sender_id, receiver_id)
+    graph_json: 3-hop subgraph as adjacency list
+    """
+    return json.dumps({"risk": RiskLevel.LOW, "reason": "TODO"})
+
+
+#%% ── AGGREGATOR (pure Python, not a LangChain tool) ─────────────────────────
+
 def compute_composite_risk(results: list[RiskResult]) -> CompositeResult:
     """
-    Aggregate 5 rule results into a 0–10 composite score.
+    Aggregate rule results into a 0–10 composite score.
     high=3, medium=1, low=0.
     Triage: score ≤1 → auto-legit · score ≥6 → auto-fraud · 2–5 → Layer 2
     """
@@ -192,18 +230,27 @@ def compute_composite_risk(results: list[RiskResult]) -> CompositeResult:
     else:
         risk_level = RiskLevel.LOW
 
-    return {
-        "score": score,
-        "risk_level": risk_level,
-        "summary": summary or "no signals",
-    }
+    return {"score": score, "risk_level": risk_level, "summary": summary or "no signals"}
 
 
-# %% all tools list (for agent binding)
+#%% ── TOOL REGISTRY (bind to agent) ──────────────────────────────────────────
+
 RULE_TOOLS = [
+    # time
     check_velocity,
+    check_temporal_pattern,
+    check_card_testing,
+    # amount
     check_amount_anomaly,
     check_balance_drain,
-    check_counterparty,
-    check_temporal_pattern,
+    check_first_large,
+    # behavioral
+    check_new_payee,
+    check_dormant_reactivation,
+    check_frequency_shift,
+    # graph flow
+    check_fan_in,
+    check_fan_out,
+    check_mule_chain,
+    check_circular_flow,
 ]
