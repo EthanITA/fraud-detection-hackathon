@@ -1,28 +1,42 @@
-#%% imports & shared types
+# %% imports & shared types
 from __future__ import annotations
+
 import json
 from datetime import datetime, timezone
-from typing import Literal, TypedDict
+from enum import Enum
+from typing import TypedDict
 
 from langchain.tools import tool
 
-RiskLevel = Literal["high", "medium", "low"]
+
+class RiskLevel(str, Enum):
+    HIGH = "high"
+    MEDIUM = "medium"
+    LOW = "low"
+
 
 class RiskResult(TypedDict):
     risk: RiskLevel
     reason: str
 
+
 class CompositeResult(TypedDict):
-    score: int          # 0–10
+    score: int  # 0–10
     risk_level: RiskLevel
     summary: str
 
-_RISK_SCORES: dict[str, int] = {"high": 3, "medium": 1, "low": 0}
 
-# Structuring thresholds: amounts just below reporting limits are suspicious
-_STRUCTURING_THRESHOLDS = [4_999, 9_999, 14_999]
+_RISK_SCORES: dict[RiskLevel, int] = {
+    RiskLevel.HIGH: 3,
+    RiskLevel.MEDIUM: 1,
+    RiskLevel.LOW: 0,
+}
 
-#%% check_velocity
+# Reporting limits — amounts just below these are structuring signals
+_STRUCTURING_LIMITS = [5_000, 10_000, 15_000]
+
+
+# %% check_velocity
 @tool
 def check_velocity(txn_json: str, history_json: str) -> str:
     """
@@ -46,11 +60,13 @@ def check_velocity(txn_json: str, history_json: str) -> str:
     if avg_gap < 60:
         return json.dumps({"risk": "high", "reason": f"burst: avg gap {avg_gap:.0f}s"})
     if avg_gap < 300:
-        return json.dumps({"risk": "medium", "reason": f"high frequency: avg gap {avg_gap:.0f}s"})
+        return json.dumps(
+            {"risk": "medium", "reason": f"high frequency: avg gap {avg_gap:.0f}s"}
+        )
     return json.dumps({"risk": "low", "reason": "normal velocity"})
 
 
-#%% check_amount_anomaly
+# %% check_amount_anomaly
 @tool
 def check_amount_anomaly(txn_json: str, profile_json: str) -> str:
     """
@@ -67,15 +83,22 @@ def check_amount_anomaly(txn_json: str, profile_json: str) -> str:
     avg, std = profile["avg_amount"], profile["std_amount"]
 
     if std > 0 and amount > avg + 3 * std:
-        return json.dumps({"risk": "high", "reason": f"outlier: €{amount} > avg+3σ (€{avg + 3 * std:.0f})"})
+        return json.dumps(
+            {
+                "risk": "high",
+                "reason": f"outlier: €{amount} > avg+3σ (€{avg + 3 * std:.0f})",
+            }
+        )
     if amount > 1_000 and amount % 100 == 0:
         return json.dumps({"risk": "high", "reason": f"suspiciously round: €{amount}"})
-    if any(t - 200 <= amount <= t for t in _STRUCTURING_THRESHOLDS):
-        return json.dumps({"risk": "medium", "reason": f"near reporting threshold: €{amount}"})
+    if any(t - 200 <= amount < t for t in _STRUCTURING_LIMITS):
+        return json.dumps(
+            {"risk": "medium", "reason": f"near reporting threshold: €{amount}"}
+        )
     return json.dumps({"risk": "low", "reason": "amount within normal range"})
 
 
-#%% check_balance_drain
+# %% check_balance_drain
 @tool
 def check_balance_drain(txn_json: str, profile_json: str) -> str:
     """
@@ -98,11 +121,13 @@ def check_balance_drain(txn_json: str, profile_json: str) -> str:
     if ratio > 0.9:
         return json.dumps({"risk": "high", "reason": f"drains {ratio:.0%} of balance"})
     if ratio > 0.7:
-        return json.dumps({"risk": "medium", "reason": f"drains {ratio:.0%} of balance"})
+        return json.dumps(
+            {"risk": "medium", "reason": f"drains {ratio:.0%} of balance"}
+        )
     return json.dumps({"risk": "low", "reason": f"drains {ratio:.0%} of balance"})
 
 
-#%% check_counterparty
+# %% check_counterparty
 @tool
 def check_counterparty(txn_json: str, graph_json: str) -> str:
     """
@@ -127,11 +152,13 @@ def check_counterparty(txn_json: str, graph_json: str) -> str:
     if is_new and amount > 1_000:
         return json.dumps({"risk": "high", "reason": f"new account receives €{amount}"})
     if in_degree > 10:
-        return json.dumps({"risk": "high", "reason": f"fan-in: {in_degree} senders → receiver"})
+        return json.dumps(
+            {"risk": "high", "reason": f"fan-in: {in_degree} senders → receiver"}
+        )
     return json.dumps({"risk": "low", "reason": "counterparty looks normal"})
 
 
-#%% check_temporal_pattern
+# %% check_temporal_pattern
 @tool
 def check_temporal_pattern(txn_json: str) -> str:
     """
@@ -148,27 +175,31 @@ def check_temporal_pattern(txn_json: str) -> str:
     return json.dumps({"risk": "low", "reason": "normal hours"})
 
 
-#%% compute_composite_risk  (called in Python, not a LangChain tool)
+# %% compute_composite_risk  (called in Python, not a LangChain tool)
 def compute_composite_risk(results: list[RiskResult]) -> CompositeResult:
     """
     Aggregate 5 rule results into a 0–10 composite score.
     high=3, medium=1, low=0.
     Triage: score ≤1 → auto-legit · score ≥6 → auto-fraud · 2–5 → Layer 2
     """
-    score = min(sum(_RISK_SCORES[r["risk"]] for r in results), 10)
-    summary = " | ".join(r["reason"] for r in results if r["risk"] != "low")
+    score = min(sum(_RISK_SCORES[RiskLevel(r["risk"])] for r in results), 10)
+    summary = " | ".join(r["reason"] for r in results if r["risk"] != RiskLevel.LOW)
 
     if score >= 6:
-        risk_level: RiskLevel = "high"
+        risk_level = RiskLevel.HIGH
     elif score >= 2:
-        risk_level = "medium"
+        risk_level = RiskLevel.MEDIUM
     else:
-        risk_level = "low"
+        risk_level = RiskLevel.LOW
 
-    return {"score": score, "risk_level": risk_level, "summary": summary or "no signals"}
+    return {
+        "score": score,
+        "risk_level": risk_level,
+        "summary": summary or "no signals",
+    }
 
 
-#%% all tools list (for agent binding)
+# %% all tools list (for agent binding)
 RULE_TOOLS = [
     check_velocity,
     check_amount_anomaly,
