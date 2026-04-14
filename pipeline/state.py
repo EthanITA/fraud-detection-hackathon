@@ -26,6 +26,7 @@ class PipelineState(TypedDict, total=False):
     transactions: list[dict]
     profiles: dict  # account_id → AccountProfile
     graph: dict  # relationship graph
+    citizens: dict  # user_id → citizen profile (demographics, location, status, persona)
     rule_results: dict[
         str, list[tuple[str, RiskResult]]
     ]  # txn_id → [(tool_name, result)]

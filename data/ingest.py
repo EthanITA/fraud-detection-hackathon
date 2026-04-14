@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import csv
 import json
+from pathlib import Path
 
 # %% field mapping
 # Adjust on hackathon day: map raw field names → guaranteed keys.
@@ -42,12 +43,42 @@ def _normalize(raw: dict) -> dict:
     return txn
 
 
+# %% find_transactions_file
+def find_transactions_file(dir_path: str) -> str:
+    """Find the transactions file in a dataset directory.
+
+    Looks for JSON/CSV files whose name contains 'transaction'.
+    Falls back to the first JSON/CSV file that isn't a known supplementary file.
+    """
+    d = Path(dir_path)
+    skip = {"users.json", "locations.json", "status.csv", "personas.md"}
+
+    # Priority: files with "transaction" in the name
+    for ext in ("*.json", "*.csv"):
+        for f in d.glob(ext):
+            if "transaction" in f.name.lower() and f.name not in skip:
+                return str(f)
+
+    # Fallback: first JSON/CSV not in the skip list
+    for ext in ("*.json", "*.csv"):
+        for f in d.glob(ext):
+            if f.name not in skip:
+                return str(f)
+
+    raise FileNotFoundError(f"No transactions file found in {dir_path}")
+
+
 # %% parse_dataset
 def parse_dataset(path: str) -> list[dict]:
     """Parse a JSON or CSV dataset into a list of transaction dicts.
 
+    Accepts either a file path or a directory path.
     Each dict contains the 6 guaranteed keys plus all original fields.
     """
+    p = Path(path)
+    if p.is_dir():
+        path = find_transactions_file(path)
+
     if path.endswith(".json"):
         with open(path) as f:
             rows = json.load(f)

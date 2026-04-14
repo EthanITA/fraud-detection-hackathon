@@ -73,40 +73,63 @@ def _format_rule_results(results: list[tuple[str, RiskResult]]) -> str:
     return "\n".join(lines) or "No signals detected by automated rules."
 
 
+# %% _get_citizen_context
+def _get_citizen_context(state: dict, user_id: str, include_persona: bool = False) -> dict:
+    """Extract citizen context for a user. Returns compact summary for most specialists,
+    full persona text only when include_persona=True (behavioral + aggregator)."""
+    citizen = state.get("citizens", {}).get(user_id, {})
+    if not citizen:
+        return {}
+    ctx = {
+        "citizen_summary": citizen.get("summary", "no citizen data"),
+        "location": citizen.get("location", {}),
+        "status": citizen.get("status", {}),
+    }
+    if include_persona and citizen.get("persona"):
+        ctx["persona"] = citizen["persona"]
+    return ctx
+
+
 # %% _build_specialist_context
 def _build_specialist_context(specialist_name: str, state: dict, txn: dict) -> dict:
     """Extract curated input for a specialist from the full pipeline state.
 
     Returns a dict with keys the prompt template expects:
-    - velocity:     {txn, history, rule_results}
-    - amount:       {txn, profile, rule_results}
-    - behavioral:   {txn, profile, history, rule_results}
-    - relationship: {txn, graph, rule_results}
+    - velocity:     {txn, history, rule_results, citizen}
+    - amount:       {txn, profile, rule_results, citizen}
+    - behavioral:   {txn, profile, history, rule_results, citizen+persona}
+    - relationship: {txn, graph, rule_results, citizen}
     """
     txn_id = txn["id"]
+    sender_id = txn["sender_id"]
     rule_results = _format_rule_results(state["rule_results"].get(txn_id, []))
 
     if specialist_name == "velocity":
-        history = get_account_context(txn["sender_id"], state["transactions"], n=20)
-        return {"txn": txn, "history": history, "rule_results": rule_results}
+        history = get_account_context(sender_id, state["transactions"], n=20)
+        citizen = _get_citizen_context(state, sender_id)
+        return {"txn": txn, "history": history, "citizen": citizen, "rule_results": rule_results}
 
     if specialist_name == "amount":
-        profile = state["profiles"].get(txn["sender_id"], {})
-        return {"txn": txn, "profile": profile, "rule_results": rule_results}
+        profile = state["profiles"].get(sender_id, {})
+        citizen = _get_citizen_context(state, sender_id)
+        return {"txn": txn, "profile": profile, "citizen": citizen, "rule_results": rule_results}
 
     if specialist_name == "behavioral":
-        profile = state["profiles"].get(txn["sender_id"], {})
-        history = get_account_context(txn["sender_id"], state["transactions"], n=20)
+        profile = state["profiles"].get(sender_id, {})
+        history = get_account_context(sender_id, state["transactions"], n=20)
+        citizen = _get_citizen_context(state, sender_id, include_persona=True)
         return {
             "txn": txn,
             "profile": profile,
             "history": history,
+            "citizen": citizen,
             "rule_results": rule_results,
         }
 
     if specialist_name == "relationship":
         graph = state.get("graph", {})
-        return {"txn": txn, "graph": graph, "rule_results": rule_results}
+        citizen = _get_citizen_context(state, sender_id)
+        return {"txn": txn, "graph": graph, "citizen": citizen, "rule_results": rule_results}
 
     raise ValueError(f"Unknown specialist: {specialist_name}")
 

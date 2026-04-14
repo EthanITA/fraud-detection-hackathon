@@ -21,8 +21,10 @@ def main():
         dataset_path = tmp.name
         print(f"Using sample data ({len(SAMPLE_TXNS)} txns)")
     else:
+        # Accepts a directory (with transactions + supplementary files)
+        # or a single transactions file path
         dataset_path = sys.argv[1]
-        print(f"Using real data: {dataset_path}")
+        print(f"Using dataset: {dataset_path}")
 
     session_id = generate_session_id()
     pipeline = build_pipeline()

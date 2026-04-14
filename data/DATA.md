@@ -113,10 +113,34 @@ Single upfront pass. Returns:
 
 ---
 
+### `citizens.py` — Multi-Modal Citizen Context
+
+Loads supplementary data from the dataset directory alongside transactions.
+
+#### `build_citizen_profiles(dir_path: str) -> dict[str, dict]`
+
+Master function that loads and merges all supplementary files:
+
+| File | Loader | Output |
+|---|---|---|
+| `users.json` | `load_users()` | Demographics: age, job, residence, lat/lng |
+| `locations.json` | `load_locations()` | Location summary: home city, visited cities, max distance, travel frequency |
+| `status.csv` | `load_statuses()` | Health summary: activity/sleep/exposure trends, specialist visits |
+| `personas.md` | `load_personas()` | Full natural-language persona description |
+
+Each citizen profile contains:
+- **`summary`** — compact one-liner (e.g., "95yo, Retired, lives in Detroit, high mobility/travel") — included in ALL specialist contexts
+- **`location`** — pre-computed: home city, visited cities, max distance from home (km), travel pings count
+- **`status`** — pre-computed: activity/sleep/exposure trends (increasing/declining/stable), specialist visit flag
+- **`persona`** — full text — included only in behavioral specialist + aggregator contexts
+- **`user`** — raw demographics
+
+Gracefully returns `{}` if the path is a file (not a directory) or if supplementary files are missing.
+
 ## Quick Reference
 
 ```
-parse_dataset("data/txns.csv")
+parse_dataset("dataset_dir/")          # or a single file path
     → list[dict]  (each dict has 6 guaranteed keys + all raw fields)
 
 compute_account_profiles(txns)
@@ -127,4 +151,7 @@ get_account_context("ACC001", txns, n=20)
 
 build_relationship_graph(txns)
     → {nodes: [...], edges: [...]}
+
+build_citizen_profiles("dataset_dir/")
+    → {"IAFGUHCK": {user, location, status, persona, summary}, ...}
 ```

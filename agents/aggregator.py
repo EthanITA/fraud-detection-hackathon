@@ -92,8 +92,13 @@ def run_aggregator(state: dict) -> dict:
         )
         specialist_summary = _format_specialist_opinions(sp_results)
 
+        # Citizen context: full persona for aggregator reasoning
+        citizen = state.get("citizens", {}).get(txn["sender_id"], {})
+        citizen_context = citizen.get("persona") or citizen.get("summary", "")
+
         user_content = json.dumps({
             "transaction": txn,
+            "citizen_context": citizen_context,
             "specialist_assessments": specialist_summary,
             "rule_results": rule_results,
         }, default=str)

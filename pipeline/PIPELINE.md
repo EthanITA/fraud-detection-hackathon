@@ -56,8 +56,11 @@ flowchart TD
 ## What Each Step Does
 
 ### Layer 0 — Ingest ($0)
-Read the dataset, compute stats for every account (average spending, who they
-send to), and build a "who-transacts-with-whom" graph. Pure data prep.
+Read the dataset directory: parse transactions, compute account stats, build
+the relationship graph, and load multi-modal citizen data (demographics,
+location history, health status, persona descriptions). Accepts either a
+directory path (scans for transactions + supplementary files) or a single
+file path (backward compatible).
 
 **Status**: Implemented.
 
@@ -179,7 +182,7 @@ flushed at exit in `main.py` to ensure all traces land before the process ends.
 
 | File | What it does |
 |---|---|
-| `state.py` | `PipelineState` TypedDict — the data shape flowing through the pipeline |
+| `state.py` | `PipelineState` TypedDict — the data shape flowing through the pipeline (includes citizens) |
 | `dispatch.py` | Maps each rule tool to its required context keys, routes invocations |
 | `nodes.py` | All node functions: ingest, run_rules, triage, 4 specialists, aggregate, output |
 | `graph.py` | Wires the nodes into a LangGraph state machine with `Send` fan-out/fan-in |

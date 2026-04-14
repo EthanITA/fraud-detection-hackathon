@@ -65,12 +65,12 @@ state — not the full pipeline state.
 
 ### Specialist Input — Curated Subset
 
-| Specialist       | Gets                                                    |
-|------------------|---------------------------------------------------------|
-| **Velocity**     | txn (guaranteed keys) + history (last 20) + L1 rules   |
-| **Amount**       | txn (guaranteed keys) + profile + L1 rules              |
-| **Behavioral**   | txn (guaranteed keys) + profile + history + L1 rules    |
-| **Relationship** | txn (guaranteed keys) + graph subgraph + L1 rules       |
+| Specialist       | Gets                                                                  |
+|------------------|-----------------------------------------------------------------------|
+| **Velocity**     | txn + history (last 20) + L1 rules + citizen summary + location       |
+| **Amount**       | txn + profile + L1 rules + citizen summary + location                 |
+| **Behavioral**   | txn + profile + history + L1 rules + citizen summary + **full persona** |
+| **Relationship** | txn + graph subgraph + L1 rules + citizen summary + location          |
 
 The `_build_specialist_context()` helper extracts exactly what each specialist
 needs from the full pipeline state — nothing more.

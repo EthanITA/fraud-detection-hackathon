@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 
 from data import (
+    build_citizen_profiles,
     build_relationship_graph,
     compute_account_profiles,
     get_account_context,
@@ -30,10 +31,17 @@ from .state import PipelineState
 
 # %% ingest
 def ingest(state: PipelineState) -> dict:
-    txns = parse_dataset(state["dataset_path"])
+    dataset_path = state["dataset_path"]
+    txns = parse_dataset(dataset_path)
     profiles = compute_account_profiles(txns)
     graph = build_relationship_graph(txns)
-    return {"transactions": txns, "profiles": profiles, "graph": graph}
+    citizens = build_citizen_profiles(dataset_path)
+    return {
+        "transactions": txns,
+        "profiles": profiles,
+        "graph": graph,
+        "citizens": citizens,
+    }
 
 
 # %% run_rules
