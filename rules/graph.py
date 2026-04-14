@@ -20,6 +20,8 @@ def check_fan_in(txn_json: str, graph_json: str) -> str:
     txn_json:   Transaction (needs: receiver_id)
     graph_json: subgraph {nodes: [{id, in_degree, ...}], edges: [...]}
     """
+    # TODO: parse txn_json/graph_json, find receiver node in graph,
+    #   HIGH if in_degree > FAN_IN_HIGH, MEDIUM if > FAN_IN_MEDIUM
     return json.dumps({"risk": RiskLevel.LOW, "reason": "TODO"})
 
 
@@ -35,6 +37,8 @@ def check_fan_out(txn_json: str, graph_json: str) -> str:
     txn_json:   Transaction (needs: sender_id)
     graph_json: subgraph {nodes: [{id, out_degree, ...}], edges: [...]}
     """
+    # TODO: parse txn_json/graph_json, find sender node in graph,
+    #   HIGH if out_degree > FAN_OUT_HIGH, MEDIUM if > FAN_OUT_MEDIUM
     return json.dumps({"risk": RiskLevel.LOW, "reason": "TODO"})
 
 
@@ -50,6 +54,10 @@ def check_mule_chain(txn_json: str, graph_json: str) -> str:
     txn_json:   Transaction (needs: receiver_id, amount, timestamp)
     graph_json: 2-hop subgraph with edge timestamps and amounts
     """
+    # TODO: parse txn_json/graph_json, find outgoing edges from receiver,
+    #   compute forward_ratio = outgoing_amount / incoming_amount within time window.
+    #   HIGH if forward_ratio > MULE_FORWARD_HIGH and window < MULE_WINDOW_HIGH,
+    #   MEDIUM if forward_ratio > MULE_FORWARD_MEDIUM and window < MULE_WINDOW_MEDIUM
     return json.dumps({"risk": RiskLevel.LOW, "reason": "TODO"})
 
 
@@ -64,4 +72,6 @@ def check_circular_flow(txn_json: str, graph_json: str) -> str:
     txn_json:   Transaction (needs: sender_id, receiver_id)
     graph_json: 3-hop subgraph as adjacency list
     """
+    # TODO: parse txn_json/graph_json, BFS/DFS from receiver_id looking for
+    #   a path back to sender_id within CIRCULAR_MAX_HOPS. HIGH if found.
     return json.dumps({"risk": RiskLevel.LOW, "reason": "TODO"})

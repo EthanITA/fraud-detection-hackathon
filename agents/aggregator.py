@@ -30,4 +30,7 @@ def run_aggregator(state: dict) -> dict:
     LangGraph node -- receives full PipelineState, returns verdicts update.
     Processes all txns that have entries in specialist_results.
     """
+    # TODO: for each txn in specialist_results, format all 4 specialist opinions + rule results,
+    #   call OpenRouter LLM with AGGREGATOR_PROMPT, validate via AggregatorOutput,
+    #   return {"verdicts": {txn_id: Verdict}}
     raise NotImplementedError("aggregate LLM node")

@@ -73,7 +73,9 @@ def triage(state: PipelineState) -> dict:
     if budget and budget.is_panic():
         ambiguous_prioritized = []
     elif budget:
-        # TODO: estimate cost per txn and cap ambiguous_prioritized to top-N
+        # TODO: estimate cost per ambiguous txn (4 specialists × MAX_TOKENS_SPECIALIST +
+        #   1 aggregator × MAX_TOKENS_AGGREGATOR), cap ambiguous_prioritized to
+        #   top-N that fit within remaining budget
         pass
 
     return {
@@ -86,30 +88,35 @@ def triage(state: PipelineState) -> dict:
 # %% velocity_specialist
 def velocity_specialist(state: PipelineState) -> dict:
     """Analyze ambiguous transactions for timing/velocity patterns."""
+    # TODO: delegate to agents.specialists.run_velocity_specialist(state)
     raise NotImplementedError("velocity_specialist LLM agent")
 
 
 # %% amount_specialist
 def amount_specialist(state: PipelineState) -> dict:
     """Analyze ambiguous transactions for spending/amount patterns."""
+    # TODO: delegate to agents.specialists.run_amount_specialist(state)
     raise NotImplementedError("amount_specialist LLM agent")
 
 
 # %% behavioral_specialist
 def behavioral_specialist(state: PipelineState) -> dict:
     """Analyze ambiguous transactions for behavioral change patterns."""
+    # TODO: delegate to agents.specialists.run_behavioral_specialist(state)
     raise NotImplementedError("behavioral_specialist LLM agent")
 
 
 # %% relationship_specialist
 def relationship_specialist(state: PipelineState) -> dict:
     """Analyze ambiguous transactions for network/relationship patterns."""
+    # TODO: delegate to agents.specialists.run_relationship_specialist(state)
     raise NotImplementedError("relationship_specialist LLM agent")
 
 
 # %% aggregate
 def aggregate(state: PipelineState) -> dict:
     """Combine specialist opinions into final verdicts with economic weighting."""
+    # TODO: delegate to agents.aggregator.run_aggregator(state)
     raise NotImplementedError("aggregate LLM node")
 
 
@@ -125,12 +132,14 @@ def collect_output(state: PipelineState) -> dict:
     specialist_txn_ids = set(state.get("specialist_results", {}).keys())
     for txn_id, _priority in state.get("ambiguous_prioritized", []):
         if txn_id not in specialist_txn_ids and txn_id not in fraud_ids:
-            # TODO: rule-based fallback verdict for budget-skipped txns
+            # TODO: fallback verdict for budget-skipped txns — use composite_risk score
+            #   from triage to decide fraud/legit without LLM
             pass
 
     fraud_ids = sorted(set(fraud_ids))
 
-    # TODO: build debug_output list[dict] with full per-txn trace
+    # TODO: build debug_output — per-txn dict with: rule_results, triage_decision,
+    #   specialist_results (if any), aggregator_verdict (if any), final_decision, priority_rank
     debug_output: list[dict] = []
 
     return {"fraud_ids": fraud_ids, "debug_output": debug_output}

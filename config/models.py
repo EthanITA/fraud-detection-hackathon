@@ -14,8 +14,3 @@ COST_PER_1K_TOKENS: dict[str, float] = {
     "openai/gpt-4o-mini": 0.00015,
     "openai/gpt-4o": 0.005,
 }
-
-COST_PER_1K_TOKENS: dict[str, float] = {
-    "openai/gpt-4o-mini": 0.00015,
-    "openai/gpt-4o": 0.005,
-}

@@ -19,6 +19,9 @@ def check_new_payee(txn_json: str, profile_json: str) -> str:
     txn_json:     Transaction (needs: receiver_id, amount)
     profile_json: AccountProfile (needs: known_counterparties: list[str])
     """
+    # TODO: parse txn_json/profile_json, check if receiver_id not in known_counterparties,
+    #   HIGH if new payee and amount > NEW_PAYEE_HIGH_AMOUNT,
+    #   MEDIUM if new payee and amount > NEW_PAYEE_MEDIUM_AMOUNT
     return json.dumps({"risk": RiskLevel.LOW, "reason": "TODO"})
 
 
@@ -33,6 +36,9 @@ def check_dormant_reactivation(txn_json: str, profile_json: str) -> str:
     txn_json:     Transaction (needs: timestamp)
     profile_json: AccountProfile (needs: last_seen — Unix epoch)
     """
+    # TODO: parse txn_json/profile_json, compute days_inactive = (timestamp - last_seen) / 86400,
+    #   HIGH if days_inactive > DORMANT_HIGH_DAYS and amount > avg_amount,
+    #   MEDIUM if days_inactive > DORMANT_MEDIUM_DAYS
     return json.dumps({"risk": RiskLevel.LOW, "reason": "TODO"})
 
 
@@ -48,4 +54,7 @@ def check_frequency_shift(txn_json: str, history_json: str, profile_json: str) -
     history_json: list[Transaction] — last 20 from same sender
     profile_json: AccountProfile (needs: avg_time_between_txns)
     """
+    # TODO: parse inputs, compute recent rate from last 1h of history_json,
+    #   compare to baseline avg_time_between_txns. HIGH if rate_multiplier > FREQUENCY_SHIFT_HIGH,
+    #   MEDIUM if > FREQUENCY_SHIFT_MEDIUM
     return json.dumps({"risk": RiskLevel.LOW, "reason": "TODO"})

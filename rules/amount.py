@@ -20,6 +20,11 @@ def check_amount_anomaly(txn_json: str, profile_json: str) -> str:
     txn_json:     Transaction (needs: amount)
     profile_json: AccountProfile (needs: avg_amount, std_amount)
     """
+    # TODO: parse txn_json/profile_json, check three signals:
+    #   1. Statistical outlier: amount > avg + OUTLIER_SIGMA * std → HIGH
+    #   2. Round number: amount >= ROUND_NUMBER_MIN and amount % 1000 == 0 → bump
+    #   3. Structuring: amount within STRUCTURING_PROXIMITY below a _STRUCTURING_LIMITS entry → bump
+    #   Return highest triggered level
     return json.dumps({"risk": RiskLevel.LOW, "reason": "TODO"})
 
 
@@ -34,6 +39,8 @@ def check_balance_drain(txn_json: str, profile_json: str) -> str:
     txn_json:     Transaction (needs: amount)
     profile_json: AccountProfile (needs: balance)
     """
+    # TODO: parse txn_json/profile_json, compute drain_ratio = amount / balance,
+    #   HIGH if drain_ratio > DRAIN_HIGH, MEDIUM if > DRAIN_MEDIUM
     return json.dumps({"risk": RiskLevel.LOW, "reason": "TODO"})
 
 
@@ -48,4 +55,7 @@ def check_first_large(txn_json: str, profile_json: str) -> str:
     txn_json:     Transaction (needs: amount)
     profile_json: AccountProfile (needs: max_amount, txn_count)
     """
+    # TODO: parse txn_json/profile_json, compute ratio = amount / max_amount,
+    #   HIGH if ratio > FIRST_LARGE_HIGH and txn_count > FIRST_LARGE_MIN_TXNS,
+    #   MEDIUM if ratio > FIRST_LARGE_MEDIUM
     return json.dumps({"risk": RiskLevel.LOW, "reason": "TODO"})

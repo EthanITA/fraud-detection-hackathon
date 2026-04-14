@@ -81,6 +81,9 @@ def run_velocity_specialist(state: dict) -> dict:
 
     LangGraph node -- receives full PipelineState, returns specialist_results update.
     """
+    # TODO: for each ambiguous txn, build context via _build_specialist_context("velocity", ...),
+    #   call OpenRouter LLM with VELOCITY_PROMPT, parse response into SpecialistOutput,
+    #   track tokens via BudgetTracker, return {"specialist_results": {txn_id: {"velocity": result}}}
     raise NotImplementedError("velocity_specialist LLM agent")
 
 
@@ -90,6 +93,8 @@ def run_amount_specialist(state: dict) -> dict:
 
     LangGraph node -- receives full PipelineState, returns specialist_results update.
     """
+    # TODO: same pattern as velocity — use _build_specialist_context("amount", ...),
+    #   call LLM with AMOUNT_PROMPT, validate via SpecialistOutput
     raise NotImplementedError("amount_specialist LLM agent")
 
 
@@ -99,6 +104,8 @@ def run_behavioral_specialist(state: dict) -> dict:
 
     LangGraph node -- receives full PipelineState, returns specialist_results update.
     """
+    # TODO: same pattern as velocity — use _build_specialist_context("behavioral", ...),
+    #   call LLM with BEHAVIORAL_PROMPT, validate via SpecialistOutput
     raise NotImplementedError("behavioral_specialist LLM agent")
 
 
@@ -108,4 +115,6 @@ def run_relationship_specialist(state: dict) -> dict:
 
     LangGraph node -- receives full PipelineState, returns specialist_results update.
     """
+    # TODO: same pattern as velocity — use _build_specialist_context("relationship", ...),
+    #   call LLM with RELATIONSHIP_PROMPT, validate via SpecialistOutput
     raise NotImplementedError("relationship_specialist LLM agent")
