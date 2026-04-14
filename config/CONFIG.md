@@ -9,7 +9,7 @@ choices, and observability setup.
 
 Loads your `.env` file and exposes typed constants:
 
-- **`OPENROUTER_API_KEY`** — Your token budget. $40 for datasets 1-3, $120 for 4-5.
+- **`OPENROUTER_API_KEY`** — Your token budget. `$40` for datasets 1-3, `$120` for 4-5.
   Non-refillable. Treat it like cash.
 - **`LANGFUSE_*`** keys — Mandatory tracing. Every submission needs a session ID,
   and Langfuse records every LLM call for the judges.
