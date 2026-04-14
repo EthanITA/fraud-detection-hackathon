@@ -78,7 +78,8 @@ def _format_rule_results(results: list[tuple[str, RiskResult]]) -> str:
 # %% _get_citizen_context
 def _get_citizen_context(state: dict, user_id: str, include_persona: bool = False) -> dict:
     """Extract citizen context for a user. Returns compact summary for most specialists,
-    full persona text only when include_persona=True (behavioral + aggregator)."""
+    full persona text only when include_persona=True (behavioral + aggregator).
+    Includes LLM pre-analysis if available."""
     citizen = state.get("citizens", {}).get(user_id, {})
     if not citizen:
         return {}
@@ -87,6 +88,10 @@ def _get_citizen_context(state: dict, user_id: str, include_persona: bool = Fals
         "location": citizen.get("location", {}),
         "status": citizen.get("status", {}),
     }
+    # Include LLM pre-analysis if available
+    assessment = state.get("citizen_assessments", {}).get(user_id)
+    if assessment:
+        ctx["pre_assessment"] = assessment
     if include_persona and citizen.get("persona"):
         ctx["persona"] = citizen["persona"]
     return ctx
@@ -172,7 +177,7 @@ def _call_specialist(
 
 # %% _run_specialist
 def _run_specialist(name: str, state: dict) -> dict:
-    """Shared logic for all 4 specialists — loop over ambiguous txns."""
+    """Shared logic for all 5 specialists — loop over ambiguous txns."""
     results: dict[str, dict] = {}
     txn_by_id = {t["id"]: t for t in state.get("transactions", [])}
     session_id = state.get("session_id")

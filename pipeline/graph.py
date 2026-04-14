@@ -7,6 +7,7 @@ from langgraph.graph import END, StateGraph
 from .nodes import (
     aggregate,
     amount_specialist,
+    analyze_citizens,
     behavioral_specialist,
     collect_output,
     geographic_specialist,
@@ -21,7 +22,7 @@ from .state import PipelineState
 
 # %% _fan_out_to_specialists
 def _fan_out_to_specialists(state: PipelineState) -> list:
-    """Route triage output: ambiguous txns fan-out to 4 specialists, rest skip to output."""
+    """Route triage output: ambiguous txns fan-out to 5 specialists, rest skip to output."""
     if state.get("ambiguous_prioritized"):
         return [
             Send("velocity_specialist", state),
@@ -38,6 +39,7 @@ def build_pipeline():
     g = StateGraph(PipelineState)
 
     g.add_node("ingest", ingest)
+    g.add_node("analyze_citizens", analyze_citizens)
     g.add_node("run_rules", run_rules)
     g.add_node("triage", triage)
     g.add_node("velocity_specialist", velocity_specialist)
@@ -49,7 +51,8 @@ def build_pipeline():
     g.add_node("output", collect_output)
 
     g.set_entry_point("ingest")
-    g.add_edge("ingest", "run_rules")
+    g.add_edge("ingest", "analyze_citizens")
+    g.add_edge("analyze_citizens", "run_rules")
     g.add_edge("run_rules", "triage")
     g.add_conditional_edges("triage", _fan_out_to_specialists)
     g.add_edge("velocity_specialist", "aggregate")

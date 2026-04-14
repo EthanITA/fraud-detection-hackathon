@@ -27,6 +27,7 @@ class PipelineState(TypedDict, total=False):
     profiles: dict  # account_id → AccountProfile
     graph: dict  # relationship graph
     citizens: dict  # user_id → citizen profile (demographics, location, status, persona)
+    citizen_assessments: dict  # user_id → LLM pre-analysis (vulnerability, contradictions, expected behavior)
     rule_results: dict[
         str, list[tuple[str, RiskResult]]
     ]  # txn_id → [(tool_name, result)]

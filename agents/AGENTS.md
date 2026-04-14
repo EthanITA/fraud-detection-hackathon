@@ -7,7 +7,7 @@ This is where we bring in the experts.
 
 ## The Metaphor
 
-Imagine a fraud review meeting. Four specialists each look at the same
+Imagine a fraud review meeting. Five specialists each look at the same
 suspicious transaction from their own angle:
 
 - **The Timing Expert** — "This account normally transacts twice a week. Today it
@@ -24,7 +24,11 @@ suspicious transaction from their own angle:
 - **The Network Expert** — "The receiver was created 3 days ago and has already
   received money from 8 different accounts. Classic mule aggregation pattern."
 
-Then a **senior analyst** (the aggregator) hears all four opinions and makes
+- **The Geographic/Identity Expert** — "This citizen is a 95-year-old retiree
+  who lives in Detroit and rarely travels. But this transaction originated from
+  a merchant in Tokyo — 10,000km from home. That's physically implausible."
+
+Then a **senior analyst** (the aggregator) hears all five opinions and makes
 the final call, weighing how much money is at stake.
 
 ## Architecture
@@ -35,29 +39,31 @@ triage
   ├── Send("velocity_specialist", state)     ─┐
   ├── Send("amount_specialist", state)        │
   ├── Send("behavioral_specialist", state)    ├── parallel (LangGraph Send API)
-  └── Send("relationship_specialist", state)  ─┘
+  ├── Send("relationship_specialist", state)  │
+  └── Send("geographic_specialist", state)    ─┘
                                                 │
                                             aggregate
 ```
 
-All 4 specialists are separate LangGraph nodes launched in parallel via
+All 5 specialists are separate LangGraph nodes launched in parallel via
 `Send()`. Each writes to the same `specialist_results` state key, which uses a
 `_merge_dicts` reducer in `PipelineState` to merge all branches:
 
 ```python
-# After all 4 complete, state contains:
+# After all 5 complete, state contains:
 specialist_results = {
     "TXN001": {
         "velocity":     {"risk_level": "high", "confidence": 0.85, ...},
         "amount":       {"risk_level": "medium", "confidence": 0.6, ...},
         "behavioral":   {"risk_level": "high", "confidence": 0.78, ...},
         "relationship": {"risk_level": "low", "confidence": 0.2, ...},
+        "geographic":   {"risk_level": "high", "confidence": 0.9, ...},
     },
     "TXN002": { ... },
 }
 ```
 
-## Layer 2 — Four Specialists (`specialists.py`)
+## Layer 2 — Five Specialists (`specialists.py`)
 
 Each specialist iterates over `ambiguous_prioritized` and analyzes every
 transaction from its domain perspective. Each gets a **curated subset** of
@@ -71,6 +77,7 @@ state — not the full pipeline state.
 | **Amount**       | txn + profile + L1 rules + citizen summary + location                 |
 | **Behavioral**   | txn + profile + history + L1 rules + citizen summary + **full persona** |
 | **Relationship** | txn + graph subgraph + L1 rules + citizen summary + location          |
+| **Geographic**   | txn + L1 rules + citizen summary + location + status + **full persona** |
 
 The `_build_specialist_context()` helper extracts exactly what each specialist
 needs from the full pipeline state — nothing more.
@@ -91,6 +98,10 @@ needs from the full pipeline state — nothing more.
 
 **Relationship Specialist** — *"Who is this money going to?"*
 - Patterns: MULE_CHAIN, FAN_IN, FAN_OUT, CIRCULAR_FLOW
+- Model: configurable via `config/models.py` (~512 tokens)
+
+**Geographic/Identity Specialist** — *"Is this plausible for THIS person?"*
+- Patterns: IMPOSSIBLE_TRAVEL, LIFESTYLE_MISMATCH, MOBILITY_VIOLATION, VULNERABILITY_EXPLOITATION
 - Model: configurable via `config/models.py` (~512 tokens)
 
 ### Why They Get Layer 1 Results
@@ -117,7 +128,7 @@ Each specialist node returns a dict that the `_merge_dicts` reducer merges:
     }
 }
 
-# After all 4 merge → specialist_results["TXN001"] has all 4 keys
+# After all 5 merge → specialist_results["TXN001"] has all 5 keys
 ```
 
 ## Structured Output Flow
@@ -168,7 +179,7 @@ Specialist failures are handled based on transaction amount:
 |---|---|
 | **Amount > €1,000** and specialist fails | Retry once |
 | **Amount ≤ €1,000** and specialist fails | Skip that specialist |
-| **All 4 specialists fail** for a txn | Fall back to rule-based verdict |
+| **All 5 specialists fail** for a txn | Fall back to rule-based verdict |
 
 This is amount-aware: we invest more effort protecting high-value transactions.
 
@@ -176,7 +187,7 @@ This is amount-aware: we invest more effort protecting high-value transactions.
 
 One capable model makes the final fraud/legit decision.
 
-**Input**: All specialist results for a transaction + the transaction + L1 rules
+**Input**: All 5 specialist results for a transaction + the transaction + L1 rules + citizen persona
 
 **Output**:
 ```python
@@ -201,23 +212,25 @@ The aggregator's prompt encodes these rules:
 - BURST + BALANCE_DRAIN
 - NEW_PAYEE + ROUND_NUMBER + LARGE
 - MULE_CHAIN + THRESHOLD_EVASION
+- IMPOSSIBLE_TRAVEL + BALANCE_DRAIN
 
 ### Why a Separate Aggregator?
 
 The specialists are biased by design — each one only sees one dimension. The
 velocity specialist doesn't know the amount is suspicious; the amount specialist
-doesn't know the receiver is a mule. Only the aggregator sees the full picture
-and can reason about cross-domain correlations.
+doesn't know the receiver is a mule; the geographic specialist doesn't know
+about the network patterns. Only the aggregator sees the full picture and can
+reason about cross-domain correlations.
 
 ## Token Budget Per Call
 
 | What | Max tokens | Model | Cost/call |
 |---|---|---|---|
-| Specialist (×4) | 512 each | configurable | depends on provider |
+| Specialist (×5) | 512 each | configurable | depends on provider |
 | Aggregator (×1) | 512 | configurable | depends on provider |
-| **Per ambiguous txn** | **~3,072** | | **varies** |
+| **Per ambiguous txn** | **~3,584** | | **varies** |
 
-With local Ollama (`gemma4:31b-cloud`): $0.00 per call.
+With local Ollama: $0.00 per call.
 All costs tracked via `BudgetTracker` in pipeline state.
 
 ## Implementation Status
@@ -234,6 +247,7 @@ All costs tracked via `BudgetTracker` in pipeline state.
 | `run_amount_specialist(state)` | Done |
 | `run_behavioral_specialist(state)` | Done |
 | `run_relationship_specialist(state)` | Done |
+| `run_geographic_specialist(state)` | Done |
 | `run_aggregator(state)` | Done |
 | Prompt templates | Done (in `prompts/`) |
 | LangGraph wiring | Done (in `pipeline/graph.py`) |

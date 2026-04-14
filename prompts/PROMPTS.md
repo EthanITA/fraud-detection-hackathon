@@ -11,8 +11,8 @@ without rewiring the factory.
 
 ### Specialist Prompts (`specialists.py`)
 
-Four constants: `VELOCITY_PROMPT`, `AMOUNT_PROMPT`, `BEHAVIORAL_PROMPT`,
-`RELATIONSHIP_PROMPT`.
+Five constants, one per specialist: `VELOCITY_PROMPT`, `AMOUNT_PROMPT`,
+`BEHAVIORAL_PROMPT`, `RELATIONSHIP_PROMPT`, `GEOGRAPHIC_PROMPT`.
 
 Each prompt follows the same structure:
 

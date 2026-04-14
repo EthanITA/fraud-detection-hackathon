@@ -30,7 +30,7 @@ def compute_composite_risk(
     Aggregate rule results into a weighted composite score.
 
     Inputs:
-      results — list of (tool.name, RiskResult) pairs from all 13 rule tools
+      results — list of (tool.name, RiskResult) pairs from all 14 rule tools
       amount  — transaction amount in EUR for economic threshold scaling
 
     Logic:

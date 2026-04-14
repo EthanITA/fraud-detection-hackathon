@@ -19,7 +19,7 @@ flowchart TD
     ingest --> run_rules
 
     subgraph "Layer 1 — Free"
-        run_rules["run_rules\n13 deterministic checks"]
+        run_rules["run_rules\n14 deterministic checks"]
         run_rules --> triage
         triage["triage\nweighted score\ncombo detection\npriority ranking"]
     end
@@ -33,14 +33,17 @@ flowchart TD
         fan_out -->|fork| amount_specialist
         fan_out -->|fork| behavioral_specialist
         fan_out -->|fork| relationship_specialist
+        fan_out -->|fork| geographic_specialist
         velocity_specialist["velocity_specialist\ntiming patterns"]
         amount_specialist["amount_specialist\nspending patterns"]
         behavioral_specialist["behavioral_specialist\nbehavior changes"]
         relationship_specialist["relationship_specialist\nnetwork patterns"]
+        geographic_specialist["geographic_specialist\nlocation/identity"]
         velocity_specialist --> fan_in{" "}
         amount_specialist --> fan_in
         behavioral_specialist --> fan_in
         relationship_specialist --> fan_in
+        geographic_specialist --> fan_in
     end
 
     fan_in --> aggregate
@@ -65,7 +68,7 @@ file path (backward compatible).
 **Status**: Implemented.
 
 ### Layer 1 — Rules ($0)
-Run 13 fast checks per transaction. Each check says "high / medium / low risk."
+Run 14 fast checks per transaction. Each check says "high / medium / low risk."
 Combine them into a weighted composite score with combo detection. Then triage:
 
 1. **Combo triggered** → auto-fraud (known dangerous pattern, skip LLM)
@@ -87,9 +90,9 @@ goes where the financial stakes are highest.
 **Status**: Implemented (triage priority ranking is a stub).
 
 ### Layer 2 — Specialists (~60% of budget)
-Four LLM agents examine the ambiguous transactions from different angles — in
+Five LLM agents examine the ambiguous transactions from different angles — in
 parallel. Parallel execution means total latency = slowest specialist, not the
-sum of all four.
+sum of all five.
 
 | Specialist | Angle | Example signals |
 |---|---|---|
@@ -97,26 +100,27 @@ sum of all four.
 | `amount_specialist` | Spending patterns | Round numbers, amount anomalies |
 | `behavioral_specialist` | Behavior changes | New payees, dormant reactivation, frequency shifts |
 | `relationship_specialist` | Network patterns | Fan-in/fan-out, mule chains |
+| `geographic_specialist` | Location/identity | Impossible travel, lifestyle mismatch |
 
 Each specialist receives the same set of ambiguous transactions but analyzes
 from its own domain. They return structured results with risk level, confidence,
 detected patterns, and reasoning.
 
-**Parallelism** uses LangGraph's `Send` API — triage emits four `Send()`
+**Parallelism** uses LangGraph's `Send` API — triage emits five `Send()`
 objects, one per specialist node. LangGraph schedules them concurrently and
-waits for all four to complete before moving to the aggregate node. The
+waits for all five to complete before moving to the aggregate node. The
 `specialist_results` state key uses a dict-merge reducer so each branch's
 output merges into a single dict.
 
 **Error handling** is amount-aware:
 - Transaction > €1k and specialist fails → retry once
 - Transaction ≤ €1k and specialist fails → skip that specialist, aggregate with remaining
-- All 4 fail → fallback to rule-based verdict
+- All 5 fail → fallback to rule-based verdict
 
 **Status**: Implemented.
 
 ### Layer 3 — Aggregator (~40% of budget)
-Combines the four specialist opinions into a final fraud/legit verdict. Weighs
+Combines the five specialist opinions into a final fraud/legit verdict. Weighs
 the transaction amount: a €50k transaction with medium suspicion gets flagged;
 a €50 transaction needs overwhelming evidence.
 
@@ -161,7 +165,8 @@ Each transaction gets a full trace for offline tuning:
     "velocity": {"risk_level": "high", "confidence": 0.85, "patterns": ["BURST"], "reasoning": "..."},
     "amount": {"risk_level": "medium", "confidence": 0.6, "patterns": ["ROUND_NUMBER"], "reasoning": "..."},
     "behavioral": {"risk_level": "high", "confidence": 0.78, "patterns": ["DORMANT_REACTIVATION"], "reasoning": "..."},
-    "relationship": {"risk_level": "low", "confidence": 0.3, "patterns": [], "reasoning": "..."}
+    "relationship": {"risk_level": "low", "confidence": 0.3, "patterns": [], "reasoning": "..."},
+    "geographic": {"risk_level": "high", "confidence": 0.9, "patterns": ["IMPOSSIBLE_TRAVEL"], "reasoning": "..."}
   },
   "layer3": {"is_fraud": true, "confidence": 0.82, "reasoning": "..."},
   "final_verdict": "fraud",
@@ -184,5 +189,5 @@ flushed at exit in `main.py` to ensure all traces land before the process ends.
 |---|---|
 | `state.py` | `PipelineState` TypedDict — the data shape flowing through the pipeline (includes citizens) |
 | `dispatch.py` | Maps each rule tool to its required context keys, routes invocations |
-| `nodes.py` | All node functions: ingest, run_rules, triage, 4 specialists, aggregate, output |
+| `nodes.py` | All node functions: ingest, run_rules, triage, 5 specialists, aggregate, output |
 | `graph.py` | Wires the nodes into a LangGraph state machine with `Send` fan-out/fan-in |

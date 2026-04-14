@@ -44,15 +44,15 @@ RAW TRANSACTIONS (100%)
              │
              ▼
 ┌─────────────────────────────────┐
-│  Layer 1: Rule Triage           │  $0 — 13 LangChain tools × 4 categories
+│  Layer 1: Rule Triage           │  $0 — 14 LangChain tools × 5 categories
 │  rules/                         │  Weighted score + combos + amount scaling
 │  ~70-85% filtered out           │  Priority ranking: score × amount
 └────────────┬────────────────────┘
              │ (~15-30% ambiguous)
              ▼
 ┌─────────────────────────────────┐
-│  Layer 2: 4 Specialists         │  ~60% budget — parallel via Send API
-│  agents/specialists.py          │  velocity · amount · behavioral · relationship
+│  Layer 2: 5 Specialists         │  ~60% budget — parallel via Send API
+│  agents/specialists.py          │  velocity · amount · behavioral · relationship · geographic
 │  Structured output enforced     │  Each: {risk_level, confidence, patterns, reasoning}
 └────────────┬────────────────────┘
              │
@@ -76,37 +76,39 @@ reply-hackathon/
 ├── config/                  # Environment, models, Langfuse tracing
 │   ├── CONFIG.md
 │   ├── env.py               # .env loading + fail-fast validation
-│   ├── models.py             # Model names, token limits, cost rates
-│   └── langfuse.py           # LangGraph callback handler, session IDs
+│   ├── models.py             # Model names, token limits, cost rates, LLM_BASE_URL
+│   └── tracing.py            # Langfuse v3 callback handler, ULID session IDs
 │
-├── data/                    # Layer 0 — parsing, profiles, graph (implemented)
+├── data/                    # Layer 0 — parsing, profiles, graph, citizens (implemented)
 │   ├── DATA.md
 │   ├── ingest.py             # FIELD_MAP + passthrough (adjust on hackathon day)
 │   ├── profiles.py           # O(n) precomputed account profiles
-│   └── graph.py              # Relationship graph with clustering coefficients
+│   ├── graph.py              # Relationship graph with clustering coefficients
+│   └── citizens.py           # Multi-modal citizen context (users, locations, status, personas)
 │
-├── rules/                   # Layer 1 — 13 deterministic tools (stubs)
+├── rules/                   # Layer 1 — 14 deterministic tools (implemented)
 │   ├── RULES.md
-│   ├── _types.py             # RiskLevel, weights, combos, thresholds (30 constants)
+│   ├── _types.py             # RiskLevel, weights, combos, thresholds (~35 constants)
 │   ├── time.py               # check_velocity, check_temporal_pattern, check_card_testing
 │   ├── amount.py             # check_amount_anomaly, check_balance_drain, check_first_large
 │   ├── behavioral.py         # check_new_payee, check_dormant_reactivation, check_frequency_shift
-│   └── graph.py              # check_fan_in, check_fan_out, check_mule_chain, check_circular_flow
+│   ├── graph.py              # check_fan_in, check_fan_out, check_mule_chain, check_circular_flow
+│   └── geographic.py         # check_impossible_travel (location vs citizen home)
 │
 ├── prompts/                 # System prompts for all LLM agents
 │   ├── PROMPTS.md
-│   ├── specialists.py        # VELOCITY_PROMPT, AMOUNT_PROMPT, BEHAVIORAL_PROMPT, RELATIONSHIP_PROMPT
+│   ├── specialists.py        # VELOCITY_PROMPT, AMOUNT_PROMPT, BEHAVIORAL_PROMPT, RELATIONSHIP_PROMPT, GEOGRAPHIC_PROMPT
 │   └── aggregator.py         # AGGREGATOR_PROMPT
 │
-├── agents/                  # Layers 2+3 — LLM specialists + aggregator (stubs)
+├── agents/                  # Layers 2+3 — LLM specialists + aggregator (implemented)
 │   ├── AGENTS.md
-│   ├── specialists.py        # 4 specialist nodes + Pydantic SpecialistOutput
+│   ├── specialists.py        # 5 specialist nodes + Pydantic SpecialistOutput
 │   └── aggregator.py         # Aggregator node + Pydantic AggregatorOutput
 │
 ├── pipeline/                # LangGraph state machine (implemented)
 │   ├── PIPELINE.md
 │   ├── state.py              # PipelineState with budget + priority + debug output
-│   ├── dispatch.py           # Tool context routing for 13 rule tools
+│   ├── dispatch.py           # Tool context routing for 14 rule tools
 │   ├── nodes.py              # All node functions (ingest → triage → specialists → aggregate → output)
 │   └── graph.py              # StateGraph wiring with Send API fan-out
 │
@@ -128,21 +130,21 @@ reply-hackathon/
 flowchart LR
     subgraph foundation ["Foundation (no deps)"]
         direction TB
-        CONFIG["config/\n<small>env · models · langfuse</small>"]
+        CONFIG["config/\n<small>env · models · tracing</small>"]
         UTILS["utils/\n<small>budget · logging · json_repair</small>"]
-        PROMPTS["prompts/\n<small>4 specialist + 1 aggregator</small>"]
+        PROMPTS["prompts/\n<small>5 specialist + 1 aggregator</small>"]
     end
 
     subgraph layer0 ["Layer 0 — $0"]
-        DATA["data/\n<small>ingest · profiles · graph</small>"]
+        DATA["data/\n<small>ingest · profiles · graph · citizens</small>"]
     end
 
     subgraph layer1 ["Layer 1 — $0"]
-        RULES["rules/\n<small>13 tools × 4 categories\n+ composite risk</small>"]
+        RULES["rules/\n<small>14 tools × 5 categories\n+ composite risk</small>"]
     end
 
     subgraph layer23 ["Layer 2+3 — LLM budget"]
-        AGENTS["agents/\n<small>4 specialists + aggregator\nPydantic structured output</small>"]
+        AGENTS["agents/\n<small>5 specialists + aggregator\nPydantic structured output</small>"]
     end
 
     subgraph orchestrator ["Orchestrator"]
@@ -174,7 +176,7 @@ flowchart TD
     INGEST["<b>ingest</b>\n<code>data/</code>\nparse → profiles → graph"]
     INGEST --> RUN_RULES
 
-    RUN_RULES["<b>run_rules</b>\n<code>rules/ × 13 tools</code>\neach txn → 13 risk results"]
+    RUN_RULES["<b>run_rules</b>\n<code>rules/ × 14 tools</code>\neach txn → 14 risk results"]
     RUN_RULES --> TRIAGE
 
     TRIAGE["<b>triage</b>\n<code>rules/composite</code>\nscore + combos + amount thresholds\npriority = score × amount"]
@@ -188,11 +190,13 @@ flowchart TD
     FAN --> A["<b>amount</b>\n<code>agents/</code>\nspending patterns"]
     FAN --> B["<b>behavioral</b>\n<code>agents/</code>\nbehavior changes"]
     FAN --> R["<b>relationship</b>\n<code>agents/</code>\nnetwork patterns"]
+    FAN --> G["<b>geographic</b>\n<code>agents/</code>\nlocation/identity"]
 
     V --> AGG
     A --> AGG
     B --> AGG
     R --> AGG
+    G --> AGG
 
     AGG["<b>aggregate</b>\n<code>agents/</code>\neconomic weighting\nfinal verdict"]
     AGG --> OUTPUT
@@ -207,6 +211,7 @@ flowchart TD
     style A fill:#fff3e0
     style B fill:#fff3e0
     style R fill:#fff3e0
+    style G fill:#fff3e0
     style AGG fill:#fce4ec
 ```
 
@@ -220,7 +225,7 @@ We don't know the dataset format until hackathon day. Six guaranteed keys
 plus all raw fields preserved. On hackathon day, update `FIELD_MAP` in
 `data/ingest.py` — nothing else changes.
 
-### Rules: 4 Categories, 30 Configurable Thresholds
+### Rules: 5 Categories, ~35 Configurable Thresholds
 All magic numbers live in `rules/_types.py`. On hackathon day, see the data
 distribution and adjust — no other file needs to change.
 
@@ -230,6 +235,7 @@ distribution and adjust — no other file needs to change.
 | Amount | check_amount_anomaly, check_balance_drain, check_first_large | 1.0–1.5× |
 | Behavioral | check_new_payee, check_dormant_reactivation, check_frequency_shift | 1.0× |
 | Graph | check_fan_in, check_fan_out, check_mule_chain, check_circular_flow | 2.0× |
+| Geographic | check_impossible_travel | 2.0× |
 
 ### Triage: Score × Amount Priority
 Ambiguous transactions ranked by `composite_score × amount`. A mediocre-risk
@@ -237,8 +243,8 @@ Ambiguous transactions ranked by `composite_score × amount`. A mediocre-risk
 when tokens run low, process fewer ambiguous txns; at 15% remaining, skip LLM
 entirely.
 
-### Specialists: 4 Parallel via Send API
-One specialist per rule category. LangGraph's `Send` API launches all 4
+### Specialists: 5 Parallel via Send API
+One specialist per rule category. LangGraph's `Send` API launches all 5
 concurrently — latency = slowest specialist, not the sum. Each gets curated
 context (not the full state). Structured output enforced via `response_format`
 + Pydantic validation.
@@ -262,11 +268,12 @@ tuning between dataset runs.
 | Layer | Txns | Tokens/txn | Model | Est. cost |
 |---|---|---|---|---|
 | 0 + 1 | all | 0 | — | $0 |
-| 2 (4 specialists) | ~500 | ~300 × 4 | gpt-4o-mini | ~$8 |
-| 3 (aggregator) | ~500 | ~800 | gpt-4o | ~$10 |
-| **Total** | | | | **~$18** |
+| 2 (5 specialists) | ~500 | ~300 × 5 | configurable | varies |
+| 3 (aggregator) | ~500 | ~800 | configurable | varies |
+| **Total** | | | | **depends on provider** |
 
-Safety margin: ~$22 for debugging, threshold tuning, re-runs.
+With local Ollama: $0.00. With OpenRouter: depends on model choice.
+Toggle `LLM_BASE_URL` in `config/models.py` between local and remote.
 
 **Datasets 4-5 ($120)**: same architecture, consider upgrading specialist model.
 
@@ -301,7 +308,7 @@ Safety margin: ~$22 for debugging, threshold tuning, re-runs.
 | Token budget exhausted | BudgetTracker with panic mode. Priority ranking spends tokens where they matter most. |
 | Unexpected dataset format | FIELD_MAP pattern — 1 dict to update. Passthrough preserves all fields. |
 | LLM returns bad output | Belt and suspenders: response_format + Pydantic + json_repair fallback. |
-| Specialist fails | Amount-aware retry (>€1k) or skip (≤€1k). All-fail → rule verdict. |
+| Specialist fails | Amount-aware retry (>€1k) or skip (≤€1k). All 5 fail → rule verdict. |
 | Langfuse connection fails | Session IDs generated client-side. Log locally as backup. |
 | Wrong output format | debug.json lets you inspect every verdict before submitting. |
 
@@ -311,14 +318,14 @@ Safety margin: ~$22 for debugging, threshold tuning, re-runs.
 
 - [x] Modular architecture: 8 packages with clean boundaries
 - [x] LangGraph pipeline with Send API fan-out
-- [x] 13 rule tools with 30 configurable thresholds
-- [x] 4 specialist prompts + aggregator prompt
+- [x] 14 rule tools with ~35 configurable thresholds
+- [x] 5 specialist prompts + aggregator prompt
 - [x] Budget tracking with panic mode
-- [x] Structured output enforcement (Pydantic)
-- [x] Data layer fully implemented (ingest + profiles + graph)
+- [x] Structured output enforcement (Pydantic + response_format)
+- [x] Data layer fully implemented (ingest + profiles + graph + citizens)
+- [x] Rule tool bodies implemented (all 14)
+- [x] Specialist LLM calls wired up (all 5 + aggregator)
+- [x] Langfuse v3 tracing with ULID session IDs
 - [ ] `.env` configured with OpenRouter + Langfuse keys
-- [ ] Langfuse integration tested with dummy session
 - [ ] OpenRouter connection tested
-- [ ] Rule tool stubs implemented
-- [ ] Specialist LLM calls wired up
 - [ ] End-to-end test on synthetic data

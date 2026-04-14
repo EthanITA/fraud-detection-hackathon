@@ -1,14 +1,14 @@
 # rules/ — The Alarm System
 
-These are 13 fast, cheap alarms. Like a building's fire detection system: smoke
-detectors, heat sensors, motion detectors. Each one is simple and sometimes wrong
-alone, but together they paint a picture.
+These are 14 fast, cheap alarms across 5 categories. Like a building's fire
+detection system: smoke detectors, heat sensors, motion detectors. Each one is
+simple and sometimes wrong alone, but together they paint a picture.
 
 **Cost**: $0 — pure Python, no LLM calls.
 
-## The Three Questions
+## The Five Questions
 
-Every rule answers one of three questions about a transaction:
+Every rule answers one of five questions about a transaction:
 
 ### 1. "Is the timing suspicious?" → `time.py`
 
@@ -46,6 +46,14 @@ reveals the scheme.
 - **`check_mule_chain`** — Money hops A→B→C within minutes (laundering chain)
 - **`check_circular_flow`** — Money loops back to where it started (wash trading)
 
+### 4. "Is the location plausible?" --> `geographic.py`
+
+Cross-references transaction location with the citizen's known home and travel
+history. A transaction from Tokyo by a homebound retiree in Detroit is
+physically implausible.
+
+- **`check_impossible_travel`** — Is this transaction from a location the citizen has never visited and couldn't plausibly reach? Compares haversine distance from home to the transaction's lat/lng against the citizen's max known travel distance.
+
 ## How Alarms Combine
 
 Each alarm says HIGH (3 pts), MEDIUM (1 pt), or LOW (0 pts).
@@ -53,10 +61,11 @@ But not all alarms are equal:
 
 | Alarm type | Weight | Why |
 |---|---|---|
-| Off-hours | 0.5× | Lots of innocent reasons to transact at night |
-| Standard signals | 1.0× | Baseline |
-| Drain / card testing | 1.5× | Strong behavioral indicators |
-| **Graph patterns** | **2.0×** | **Hardest to fake, most indicative of organized fraud** |
+| Off-hours | 0.5x | Lots of innocent reasons to transact at night |
+| Standard signals | 1.0x | Baseline |
+| Drain / card testing | 1.5x | Strong behavioral indicators |
+| **Graph patterns** | **2.0x** | **Hardest to fake, most indicative of organized fraud** |
+| **Geographic** | **2.0x** | **Physical implausibility is hard to explain away** |
 
 ### Auto-Pilot Decisions
 
@@ -66,6 +75,7 @@ Some combinations are so clear that we skip the LLM entirely:
 - Burst + Balance drain (account being emptied fast)
 - New payee + Suspicious amount (sending a weird amount to a stranger)
 - Mule chain + Structuring (laundering + hiding from reporting)
+- Impossible travel + Balance drain (draining from an implausible location)
 
 **Depends on how much money is involved**:
 
@@ -134,3 +144,10 @@ needs to change — every tool reads its thresholds from there.
 | `MULE_WINDOW_HIGH` | 1800 | Forward window (seconds, 30 min) → HIGH | `check_mule_chain` |
 | `MULE_WINDOW_MEDIUM` | 7200 | Forward window (seconds, 2h) → MEDIUM | `check_mule_chain` |
 | `CIRCULAR_MAX_HOPS` | 3 | Max hops to detect circular flow → HIGH | `check_circular_flow` |
+
+### Geographic thresholds
+
+| Constant | Default | Controls | Used by |
+|---|---|---|---|
+| `IMPOSSIBLE_TRAVEL_DISTANCE_HIGH` | 5000 | km from home → HIGH (if also > known max × 1.5) | `check_impossible_travel` |
+| `IMPOSSIBLE_TRAVEL_DISTANCE_MEDIUM` | 2000 | km from home → MEDIUM | `check_impossible_travel` |

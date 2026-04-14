@@ -18,6 +18,7 @@ from config.models import (
     SPECIALIST_MODEL,
 )
 from agents.aggregator import run_aggregator
+from agents.citizen_analyst import run_citizen_analysis
 from agents.specialists import (
     run_amount_specialist,
     run_behavioral_specialist,
@@ -43,6 +44,12 @@ def ingest(state: PipelineState) -> dict:
         "graph": graph,
         "citizens": citizens,
     }
+
+
+# %% analyze_citizens
+def analyze_citizens(state: PipelineState) -> dict:
+    """LLM pre-analysis of citizen profiles. Runs once per citizen."""
+    return run_citizen_analysis(state)
 
 
 # %% run_rules
@@ -100,7 +107,7 @@ def triage(state: PipelineState) -> dict:
     elif budget:
         specialist_rate = COST_PER_1K_TOKENS[SPECIALIST_MODEL]
         aggregator_rate = COST_PER_1K_TOKENS[AGGREGATOR_MODEL]
-        cost_per_txn = (4 * MAX_TOKENS_SPECIALIST * specialist_rate + MAX_TOKENS_AGGREGATOR * aggregator_rate) / 1000
+        cost_per_txn = (5 * MAX_TOKENS_SPECIALIST * specialist_rate + MAX_TOKENS_AGGREGATOR * aggregator_rate) / 1000
         if cost_per_txn > 0:
             max_txns = int(budget.remaining() / cost_per_txn)
             ambiguous_prioritized = ambiguous_prioritized[:max_txns]

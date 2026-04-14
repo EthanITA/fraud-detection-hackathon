@@ -49,7 +49,7 @@ _llm = ChatOpenAI(
 
 # %% _format_specialist_opinions
 def _format_specialist_opinions(specialist_results: dict) -> str:
-    """Format the 4 specialist outputs into a readable block for the aggregator."""
+    """Format the 5 specialist outputs into a readable block for the aggregator."""
     lines = []
     for name, result in specialist_results.items():
         lines.append(
@@ -92,13 +92,16 @@ def run_aggregator(state: dict) -> dict:
         )
         specialist_summary = _format_specialist_opinions(sp_results)
 
-        # Citizen context: full persona for aggregator reasoning
-        citizen = state.get("citizens", {}).get(txn["sender_id"], {})
+        # Citizen context: full persona + pre-analysis for aggregator
+        sender_id = txn["sender_id"]
+        citizen = state.get("citizens", {}).get(sender_id, {})
         citizen_context = citizen.get("persona") or citizen.get("summary", "")
+        citizen_assessment = state.get("citizen_assessments", {}).get(sender_id, {})
 
         user_content = json.dumps({
             "transaction": txn,
             "citizen_context": citizen_context,
+            "citizen_pre_assessment": citizen_assessment,
             "specialist_assessments": specialist_summary,
             "rule_results": rule_results,
         }, default=str)

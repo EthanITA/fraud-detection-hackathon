@@ -29,10 +29,10 @@ local dev can work without tracing.
 
 Two models, two roles:
 
-- **`SPECIALIST_MODEL`** — The workhorse. Runs 4× per ambiguous transaction
-  (velocity, amount, behavioral, relationship). Default: `gemma4:31b-cloud`.
-- **`AGGREGATOR_MODEL`** — The careful judge. Runs 1× per ambiguous
-  transaction. Default: `gemma4:31b-cloud`.
+- **`SPECIALIST_MODEL`** — The workhorse. Runs 5x per ambiguous transaction
+  (velocity, amount, behavioral, relationship, geographic). Default: `gemma3:27b-cloud`.
+- **`AGGREGATOR_MODEL`** — The careful judge. Runs 1x per ambiguous
+  transaction. Default: `gemma3:27b-cloud`.
 
 Also configures `TEMPERATURE` (0.0 — deterministic) and max tokens per call
 (512 for both — enough headroom for reasoning models).

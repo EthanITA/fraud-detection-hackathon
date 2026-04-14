@@ -91,7 +91,7 @@ AMOUNT_TRIAGE: list[tuple[float, float, float]] = [
 
 # %% thresholds
 # ── Thresholds ───────────────────────────────────────────────────────────────
-# Every magic number the 13 tools use. Tune these on hackathon day after
+# Every magic number the 14 tools use. Tune these on hackathon day after
 # seeing the data distribution — no other file needs to change.
 
 # Time
