@@ -14,7 +14,7 @@ from .dispatch import invoke_tool
 from .state import PipelineState
 
 
-# ── Layer 0 ───────────────────────────────────────────────────────────────────
+# -- Layer 0 ------------------------------------------------------------------
 
 def ingest(state: PipelineState) -> dict:
     txns = parse_dataset(state["dataset_path"])
@@ -23,7 +23,7 @@ def ingest(state: PipelineState) -> dict:
     return {"transactions": txns, "profiles": profiles, "graph": graph}
 
 
-# ── Layer 1 ───────────────────────────────────────────────────────────────────
+# -- Layer 1 ------------------------------------------------------------------
 
 def run_rules(state: PipelineState) -> dict:
     all_results = {}
@@ -46,7 +46,8 @@ def run_rules(state: PipelineState) -> dict:
 
 
 def triage(state: PipelineState) -> dict:
-    auto_legit, auto_fraud, ambiguous = [], [], []
+    auto_legit, auto_fraud = [], []
+    ambiguous_scored: list[tuple[str, float, float]] = []
 
     for txn in state["transactions"]:
         txn_id = txn["id"]
@@ -54,43 +55,85 @@ def triage(state: PipelineState) -> dict:
             state["rule_results"][txn_id], txn["amount"]
         )
 
-        if composite["auto_fraud"]:
+        if composite["combo_triggered"] is not None:
+            auto_fraud.append(txn_id)
+        elif composite["auto_fraud"]:
             auto_fraud.append(txn_id)
         elif composite["auto_legit"]:
             auto_legit.append(txn_id)
         else:
-            ambiguous.append(txn_id)
+            ambiguous_scored.append((txn_id, composite["score"], txn["amount"]))
 
-    return {"auto_legit": auto_legit, "auto_fraud": auto_fraud, "ambiguous": ambiguous}
+    # Priority ranking: score * amount descending (expected-value heuristic)
+    ambiguous_prioritized = sorted(
+        [(txn_id, score * amount) for txn_id, score, amount in ambiguous_scored],
+        key=lambda x: x[1],
+        reverse=True,
+    )
+
+    # Budget check: estimate how many ambiguous txns we can afford
+    budget = state.get("budget")
+    if budget and budget.is_panic():
+        ambiguous_prioritized = []
+    elif budget:
+        # TODO: estimate cost per txn and cap ambiguous_prioritized to top-N
+        pass
+
+    return {
+        "auto_legit": auto_legit,
+        "auto_fraud": auto_fraud,
+        "ambiguous_prioritized": ambiguous_prioritized,
+    }
 
 
-# ── Layer 2 ───────────────────────────────────────────────────────────────────
+# -- Layer 2 — Specialists (parallel via Send) --------------------------------
 
-def run_specialists(state: PipelineState) -> dict:
-    # TODO: 3 parallel LLM agents (velocity, amount, relationship)
-    return {"specialist_results": {}}
+def velocity_specialist(state: PipelineState) -> dict:
+    """Analyze ambiguous transactions for timing/velocity patterns."""
+    raise NotImplementedError("velocity_specialist LLM agent")
 
 
-# ── Layer 3 ───────────────────────────────────────────────────────────────────
+def amount_specialist(state: PipelineState) -> dict:
+    """Analyze ambiguous transactions for spending/amount patterns."""
+    raise NotImplementedError("amount_specialist LLM agent")
+
+
+def behavioral_specialist(state: PipelineState) -> dict:
+    """Analyze ambiguous transactions for behavioral change patterns."""
+    raise NotImplementedError("behavioral_specialist LLM agent")
+
+
+def relationship_specialist(state: PipelineState) -> dict:
+    """Analyze ambiguous transactions for network/relationship patterns."""
+    raise NotImplementedError("relationship_specialist LLM agent")
+
+
+# -- Layer 3 ------------------------------------------------------------------
 
 def aggregate(state: PipelineState) -> dict:
-    # TODO: LLM aggregator with economic weighting
-    return {"verdicts": {}}
+    """Combine specialist opinions into final verdicts with economic weighting."""
+    raise NotImplementedError("aggregate LLM node")
 
 
-# ── Output ────────────────────────────────────────────────────────────────────
+# -- Output --------------------------------------------------------------------
 
 def collect_output(state: PipelineState) -> dict:
     fraud_ids = list(state.get("auto_fraud", []))
+
     for txn_id, verdict in state.get("verdicts", {}).items():
         if verdict.get("is_fraud"):
             fraud_ids.append(txn_id)
-    return {"fraud_ids": sorted(set(fraud_ids))}
 
+    # Budget fallback: ambiguous txns that never reached specialists
+    specialist_txn_ids = set(state.get("specialist_results", {}).keys())
+    for txn_id, _priority in state.get("ambiguous_prioritized", []):
+        if txn_id not in specialist_txn_ids and txn_id not in fraud_ids:
+            # TODO: rule-based fallback verdict for budget-skipped txns
+            pass
 
-# ── Routing ───────────────────────────────────────────────────────────────────
+    fraud_ids = sorted(set(fraud_ids))
 
-def should_run_specialists(state: PipelineState) -> str:
-    if state.get("ambiguous"):
-        return "specialists"
-    return "output"
+    # TODO: build debug_output list[dict] with full per-txn trace
+    debug_output: list[dict] = []
+
+    return {"fraud_ids": fraud_ids, "debug_output": debug_output}
