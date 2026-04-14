@@ -5,23 +5,15 @@ from typing import Literal, TypedDict
 
 from pydantic import BaseModel
 
-from config.models import MAX_TOKENS_SPECIALIST, SPECIALIST_MODEL, TEMPERATURE
 from data import get_account_context
-from prompts import (
-    AMOUNT_PROMPT,
-    BEHAVIORAL_PROMPT,
-    RELATIONSHIP_PROMPT,
-    VELOCITY_PROMPT,
-)
 from rules._types import RiskResult
-from utils import extract_json
 
 
 # %% SpecialistResult
 class SpecialistResult(TypedDict):
-    agent: str              # "velocity" | "amount" | "behavioral" | "relationship"
-    risk_level: str         # "high" | "medium" | "low"
-    confidence: float       # 0.0-1.0
+    agent: str  # "velocity" | "amount" | "behavioral" | "relationship"
+    risk_level: str  # "high" | "medium" | "low"
+    confidence: float  # 0.0-1.0
     patterns_detected: list[str]
     reasoning: str
 
@@ -29,6 +21,7 @@ class SpecialistResult(TypedDict):
 # %% SpecialistOutput
 class SpecialistOutput(BaseModel):
     """Pydantic model for structured output validation (belt-and-suspenders layer 2)."""
+
     risk_level: Literal["high", "medium", "low"]
     confidence: float
     patterns_detected: list[str]
@@ -45,9 +38,7 @@ def _format_rule_results(results: list[tuple[str, RiskResult]]) -> str:
 
 
 # %% _build_specialist_context
-def _build_specialist_context(
-    specialist_name: str, state: dict, txn: dict
-) -> dict:
+def _build_specialist_context(specialist_name: str, state: dict, txn: dict) -> dict:
     """Extract curated input for a specialist from the full pipeline state.
 
     Returns a dict with keys the prompt template expects:
@@ -60,9 +51,7 @@ def _build_specialist_context(
     rule_results = _format_rule_results(state["rule_results"].get(txn_id, []))
 
     if specialist_name == "velocity":
-        history = get_account_context(
-            txn["sender_id"], state["transactions"], n=20
-        )
+        history = get_account_context(txn["sender_id"], state["transactions"], n=20)
         return {"txn": txn, "history": history, "rule_results": rule_results}
 
     if specialist_name == "amount":
@@ -71,9 +60,7 @@ def _build_specialist_context(
 
     if specialist_name == "behavioral":
         profile = state["profiles"].get(txn["sender_id"], {})
-        history = get_account_context(
-            txn["sender_id"], state["transactions"], n=20
-        )
+        history = get_account_context(txn["sender_id"], state["transactions"], n=20)
         return {
             "txn": txn,
             "profile": profile,

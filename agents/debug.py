@@ -1,7 +1,11 @@
 # %% env setup
-import sys, os  # noqa: E401
+import os  # noqa: E401
+import sys
+
 try:
-    sys.path.insert(0, str(__import__("pathlib").Path(__file__).resolve().parent.parent))
+    sys.path.insert(
+        0, str(__import__("pathlib").Path(__file__).resolve().parent.parent)
+    )
 except NameError:
     sys.path.insert(0, os.getcwd())
 import _env  # noqa: F401
@@ -12,7 +16,7 @@ import json
 from _sample import SAMPLE_TXNS
 from data import build_relationship_graph, compute_account_profiles, get_account_context
 from pipeline.dispatch import invoke_tool
-from rules import RULE_TOOLS, compute_composite_risk
+from rules import RULE_TOOLS
 
 profiles = compute_account_profiles(SAMPLE_TXNS)
 graph = build_relationship_graph(SAMPLE_TXNS)
@@ -26,7 +30,9 @@ for txn in SAMPLE_TXNS:
         "profile": json.dumps(profiles.get(txn["sender_id"], {})),
         "graph": json.dumps(graph),
     }
-    rule_results[txn["id"]] = [(tool.name, invoke_tool(tool, ctx)) for tool in RULE_TOOLS]
+    rule_results[txn["id"]] = [
+        (tool.name, invoke_tool(tool, ctx)) for tool in RULE_TOOLS
+    ]
 
 print(f"Upstream ready: {len(rule_results)} txns scored")
 
@@ -102,5 +108,7 @@ except Exception as e:
 # %% AggregatorOutput
 from agents.aggregator import AggregatorOutput
 
-verdict = AggregatorOutput(is_fraud=True, confidence=0.87, reasoning="2 specialists flagged high")
+verdict = AggregatorOutput(
+    is_fraud=True, confidence=0.87, reasoning="2 specialists flagged high"
+)
 print(f"\nAggregatorOutput: {verdict.model_dump()}")

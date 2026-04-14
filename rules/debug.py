@@ -1,7 +1,11 @@
 # %% env setup
-import sys, os  # noqa: E401
+import os  # noqa: E401
+import sys
+
 try:
-    sys.path.insert(0, str(__import__("pathlib").Path(__file__).resolve().parent.parent))
+    sys.path.insert(
+        0, str(__import__("pathlib").Path(__file__).resolve().parent.parent)
+    )
 except NameError:
     sys.path.insert(0, os.getcwd())
 import _env  # noqa: F401
@@ -14,8 +18,10 @@ from data import build_relationship_graph, compute_account_profiles, get_account
 
 profiles = compute_account_profiles(SAMPLE_TXNS)
 graph = build_relationship_graph(SAMPLE_TXNS)
-print(f"Upstream ready: {len(profiles)} profiles, "
-      f"{len(graph['nodes'])} graph nodes")
+print(
+    f"Upstream ready: {len(profiles)} profiles, " f"{len(graph['nodes'])} graph nodes"
+)
+
 
 # %% helper: build context for a transaction
 def build_context(txn: dict) -> dict[str, str]:
@@ -25,6 +31,7 @@ def build_context(txn: dict) -> dict[str, str]:
         "profile": json.dumps(profiles.get(txn["sender_id"], {})),
         "graph": json.dumps(graph),
     }
+
 
 # %% run single tool — check_velocity on burst txn (T003)
 from pipeline.dispatch import invoke_tool
@@ -75,7 +82,9 @@ results_struct = [(tool.name, invoke_tool(tool, ctx_struct)) for tool in RULE_TO
 composite_struct = compute_composite_risk(results_struct, txn_struct["amount"])
 
 print(f"\nComposite for {txn_struct['id']} (structuring, €{txn_struct['amount']}):")
-print(f"  score={composite_struct['score']}, auto_fraud={composite_struct['auto_fraud']}")
+print(
+    f"  score={composite_struct['score']}, auto_fraud={composite_struct['auto_fraud']}"
+)
 
 # %% triage all transactions
 print("\n--- Full triage ---")

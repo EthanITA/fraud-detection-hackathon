@@ -1,7 +1,11 @@
 # %% env setup
-import sys, os  # noqa: E401
+import os  # noqa: E401
+import sys
+
 try:
-    sys.path.insert(0, str(__import__("pathlib").Path(__file__).resolve().parent.parent))
+    sys.path.insert(
+        0, str(__import__("pathlib").Path(__file__).resolve().parent.parent)
+    )
 except NameError:
     sys.path.insert(0, os.getcwd())
 import _env  # noqa: F401
@@ -16,8 +20,12 @@ print(f"Team: {TEAM_NAME}")
 # %% inspect model config
 from config import SPECIALIST_MODEL, AGGREGATOR_MODEL, COST_PER_1K_TOKENS, TEMPERATURE
 
-print(f"Specialist: {SPECIALIST_MODEL} (${COST_PER_1K_TOKENS.get(SPECIALIST_MODEL, '?')}/1k)")
-print(f"Aggregator: {AGGREGATOR_MODEL} (${COST_PER_1K_TOKENS.get(AGGREGATOR_MODEL, '?')}/1k)")
+print(
+    f"Specialist: {SPECIALIST_MODEL} (${COST_PER_1K_TOKENS.get(SPECIALIST_MODEL, '?')}/1k)"
+)
+print(
+    f"Aggregator: {AGGREGATOR_MODEL} (${COST_PER_1K_TOKENS.get(AGGREGATOR_MODEL, '?')}/1k)"
+)
 print(f"Temperature: {TEMPERATURE}")
 
 # %% session ID

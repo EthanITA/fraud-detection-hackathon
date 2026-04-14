@@ -80,9 +80,7 @@ def compute_account_profiles(txns: list[dict]) -> dict[str, dict]:
 
 
 # %% get_account_context
-def get_account_context(
-    account_id: str, txns: list[dict], n: int = 20
-) -> list[dict]:
+def get_account_context(account_id: str, txns: list[dict], n: int = 20) -> list[dict]:
     """Return the last n transactions where account_id is the sender."""
     sender_txns = [t for t in txns if t["sender_id"] == account_id]
     sender_txns.sort(key=lambda t: t["timestamp"], reverse=True)

@@ -1,7 +1,6 @@
 # %% imports
 from __future__ import annotations
 
-import operator
 from typing import Annotated, TypedDict
 
 from rules._types import RiskResult
@@ -19,13 +18,17 @@ class PipelineState(TypedDict, total=False):
     session_id: str
     budget: BudgetTracker
     transactions: list[dict]
-    profiles: dict                                    # account_id → AccountProfile
-    graph: dict                                       # relationship graph
-    rule_results: dict[str, list[tuple[str, RiskResult]]]  # txn_id → [(tool_name, result)]
+    profiles: dict  # account_id → AccountProfile
+    graph: dict  # relationship graph
+    rule_results: dict[
+        str, list[tuple[str, RiskResult]]
+    ]  # txn_id → [(tool_name, result)]
     auto_legit: list[str]
     auto_fraud: list[str]
-    ambiguous_prioritized: list[tuple[str, float]]    # [(txn_id, score*amount)] sorted desc
+    ambiguous_prioritized: list[
+        tuple[str, float]
+    ]  # [(txn_id, score*amount)] sorted desc
     specialist_results: Annotated[dict, _merge_dicts]  # txn_id → {specialist → result}
-    verdicts: dict                                    # txn_id → Verdict
+    verdicts: dict  # txn_id → Verdict
     fraud_ids: list[str]
     debug_output: list[dict]

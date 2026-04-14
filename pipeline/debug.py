@@ -1,7 +1,11 @@
 # %% env setup
-import sys, os  # noqa: E401
+import os  # noqa: E401
+import sys
+
 try:
-    sys.path.insert(0, str(__import__("pathlib").Path(__file__).resolve().parent.parent))
+    sys.path.insert(
+        0, str(__import__("pathlib").Path(__file__).resolve().parent.parent)
+    )
 except NameError:
     sys.path.insert(0, os.getcwd())
 import _env  # noqa: F401
@@ -81,7 +85,9 @@ for txn_id, priority in ambiguous[:5]:
     txn = next(t for t in txns if t["id"] == txn_id)
     rule_res = rule_results[txn_id]
     flagged = [f"{n}:{r['risk']}" for n, r in rule_res if r["risk"] != "low"]
-    print(f"  {txn_id}: €{txn['amount']:>8.0f} | priority={priority:>10.0f} | flags: {', '.join(flagged)}")
+    print(
+        f"  {txn_id}: €{txn['amount']:>8.0f} | priority={priority:>10.0f} | flags: {', '.join(flagged)}"
+    )
 
 # %% collect output (with stubs, only auto_fraud appears)
 from pipeline.nodes import collect_output

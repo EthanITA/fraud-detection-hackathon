@@ -53,23 +53,27 @@ def build_relationship_graph(txns: list[dict]) -> dict:
 
     nodes = []
     for aid in all_ids:
-        nodes.append({
-            "id": aid,
-            "in_degree": len(in_neighbors.get(aid, set())),
-            "out_degree": len(out_neighbors.get(aid, set())),
-            "clustering_coefficient": _clustering(aid),
-            "is_new": txn_counts[aid] < 3,
-        })
+        nodes.append(
+            {
+                "id": aid,
+                "in_degree": len(in_neighbors.get(aid, set())),
+                "out_degree": len(out_neighbors.get(aid, set())),
+                "clustering_coefficient": _clustering(aid),
+                "is_new": txn_counts[aid] < 3,
+            }
+        )
 
     edges = []
     for (src, tgt), data in edge_data.items():
-        edges.append({
-            "source": src,
-            "target": tgt,
-            "count": data["count"],
-            "total_amount": data["total_amount"],
-            "avg_amount": data["total_amount"] / data["count"],
-            "timestamps": data["timestamps"],
-        })
+        edges.append(
+            {
+                "source": src,
+                "target": tgt,
+                "count": data["count"],
+                "total_amount": data["total_amount"],
+                "avg_amount": data["total_amount"] / data["count"],
+                "timestamps": data["timestamps"],
+            }
+        )
 
     return {"nodes": nodes, "edges": edges}

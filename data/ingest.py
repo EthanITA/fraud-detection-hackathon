@@ -15,7 +15,14 @@ FIELD_MAP: dict[str, str] = {
     "balance": "sender_balance",
 }
 
-GUARANTEED_KEYS = {"id", "sender_id", "receiver_id", "amount", "timestamp", "sender_balance"}
+GUARANTEED_KEYS = {
+    "id",
+    "sender_id",
+    "receiver_id",
+    "amount",
+    "timestamp",
+    "sender_balance",
+}
 
 
 # %% _normalize

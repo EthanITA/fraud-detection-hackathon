@@ -10,7 +10,6 @@ from data import (
     parse_dataset,
 )
 from rules import RULE_TOOLS, compute_composite_risk
-
 from .dispatch import invoke_tool
 from .state import PipelineState
 
@@ -51,9 +50,7 @@ def triage(state: PipelineState) -> dict:
 
     for txn in state["transactions"]:
         txn_id = txn["id"]
-        composite = compute_composite_risk(
-            state["rule_results"][txn_id], txn["amount"]
-        )
+        composite = compute_composite_risk(state["rule_results"][txn_id], txn["amount"])
 
         if composite["combo_triggered"] is not None:
             auto_fraud.append(txn_id)

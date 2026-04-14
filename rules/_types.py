@@ -81,9 +81,9 @@ ALWAYS_FLAG_COMBOS: list[tuple[str, set[str]]] = [
 
 AMOUNT_TRIAGE: list[tuple[float, float, float]] = [
     (10_000, 0, 4),  # >€10k: almost nothing auto-legit, cautious fraud threshold
-    (1_000, 1, 5),   # €1k–€10k
-    (100, 1, 6),     # €100–€1k (standard)
-    (0, 2, 8),       # <€100: need very strong signals
+    (1_000, 1, 5),  # €1k–€10k
+    (100, 1, 6),  # €100–€1k (standard)
+    (0, 2, 8),  # <€100: need very strong signals
 ]
 
 # %% thresholds
@@ -92,40 +92,40 @@ AMOUNT_TRIAGE: list[tuple[float, float, float]] = [
 # seeing the data distribution — no other file needs to change.
 
 # Time
-VELOCITY_HIGH_GAP = 60          # seconds — avg gap between recent txns → HIGH
-VELOCITY_MEDIUM_GAP = 300       # seconds → MEDIUM
-OFF_HOURS_START = 0             # UTC hour — suspicious window start
-OFF_HOURS_END = 5               # UTC hour — suspicious window end
-CARD_TEST_MICRO_LIMIT = 10     # € — max amount to count as micro test txn
-CARD_TEST_LARGE_LIMIT = 500    # € — min amount for the "real" txn after tests
-CARD_TEST_WINDOW = 300          # seconds — lookback for micro-txns before current
-CARD_TEST_HIGH_COUNT = 3        # micro-txns in window → HIGH (fewer → MEDIUM)
+VELOCITY_HIGH_GAP = 60  # seconds — avg gap between recent txns → HIGH
+VELOCITY_MEDIUM_GAP = 300  # seconds → MEDIUM
+OFF_HOURS_START = 0  # UTC hour — suspicious window start
+OFF_HOURS_END = 5  # UTC hour — suspicious window end
+CARD_TEST_MICRO_LIMIT = 10  # € — max amount to count as micro test txn
+CARD_TEST_LARGE_LIMIT = 500  # € — min amount for the "real" txn after tests
+CARD_TEST_WINDOW = 300  # seconds — lookback for micro-txns before current
+CARD_TEST_HIGH_COUNT = 3  # micro-txns in window → HIGH (fewer → MEDIUM)
 
 # Amount
-OUTLIER_SIGMA = 3               # std devs above mean → HIGH
-ROUND_NUMBER_MIN = 1_000        # € — min round amount that looks suspicious
-STRUCTURING_PROXIMITY = 200     # € below a reporting limit → structuring signal
-DRAIN_HIGH = 0.9                # balance fraction drained → HIGH
-DRAIN_MEDIUM = 0.7              # balance fraction drained → MEDIUM
-FIRST_LARGE_HIGH = 5            # multiple of historical max → HIGH
-FIRST_LARGE_MEDIUM = 3          # multiple of historical max → MEDIUM
-FIRST_LARGE_MIN_TXNS = 5        # min txn history before HIGH can trigger
+OUTLIER_SIGMA = 3  # std devs above mean → HIGH
+ROUND_NUMBER_MIN = 1_000  # € — min round amount that looks suspicious
+STRUCTURING_PROXIMITY = 200  # € below a reporting limit → structuring signal
+DRAIN_HIGH = 0.9  # balance fraction drained → HIGH
+DRAIN_MEDIUM = 0.7  # balance fraction drained → MEDIUM
+FIRST_LARGE_HIGH = 5  # multiple of historical max → HIGH
+FIRST_LARGE_MEDIUM = 3  # multiple of historical max → MEDIUM
+FIRST_LARGE_MIN_TXNS = 5  # min txn history before HIGH can trigger
 
 # Behavioral
-NEW_PAYEE_HIGH_AMOUNT = 1_000   # € to unknown payee → HIGH
-NEW_PAYEE_MEDIUM_AMOUNT = 200   # € to unknown payee → MEDIUM
-DORMANT_HIGH_DAYS = 180         # days inactive → HIGH (if amount > avg)
-DORMANT_MEDIUM_DAYS = 90        # days inactive → MEDIUM
-FREQUENCY_SHIFT_HIGH = 10       # rate multiplier vs baseline → HIGH
-FREQUENCY_SHIFT_MEDIUM = 5      # rate multiplier vs baseline → MEDIUM
+NEW_PAYEE_HIGH_AMOUNT = 1_000  # € to unknown payee → HIGH
+NEW_PAYEE_MEDIUM_AMOUNT = 200  # € to unknown payee → MEDIUM
+DORMANT_HIGH_DAYS = 180  # days inactive → HIGH (if amount > avg)
+DORMANT_MEDIUM_DAYS = 90  # days inactive → MEDIUM
+FREQUENCY_SHIFT_HIGH = 10  # rate multiplier vs baseline → HIGH
+FREQUENCY_SHIFT_MEDIUM = 5  # rate multiplier vs baseline → MEDIUM
 
 # Graph
-FAN_IN_HIGH = 10                # in-degree (distinct senders) → HIGH
-FAN_IN_MEDIUM = 5               # in-degree → MEDIUM
-FAN_OUT_HIGH = 10               # out-degree (distinct receivers in 24h) → HIGH
-FAN_OUT_MEDIUM = 5              # out-degree → MEDIUM
-MULE_FORWARD_HIGH = 0.7         # fraction of received amount forwarded → HIGH
-MULE_FORWARD_MEDIUM = 0.5       # fraction forwarded → MEDIUM
-MULE_WINDOW_HIGH = 1_800        # seconds (30 min) — forward window → HIGH
-MULE_WINDOW_MEDIUM = 7_200      # seconds (2h) — forward window → MEDIUM
-CIRCULAR_MAX_HOPS = 3           # max hops to detect circular flow → HIGH
+FAN_IN_HIGH = 10  # in-degree (distinct senders) → HIGH
+FAN_IN_MEDIUM = 5  # in-degree → MEDIUM
+FAN_OUT_HIGH = 10  # out-degree (distinct receivers in 24h) → HIGH
+FAN_OUT_MEDIUM = 5  # out-degree → MEDIUM
+MULE_FORWARD_HIGH = 0.7  # fraction of received amount forwarded → HIGH
+MULE_FORWARD_MEDIUM = 0.5  # fraction forwarded → MEDIUM
+MULE_WINDOW_HIGH = 1_800  # seconds (30 min) — forward window → HIGH
+MULE_WINDOW_MEDIUM = 7_200  # seconds (2h) — forward window → MEDIUM
+CIRCULAR_MAX_HOPS = 3  # max hops to detect circular flow → HIGH
