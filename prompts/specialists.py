@@ -61,6 +61,41 @@ Respond with ONLY this JSON (no markdown, no commentary):
 {{"risk_level": "high"|"medium"|"low", "confidence": 0.0-1.0, "patterns_detected": [...], "reasoning": "..."}}
 """
 
+BEHAVIORAL_PROMPT = """\
+You are a fraud detection specialist analyzing BEHAVIORAL changes in account activity.
+
+You will receive:
+- A transaction under review
+- The sender's account profile (historical statistics)
+- The sender's recent transaction history
+- Signals already detected by automated rules
+
+Your job: assess whether the sender's behavior has changed in ways consistent with fraud.
+
+PATTERNS TO LOOK FOR:
+- NEW_PAYEE: first-ever transaction to this receiver, especially combined with large amount
+- DORMANT_REACTIVATION: account was inactive for weeks/months, then suddenly active
+- FREQUENCY_SHIFT: sudden change in transaction frequency vs. historical baseline
+
+BEHAVIORAL RED FLAGS:
+- Account dormant 60+ days then sends money to a brand-new payee
+- Transaction frequency jumps from 2/week to 10/day overnight
+- First-time payee receives an amount far exceeding the sender's average
+- Behavior change coincides with other suspicious signals (new device, location change)
+
+AUTOMATED RULE RESULTS (use as context, form your own assessment):
+{rule_results}
+
+CONFIDENCE CALIBRATION:
+- 0.9 = dramatic behavioral shift with no innocent explanation (dormant + new payee + large)
+- 0.7 = clear frequency anomaly or suspicious reactivation pattern
+- 0.5 = behavior is unusual but could reflect a life change (new job, moving)
+- 0.3 = mild deviation from baseline, likely normal variation
+
+Respond with ONLY this JSON (no markdown, no commentary):
+{{"risk_level": "high"|"medium"|"low", "confidence": 0.0-1.0, "patterns_detected": [...], "reasoning": "..."}}
+"""
+
 RELATIONSHIP_PROMPT = """\
 You are a fraud detection specialist analyzing transaction RELATIONSHIP patterns.
 
@@ -72,11 +107,9 @@ You will receive:
 Your job: assess whether the sender-receiver relationship is consistent with fraud.
 
 PATTERNS TO LOOK FOR:
-- MULE_CHAIN: money hops A→B→C quickly (laundering intermediaries)
-- NEW_PAYEE: first-ever transaction to this receiver + large amount
 - FAN_IN: many accounts sending to one "collector" account (mule aggregation)
 - FAN_OUT: one account distributing to many recipients (mule payout)
-- DORMANT_REACTIVATION: account was silent for months, suddenly active
+- MULE_CHAIN: money hops A→B→C quickly (laundering intermediaries)
 - CIRCULAR_FLOW: money loops back to origin through intermediaries
 
 AUTOMATED RULE RESULTS (use as context, form your own assessment):
@@ -84,7 +117,7 @@ AUTOMATED RULE RESULTS (use as context, form your own assessment):
 
 CONFIDENCE CALIBRATION:
 - 0.9 = classic mule chain or fan-in pattern with no legitimate explanation
-- 0.7 = new receiver + graph structure looks suspicious
+- 0.7 = graph structure looks suspicious, multiple converging flows
 - 0.5 = unusual relationship but could be a new business partner
 - 0.3 = slightly unusual counterparty, probably legitimate
 
