@@ -11,7 +11,7 @@ from pydantic import BaseModel
 
 from config import OPENROUTER_API_KEY
 from config.tracing import get_langfuse_callback
-from config.models import AGGREGATOR_MODEL, MAX_TOKENS_AGGREGATOR, TEMPERATURE
+from config.models import AGGREGATOR_MODEL, LLM_BASE_URL, MAX_TOKENS_AGGREGATOR, TEMPERATURE
 from prompts import AGGREGATOR_PROMPT
 from rules._types import RiskResult
 from utils import extract_json
@@ -39,8 +39,8 @@ class AggregatorOutput(BaseModel):
 # %% LLM client
 _llm = ChatOpenAI(
     model=AGGREGATOR_MODEL,
-    base_url="https://openrouter.ai/api/v1",
-    api_key=OPENROUTER_API_KEY,
+    base_url=LLM_BASE_URL,
+    api_key=OPENROUTER_API_KEY or "ollama",
     temperature=TEMPERATURE,
     max_tokens=MAX_TOKENS_AGGREGATOR,
     model_kwargs={"response_format": {"type": "json_object"}},

@@ -11,7 +11,7 @@ from pydantic import BaseModel
 
 from config import OPENROUTER_API_KEY
 from config.tracing import get_langfuse_callback
-from config.models import MAX_TOKENS_SPECIALIST, SPECIALIST_MODEL, TEMPERATURE
+from config.models import LLM_BASE_URL, MAX_TOKENS_SPECIALIST, SPECIALIST_MODEL, TEMPERATURE
 from data import get_account_context
 from prompts import (
     AMOUNT_PROMPT,
@@ -56,8 +56,8 @@ _PROMPTS = {
 # %% LLM client
 _llm = ChatOpenAI(
     model=SPECIALIST_MODEL,
-    base_url="https://openrouter.ai/api/v1",
-    api_key=OPENROUTER_API_KEY,
+    base_url=LLM_BASE_URL,
+    api_key=OPENROUTER_API_KEY or "ollama",
     temperature=TEMPERATURE,
     max_tokens=MAX_TOKENS_SPECIALIST,
     model_kwargs={"response_format": {"type": "json_object"}},
