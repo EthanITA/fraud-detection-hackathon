@@ -6,181 +6,229 @@
 
 ---
 
-## Rules
+## Competition Rules
 
 - Input: financial transaction datasets (JSON or CSV)
 - Output: `.txt` file listing fraudulent transaction IDs + source `.zip`
 - **5 datasets**: 1-3 available at start; 4-5 unlock after submitting eval for 1-3
 - **Token budgets**: $40 for datasets 1-3 · $120 for datasets 4-5 (OpenRouter) — non-refillable
 - **Submissions**: unlimited on training · **one shot only** on evaluation
-- **LLM must orchestrate**: deterministic rules must be LangChain tools the agent decides to invoke — not hardcoded pipeline steps
+- **LLM must orchestrate**: deterministic rules must be LangChain tools the agent decides to invoke
 - **Tracing**: Langfuse mandatory — session ID required in every submission
 
 ### Scoring
 
 | Criterion | What it measures |
 |---|---|
-| **Count-based accuracy** | How many fraudulent txns you correctly identify (each txn weighted equally) |
-| **Economic accuracy** | How much fraud value (€) you recover — catching a €50k fraud >> catching a €5 one |
+| **Count-based accuracy** | How many fraudulent txns you correctly identify |
+| **Economic accuracy** | How much fraud value (€) you recover — €50k fraud >> €5 one |
 | **Cost efficiency** | How sustainable your LLM token usage is |
 | **Latency** | How fast your system processes transactions |
-| **Architecture quality** | How well-designed your multi-agent system is (judges review source code) |
+| **Architecture quality** | How well-designed your multi-agent system is |
+
 ---
 
-## Part 1 — Technical Spec
+## Architecture: 4-Layer Triage Funnel
 
-### Architecture: 4-layer triage funnel
+The key insight: most transactions are obviously legit. Cheap filters first,
+expensive LLM calls only for the ambiguous middle.
 
 ```
 RAW TRANSACTIONS (100%)
         │
         ▼
-┌──────────────────────────┐
-│  Layer 0: Data Ingestion │  $0 tokens — parse, feature extraction, graph
-└────────────┬─────────────┘
+┌─────────────────────────────────┐
+│  Layer 0: Data Ingestion        │  $0 — parse, profiles, graph
+│  data/                          │  Minimal contract + passthrough
+└────────────┬────────────────────┘
              │
              ▼
-┌──────────────────────────┐
-│  Layer 1: Rule Triage    │  $0 tokens — deterministic LangChain tools
-│  ~70-85% filtered out    │  score 0-1 → auto-legit · ≥6 → auto-fraud
-└────────────┬─────────────┘
-             │ (~15-30% ambiguous, score 2-5)
+┌─────────────────────────────────┐
+│  Layer 1: Rule Triage           │  $0 — 13 LangChain tools × 4 categories
+│  rules/                         │  Weighted score + combos + amount scaling
+│  ~70-85% filtered out           │  Priority ranking: score × amount
+└────────────┬────────────────────┘
+             │ (~15-30% ambiguous)
              ▼
-┌──────────────────────────┐
-│  Layer 2: Specialists    │  ~60% of budget — 3 parallel agents (cheap model)
-│  velocity · amount ·     │  each returns {risk_level, confidence, reasoning}
-│  relationship            │
-└────────────┬─────────────┘
+┌─────────────────────────────────┐
+│  Layer 2: 4 Specialists         │  ~60% budget — parallel via Send API
+│  agents/specialists.py          │  velocity · amount · behavioral · relationship
+│  Structured output enforced     │  Each: {risk_level, confidence, patterns, reasoning}
+└────────────┬────────────────────┘
              │
              ▼
-┌──────────────────────────┐
-│  Layer 3: Aggregator     │  ~40% of budget — capable model, economic weighting
-│  final fraud/legit +     │  threshold scales with txn amount
-│  confidence score        │
-└────────────┬─────────────┘
+┌─────────────────────────────────┐
+│  Layer 3: Aggregator            │  ~40% budget — economic weighting
+│  agents/aggregator.py           │  Final verdict: {is_fraud, confidence, reasoning}
+└────────────┬────────────────────┘
              │
-         output.txt
-```
-
-### Layer 0 — Data ingestion (`data.py`)
-
-```
-parse_dataset(path) → list[Transaction]
-compute_account_profiles(txns) → dict[account_id, AccountProfile]
-  AccountProfile: txn_count, avg_amount, std_amount, min/max_amount,
-                  avg_time_between_txns, unique_counterparties,
-                  total_sent, total_received, first_seen, last_seen, is_new
-build_relationship_graph(txns) → Graph
-  nodes = accounts · edges = transactions
-  edge attrs: count, total_amount, avg_amount
-  node attrs: in_degree, out_degree, clustering_coefficient
-get_account_context(account_id, txns, n=20) → list[Transaction]
-compute_risk_features(txn, profile, graph) → RiskFeatures
-```
-
-### Layer 1 — Rule tools (`rules.py`)
-
-Each returns `{risk: "high"|"medium"|"low", reason: str}`.
-
-| Tool | Logic |
-|---|---|
-| `check_velocity` | high if avg gap < 60s · medium if < 300s |
-| `check_amount_anomaly` | high if > avg+3σ · high if round number >€1k · medium near €5k/€10k/€15k thresholds |
-| `check_balance_drain` | high if txn > 90% of sender balance · medium if > 70% |
-| `check_counterparty` | high if new account + large amount · high if receiver has fan-in pattern |
-| `check_temporal_pattern` | medium if 00:00–05:00 |
-| `compute_composite_risk` | high=3 · medium=1 · low=0 → score 0-10 + summary |
-
-**Triage thresholds**: score 0–1 → auto-legit · score ≥ 6 → auto-fraud · score 2–5 → Layer 2
-
-### Layer 2 — Specialist agents (`agents.py`)
-
-Model: `gpt-4o-mini` (or equivalent cheap model on OpenRouter)
-
-| Agent | Input | Focus |
-|---|---|---|
-| Velocity | txn + sender's last 20 txns | BURST · UNUSUAL_HOURS · CARD_TESTING · FREQUENCY_SHIFT · RAPID_ROUND_TRIP |
-| Amount | txn + sender account profile | STATISTICAL_OUTLIER · ROUND_NUMBER · THRESHOLD_EVASION · STRUCTURING · BALANCE_DRAIN · FIRST_LARGE |
-| Relationship | txn + 2-hop subgraph | MULE_CHAIN · NEW_PAYEE · FAN_IN · FAN_OUT · DORMANT_REACTIVATION · CIRCULAR_FLOW |
-
-All three run in parallel. Each outputs `{risk_level, confidence, patterns_detected, reasoning}`.
-
-Prompts live in `prompts.py`.
-
-### Layer 3 — Verdict aggregator (`agents.py`)
-
-Model: `gpt-4o` (or equivalent capable model)
-
-**Decision rules**:
-- 2+ specialists say high → fraud
-- 1 specialist says high with confidence > 0.8 → fraud
-- Economic threshold scaling:
-  - > €10,000 → flag if ANY specialist says medium or above
-  - €1k–€10k → flag if composite confidence > 0.5
-  - < €1,000 → flag only if 2+ high
-  - < €100 → flag only if all 3 high
-
-**Pattern combos** that always flag: BURST+BALANCE_DRAIN · NEW_PAYEE+ROUND_NUMBER+LARGE · MULE_CHAIN+THRESHOLD_EVASION
-
-Output: `{transaction_id, is_fraud, confidence, reasoning}`
-
-### Token budget
-
-**Datasets 1-3 ($40)**
-
-| Layer | Txns processed | Tokens/txn | Model | Est. cost |
-|---|---|---|---|---|
-| 0 + 1 | 3,000 | 0 | None | $0 |
-| 2 (specialists) | ~500 | ~300 × 3 | gpt-4o-mini | ~$6–8 |
-| 3 (aggregator) | ~500 | ~800 | gpt-4o | ~$8–12 |
-| Debugging | — | — | — | ~$15–20 |
-| **Total** | | | | **~$25–35** |
-
-Safety valve: tighten Layer 1 thresholds to pass fewer transactions to Layer 2.
-
-**Datasets 4-5 ($120)**: same architecture — consider upgrading all layers to a more capable model.
-
-### Fraud domain reference
-
-**Velocity signals**: transaction burst (< 60s gaps), unusual hours (00:00–05:00), card testing (rapid small txns → large one), sudden frequency spike.
-
-**Amount signals**: just below reporting thresholds (€4,999 / €9,999), perfectly round amounts > €1k, amount wildly inconsistent with account history, near-total balance drain.
-
-**Behavioral/relational signals**: account draining to new payee, mule chains (A→B→C→cashout), fan-in (many senders → one account → wire out), dormant account reactivation, circular flows.
-
-**Economic weighting**: catching a €50k fraud is worth ~1000x a €50 fraud. The aggregator's threshold must scale inversely with amount.
-
-### Code structure
-
-```
-reply-hackathon/
-├── .env                  # OPENROUTER_API_KEY, LANGFUSE_*, TEAM_NAME
-├── requirements.txt
-├── config.py             # Env vars, model configs, Langfuse init, session ID gen
-├── data.py               # Dataset parsing, feature extraction, graph builder
-├── rules.py              # Deterministic triage tools (LangChain @tool)
-├── agents.py             # Orchestrator, specialists, aggregator
-├── prompts.py            # All system prompts as constants
-├── main.py               # CLI: load dataset → run pipeline → write output.txt
-├── utils.py              # JSON parsing helpers, logging
-└── README.md
+      output.txt + debug.json
 ```
 
 ---
 
-### Risk mitigation
+## Module Map
+
+```
+reply-hackathon/
+├── main.py                  # CLI entry point (18 lines)
+│
+├── config/                  # Environment, models, Langfuse tracing
+│   ├── CONFIG.md
+│   ├── env.py               # .env loading + fail-fast validation
+│   ├── models.py             # Model names, token limits, cost rates
+│   └── langfuse.py           # LangGraph callback handler, session IDs
+│
+├── data/                    # Layer 0 — parsing, profiles, graph (implemented)
+│   ├── DATA.md
+│   ├── ingest.py             # FIELD_MAP + passthrough (adjust on hackathon day)
+│   ├── profiles.py           # O(n) precomputed account profiles
+│   └── graph.py              # Relationship graph with clustering coefficients
+│
+├── rules/                   # Layer 1 — 13 deterministic tools (stubs)
+│   ├── RULES.md
+│   ├── _types.py             # RiskLevel, weights, combos, thresholds (30 constants)
+│   ├── time.py               # check_velocity, check_temporal_pattern, check_card_testing
+│   ├── amount.py             # check_amount_anomaly, check_balance_drain, check_first_large
+│   ├── behavioral.py         # check_new_payee, check_dormant_reactivation, check_frequency_shift
+│   └── graph.py              # check_fan_in, check_fan_out, check_mule_chain, check_circular_flow
+│
+├── prompts/                 # System prompts for all LLM agents
+│   ├── PROMPTS.md
+│   ├── specialists.py        # VELOCITY_PROMPT, AMOUNT_PROMPT, BEHAVIORAL_PROMPT, RELATIONSHIP_PROMPT
+│   └── aggregator.py         # AGGREGATOR_PROMPT
+│
+├── agents/                  # Layers 2+3 — LLM specialists + aggregator (stubs)
+│   ├── AGENTS.md
+│   ├── specialists.py        # 4 specialist nodes + Pydantic SpecialistOutput
+│   └── aggregator.py         # Aggregator node + Pydantic AggregatorOutput
+│
+├── pipeline/                # LangGraph state machine (implemented)
+│   ├── PIPELINE.md
+│   ├── state.py              # PipelineState with budget + priority + debug output
+│   ├── dispatch.py           # Tool context routing for 13 rule tools
+│   ├── nodes.py              # All node functions (ingest → triage → specialists → aggregate → output)
+│   └── graph.py              # StateGraph wiring with Send API fan-out
+│
+├── utils/                   # Cross-cutting helpers
+│   ├── UTILS.md
+│   ├── json_repair.py        # Fallback JSON parser (structured output is primary)
+│   ├── budget.py             # BudgetTracker with panic mode at 15%
+│   └── logging.py            # Structured logger
+│
+├── requirements.txt
+└── .env                     # OPENROUTER_API_KEY, LANGFUSE_*, TEAM_NAME
+```
+
+---
+
+## Key Design Decisions
+
+### Data: Minimal Contract + Passthrough
+We don't know the dataset format until hackathon day. Six guaranteed keys
+(`id`, `sender_id`, `receiver_id`, `amount`, `timestamp`, `sender_balance`)
+plus all raw fields preserved. On hackathon day, update `FIELD_MAP` in
+`data/ingest.py` — nothing else changes.
+
+### Rules: 4 Categories, 30 Configurable Thresholds
+All magic numbers live in `rules/_types.py`. On hackathon day, see the data
+distribution and adjust — no other file needs to change.
+
+| Category | Tools | Weight |
+|---|---|---|
+| Time | check_velocity, check_temporal_pattern, check_card_testing | 0.5–1.5× |
+| Amount | check_amount_anomaly, check_balance_drain, check_first_large | 1.0–1.5× |
+| Behavioral | check_new_payee, check_dormant_reactivation, check_frequency_shift | 1.0× |
+| Graph | check_fan_in, check_fan_out, check_mule_chain, check_circular_flow | 2.0× |
+
+### Triage: Score × Amount Priority
+Ambiguous transactions ranked by `composite_score × amount`. A mediocre-risk
+€50k transaction gets LLM analysis before a high-risk €5 one. Budget-aware:
+when tokens run low, process fewer ambiguous txns; at 15% remaining, skip LLM
+entirely.
+
+### Specialists: 4 Parallel via Send API
+One specialist per rule category. LangGraph's `Send` API launches all 4
+concurrently — latency = slowest specialist, not the sum. Each gets curated
+context (not the full state). Structured output enforced via `response_format`
++ Pydantic validation.
+
+### Error Handling: Amount-Aware
+- Txn > €1k + specialist fails → retry once
+- Txn ≤ €1k + specialist fails → skip, use remaining specialists
+- All fail → fallback to rule-based verdict
+
+### Output: txt + debug.json
+`output.txt` for submission. `debug.json` with full per-txn trace (L1 scores,
+specialist reasoning, aggregator verdict, priority rank, verdict source) for
+tuning between dataset runs.
+
+---
+
+## Token Budget
+
+**Datasets 1-3 ($40)**
+
+| Layer | Txns | Tokens/txn | Model | Est. cost |
+|---|---|---|---|---|
+| 0 + 1 | all | 0 | — | $0 |
+| 2 (4 specialists) | ~500 | ~300 × 4 | gpt-4o-mini | ~$8 |
+| 3 (aggregator) | ~500 | ~800 | gpt-4o | ~$10 |
+| **Total** | | | | **~$18** |
+
+Safety margin: ~$22 for debugging, threshold tuning, re-runs.
+
+**Datasets 4-5 ($120)**: same architecture, consider upgrading specialist model.
+
+---
+
+## Hackathon Day Playbook
+
+### First 15 minutes — Data exploration
+1. Open the dataset, inspect field names and types
+2. Update `FIELD_MAP` in `data/ingest.py`
+3. Run `parse_dataset()` and check output
+4. Look at amount distribution, timestamp range, account count
+
+### Next 30 minutes — Threshold tuning
+1. Run Layer 0+1 on training data
+2. Check triage split: what % auto-legit, auto-fraud, ambiguous?
+3. Adjust thresholds in `rules/_types.py` until ~15-30% is ambiguous
+4. Check `debug.json` for false positives/negatives
+
+### Remaining time — LLM layers
+1. Implement specialist stubs (wire LLM calls)
+2. Test on training data, check Langfuse traces
+3. Monitor budget, adjust triage if needed
+4. Submit evaluation — **one shot only**
+
+---
+
+## Risk Mitigation
 
 | Risk | Mitigation |
 |---|---|
-| Token budget exhausted | Layer 1 filters aggressively. Monitor continuously. "Budget panic" mode: skip Layer 2, rules only. |
-| Unexpected dataset format | Spend first 15 min exploring data. Parser handles both JSON and CSV. |
-| LLM returns unparseable output | Wrap every call in try/catch with JSON repair. Fall back to rule-based verdict. |
-| Langfuse connection fails | Log locally as backup. Session IDs are generated client-side. |
-| Team member goes down | Modular architecture — anyone can pick up any module. All code in shared repo. |
-| Wrong evaluation output format | Triple-check against problem statement before submitting. One person dedicated to QA. |
+| Token budget exhausted | BudgetTracker with panic mode. Priority ranking spends tokens where they matter most. |
+| Unexpected dataset format | FIELD_MAP pattern — 1 dict to update. Passthrough preserves all fields. |
+| LLM returns bad output | Belt and suspenders: response_format + Pydantic + json_repair fallback. |
+| Specialist fails | Amount-aware retry (>€1k) or skip (≤€1k). All-fail → rule verdict. |
+| Langfuse connection fails | Session IDs generated client-side. Log locally as backup. |
+| Wrong output format | debug.json lets you inspect every verdict before submitting. |
 
-### Pre-challenge checklist
+---
 
-- [ ] Codebase scaffolded: config, data, rules, agents, prompts, main
+## Pre-Challenge Checklist
+
+- [x] Modular architecture: 8 packages with clean boundaries
+- [x] LangGraph pipeline with Send API fan-out
+- [x] 13 rule tools with 30 configurable thresholds
+- [x] 4 specialist prompts + aggregator prompt
+- [x] Budget tracking with panic mode
+- [x] Structured output enforcement (Pydantic)
+- [x] Data layer fully implemented (ingest + profiles + graph)
+- [ ] `.env` configured with OpenRouter + Langfuse keys
 - [ ] Langfuse integration tested with dummy session
-- [ ] OpenRouter connection tested with own key
+- [ ] OpenRouter connection tested
+- [ ] Rule tool stubs implemented
+- [ ] Specialist LLM calls wired up
+- [ ] End-to-end test on synthetic data
