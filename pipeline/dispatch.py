@@ -20,12 +20,17 @@ _TOOL_CONTEXT: dict[str, tuple[str, ...]] = {
     "check_fan_out":              ("txn", "graph"),
     "check_mule_chain":           ("txn", "graph"),
     "check_circular_flow":        ("txn", "graph"),
+    "check_impossible_travel":    ("txn", "citizen"),
 }
 
 
 # %% invoke_tool
 def invoke_tool(tool, context: dict[str, str]) -> RiskResult:
-    """Call a rule tool with the subset of context it needs."""
+    """Call a rule tool with the subset of context it needs.
+
+    If a required context key is missing (e.g., citizen data not loaded),
+    the tool gets '{}' as a graceful fallback — it will return LOW risk.
+    """
     keys = _TOOL_CONTEXT[tool.name]
-    args = {f"{k}_json": context[k] for k in keys}
+    args = {f"{k}_json": context.get(k, "{}") for k in keys}
     return json.loads(tool.invoke(args))

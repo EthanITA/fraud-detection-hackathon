@@ -59,6 +59,8 @@ TOOL_WEIGHTS: dict[str, float] = {
     "check_fan_out": 2.0,
     "check_mule_chain": 2.0,
     "check_circular_flow": 2.0,
+    # geographic
+    "check_impossible_travel": 2.0,
 }
 
 # %% always-flag combos
@@ -69,6 +71,7 @@ ALWAYS_FLAG_COMBOS: list[tuple[str, set[str]]] = [
     ("BURST+BALANCE_DRAIN", {"check_velocity", "check_balance_drain"}),
     ("NEW_PAYEE+AMOUNT_ANOMALY", {"check_new_payee", "check_amount_anomaly"}),
     ("MULE_CHAIN+STRUCTURING", {"check_mule_chain", "check_amount_anomaly"}),
+    ("IMPOSSIBLE_TRAVEL+BALANCE_DRAIN", {"check_impossible_travel", "check_balance_drain"}),
 ]
 
 # %% amount-aware triage thresholds
@@ -129,3 +132,7 @@ MULE_FORWARD_MEDIUM = 0.5  # fraction forwarded → MEDIUM
 MULE_WINDOW_HIGH = 1_800  # seconds (30 min) — forward window → HIGH
 MULE_WINDOW_MEDIUM = 7_200  # seconds (2h) — forward window → MEDIUM
 CIRCULAR_MAX_HOPS = 3  # max hops to detect circular flow → HIGH
+
+# Geographic
+IMPOSSIBLE_TRAVEL_DISTANCE_HIGH = 5_000  # km from home → HIGH (if > known max × 1.5)
+IMPOSSIBLE_TRAVEL_DISTANCE_MEDIUM = 2_000  # km from home → MEDIUM

@@ -16,6 +16,7 @@ from data import get_account_context
 from prompts import (
     AMOUNT_PROMPT,
     BEHAVIORAL_PROMPT,
+    GEOGRAPHIC_PROMPT,
     RELATIONSHIP_PROMPT,
     VELOCITY_PROMPT,
 )
@@ -50,6 +51,7 @@ _PROMPTS = {
     "amount": AMOUNT_PROMPT,
     "behavioral": BEHAVIORAL_PROMPT,
     "relationship": RELATIONSHIP_PROMPT,
+    "geographic": GEOGRAPHIC_PROMPT,
 }
 
 
@@ -130,6 +132,10 @@ def _build_specialist_context(specialist_name: str, state: dict, txn: dict) -> d
         graph = state.get("graph", {})
         citizen = _get_citizen_context(state, sender_id)
         return {"txn": txn, "graph": graph, "citizen": citizen, "rule_results": rule_results}
+
+    if specialist_name == "geographic":
+        citizen = _get_citizen_context(state, sender_id, include_persona=True)
+        return {"txn": txn, "citizen": citizen, "rule_results": rule_results}
 
     raise ValueError(f"Unknown specialist: {specialist_name}")
 
@@ -221,3 +227,9 @@ def run_behavioral_specialist(state: dict) -> dict:
 def run_relationship_specialist(state: dict) -> dict:
     """Analyze all ambiguous transactions for network/relationship patterns."""
     return _run_specialist("relationship", state)
+
+
+# %% run_geographic_specialist
+def run_geographic_specialist(state: dict) -> dict:
+    """Analyze all ambiguous transactions for geographic/identity consistency."""
+    return _run_specialist("geographic", state)

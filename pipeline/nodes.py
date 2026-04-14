@@ -21,6 +21,7 @@ from agents.aggregator import run_aggregator
 from agents.specialists import (
     run_amount_specialist,
     run_behavioral_specialist,
+    run_geographic_specialist,
     run_relationship_specialist,
     run_velocity_specialist,
 )
@@ -50,6 +51,7 @@ def run_rules(state: PipelineState) -> dict:
 
     for txn in state["transactions"]:
         sender_id = txn["sender_id"]
+        citizen = state.get("citizens", {}).get(sender_id, {})
         context = {
             "txn": json.dumps(txn),
             "history": json.dumps(
@@ -57,6 +59,7 @@ def run_rules(state: PipelineState) -> dict:
             ),
             "profile": json.dumps(state["profiles"].get(sender_id, {})),
             "graph": json.dumps(state["graph"]),
+            "citizen": json.dumps(citizen.get("location", {})),
         }
         all_results[txn["id"]] = [
             (tool.name, invoke_tool(tool, context)) for tool in RULE_TOOLS
@@ -131,6 +134,12 @@ def behavioral_specialist(state: PipelineState) -> dict:
 def relationship_specialist(state: PipelineState) -> dict:
     """Analyze ambiguous transactions for network/relationship patterns."""
     return run_relationship_specialist(state)
+
+
+# %% geographic_specialist
+def geographic_specialist(state: PipelineState) -> dict:
+    """Analyze ambiguous transactions for geographic/identity consistency."""
+    return run_geographic_specialist(state)
 
 
 # %% aggregate

@@ -9,6 +9,7 @@ from .nodes import (
     amount_specialist,
     behavioral_specialist,
     collect_output,
+    geographic_specialist,
     ingest,
     relationship_specialist,
     run_rules,
@@ -27,6 +28,7 @@ def _fan_out_to_specialists(state: PipelineState) -> list:
             Send("amount_specialist", state),
             Send("behavioral_specialist", state),
             Send("relationship_specialist", state),
+            Send("geographic_specialist", state),
         ]
     return [Send("output", state)]
 
@@ -42,6 +44,7 @@ def build_pipeline():
     g.add_node("amount_specialist", amount_specialist)
     g.add_node("behavioral_specialist", behavioral_specialist)
     g.add_node("relationship_specialist", relationship_specialist)
+    g.add_node("geographic_specialist", geographic_specialist)
     g.add_node("aggregate", aggregate)
     g.add_node("output", collect_output)
 
@@ -53,6 +56,7 @@ def build_pipeline():
     g.add_edge("amount_specialist", "aggregate")
     g.add_edge("behavioral_specialist", "aggregate")
     g.add_edge("relationship_specialist", "aggregate")
+    g.add_edge("geographic_specialist", "aggregate")
     g.add_edge("aggregate", "output")
     g.add_edge("output", END)
 

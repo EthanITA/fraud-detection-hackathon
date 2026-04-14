@@ -16,6 +16,7 @@ from .behavioral import (
     check_frequency_shift,
     check_new_payee,
 )
+from .geographic import check_impossible_travel
 from .graph import check_circular_flow, check_fan_in, check_fan_out, check_mule_chain
 from .time import check_card_testing, check_temporal_pattern, check_velocity
 
@@ -104,4 +105,6 @@ RULE_TOOLS = [
     check_fan_out,
     check_mule_chain,
     check_circular_flow,
+    # geographic
+    check_impossible_travel,
 ]
