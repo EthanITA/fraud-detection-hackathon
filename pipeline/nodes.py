@@ -9,6 +9,13 @@ from data import (
     get_account_context,
     parse_dataset,
 )
+from config.models import (
+    AGGREGATOR_MODEL,
+    COST_PER_1K_TOKENS,
+    MAX_TOKENS_AGGREGATOR,
+    MAX_TOKENS_SPECIALIST,
+    SPECIALIST_MODEL,
+)
 from rules import RULE_TOOLS, compute_composite_risk
 from .dispatch import invoke_tool
 from .state import PipelineState
@@ -73,10 +80,12 @@ def triage(state: PipelineState) -> dict:
     if budget and budget.is_panic():
         ambiguous_prioritized = []
     elif budget:
-        # TODO: estimate cost per ambiguous txn (4 specialists × MAX_TOKENS_SPECIALIST +
-        #   1 aggregator × MAX_TOKENS_AGGREGATOR), cap ambiguous_prioritized to
-        #   top-N that fit within remaining budget
-        pass
+        specialist_rate = COST_PER_1K_TOKENS[SPECIALIST_MODEL]
+        aggregator_rate = COST_PER_1K_TOKENS[AGGREGATOR_MODEL]
+        cost_per_txn = (4 * MAX_TOKENS_SPECIALIST * specialist_rate + MAX_TOKENS_AGGREGATOR * aggregator_rate) / 1000
+        if cost_per_txn > 0:
+            max_txns = int(budget.remaining() / cost_per_txn)
+            ambiguous_prioritized = ambiguous_prioritized[:max_txns]
 
     return {
         "auto_legit": auto_legit,
@@ -130,16 +139,48 @@ def collect_output(state: PipelineState) -> dict:
 
     # Budget fallback: ambiguous txns that never reached specialists
     specialist_txn_ids = set(state.get("specialist_results", {}).keys())
+    txn_by_id = {txn["id"]: txn for txn in state.get("transactions", [])}
     for txn_id, _priority in state.get("ambiguous_prioritized", []):
         if txn_id not in specialist_txn_ids and txn_id not in fraud_ids:
-            # TODO: fallback verdict for budget-skipped txns — use composite_risk score
-            #   from triage to decide fraud/legit without LLM
-            pass
+            rule_results = state.get("rule_results", {}).get(txn_id)
+            txn = txn_by_id.get(txn_id)
+            if rule_results and txn:
+                composite = compute_composite_risk(rule_results, txn["amount"])
+                if composite["auto_fraud"] or composite["combo_triggered"]:
+                    fraud_ids.append(txn_id)
 
     fraud_ids = sorted(set(fraud_ids))
 
-    # TODO: build debug_output — per-txn dict with: rule_results, triage_decision,
-    #   specialist_results (if any), aggregator_verdict (if any), final_decision, priority_rank
+    ambiguous_rank = {
+        txn_id: rank
+        for rank, (txn_id, _) in enumerate(state.get("ambiguous_prioritized", []), 1)
+    }
+    auto_legit_set = set(state.get("auto_legit", []))
+    auto_fraud_set = set(state.get("auto_fraud", []))
+    fraud_set = set(fraud_ids)
+
     debug_output: list[dict] = []
+    for txn in state.get("transactions", []):
+        txn_id = txn["id"]
+        rule_results = state.get("rule_results", {}).get(txn_id)
+        composite = compute_composite_risk(rule_results, txn["amount"]) if rule_results else None
+
+        if txn_id in auto_fraud_set:
+            triage_decision = "auto_fraud"
+        elif txn_id in auto_legit_set:
+            triage_decision = "auto_legit"
+        else:
+            triage_decision = "ambiguous"
+
+        debug_output.append({
+            "txn_id": txn_id,
+            "amount": txn["amount"],
+            "triage": triage_decision,
+            "rule_summary": composite["summary"] if composite else "no rules",
+            "priority_rank": ambiguous_rank.get(txn_id),
+            "specialist_results": state.get("specialist_results", {}).get(txn_id),
+            "verdict": state.get("verdicts", {}).get(txn_id),
+            "final": "fraud" if txn_id in fraud_set else "legit",
+        })
 
     return {"fraud_ids": fraud_ids, "debug_output": debug_output}
