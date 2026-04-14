@@ -1,5 +1,9 @@
 # %% env setup
-import sys; sys.path.insert(0, str(__import__("pathlib").Path(__file__).resolve().parent.parent))  # noqa: E702
+import sys, os  # noqa: E401
+try:
+    sys.path.insert(0, str(__import__("pathlib").Path(__file__).resolve().parent.parent))
+except NameError:
+    sys.path.insert(0, os.getcwd())
 import _env  # noqa: F401
 
 # %% json_repair — valid JSON
