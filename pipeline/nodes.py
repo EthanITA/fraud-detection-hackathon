@@ -16,6 +16,13 @@ from config.models import (
     MAX_TOKENS_SPECIALIST,
     SPECIALIST_MODEL,
 )
+from agents.aggregator import run_aggregator
+from agents.specialists import (
+    run_amount_specialist,
+    run_behavioral_specialist,
+    run_relationship_specialist,
+    run_velocity_specialist,
+)
 from rules import RULE_TOOLS, compute_composite_risk
 from .dispatch import invoke_tool
 from .state import PipelineState
@@ -97,36 +104,31 @@ def triage(state: PipelineState) -> dict:
 # %% velocity_specialist
 def velocity_specialist(state: PipelineState) -> dict:
     """Analyze ambiguous transactions for timing/velocity patterns."""
-    # TODO: delegate to agents.specialists.run_velocity_specialist(state)
-    raise NotImplementedError("velocity_specialist LLM agent")
+    return run_velocity_specialist(state)
 
 
 # %% amount_specialist
 def amount_specialist(state: PipelineState) -> dict:
     """Analyze ambiguous transactions for spending/amount patterns."""
-    # TODO: delegate to agents.specialists.run_amount_specialist(state)
-    raise NotImplementedError("amount_specialist LLM agent")
+    return run_amount_specialist(state)
 
 
 # %% behavioral_specialist
 def behavioral_specialist(state: PipelineState) -> dict:
     """Analyze ambiguous transactions for behavioral change patterns."""
-    # TODO: delegate to agents.specialists.run_behavioral_specialist(state)
-    raise NotImplementedError("behavioral_specialist LLM agent")
+    return run_behavioral_specialist(state)
 
 
 # %% relationship_specialist
 def relationship_specialist(state: PipelineState) -> dict:
     """Analyze ambiguous transactions for network/relationship patterns."""
-    # TODO: delegate to agents.specialists.run_relationship_specialist(state)
-    raise NotImplementedError("relationship_specialist LLM agent")
+    return run_relationship_specialist(state)
 
 
 # %% aggregate
 def aggregate(state: PipelineState) -> dict:
     """Combine specialist opinions into final verdicts with economic weighting."""
-    # TODO: delegate to agents.aggregator.run_aggregator(state)
-    raise NotImplementedError("aggregate LLM node")
+    return run_aggregator(state)
 
 
 # %% collect_output

@@ -9,7 +9,13 @@ from utils import BudgetTracker
 
 # %% _merge_dicts
 def _merge_dicts(a: dict, b: dict) -> dict:
-    return {**a, **b}
+    merged = dict(a)
+    for key, val in b.items():
+        if key in merged and isinstance(merged[key], dict) and isinstance(val, dict):
+            merged[key] = {**merged[key], **val}
+        else:
+            merged[key] = val
+    return merged
 
 
 # %% PipelineState
