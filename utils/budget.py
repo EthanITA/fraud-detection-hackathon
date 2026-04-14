@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+from config.models import COST_PER_1K_TOKENS
+
 BUDGET_PANIC_THRESHOLD = 0.15
+DEFAULT_RATE = 0.001
 
 
 class BudgetTracker:
@@ -28,10 +31,5 @@ class BudgetTracker:
 
     @staticmethod
     def _estimate_cost(tokens: int, model: str) -> float:
-        # rough $/1k-token estimates for OpenRouter
-        rates = {
-            "openai/gpt-4o-mini": 0.00015,
-            "openai/gpt-4o": 0.005,
-        }
-        per_token = rates.get(model, 0.001) / 1000
-        return tokens * per_token
+        rate = COST_PER_1K_TOKENS.get(model, DEFAULT_RATE)
+        return tokens * rate / 1000

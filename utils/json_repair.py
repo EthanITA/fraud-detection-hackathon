@@ -6,13 +6,17 @@ import re
 
 def extract_json(raw: str) -> dict:
     """
-    Robustly extract a JSON dict from LLM output.
+    Fallback JSON parser for LLM output.
 
-    Tries in order:
+    Primary JSON enforcement is via structured output in agents/.
+    This function is the defensive safety net for when structured output
+    fails or isn't available.
+
+    Cascade:
       1. Direct json.loads
       2. Strip markdown fences and retry
       3. Regex-extract outermost {...} and retry
-      4. Fallback: {"error": "parse_failed", "raw": <first 200 chars>}
+      4. Give up: {"error": "parse_failed", "raw": <first 200 chars>}
     """
     # 1. direct
     try:
