@@ -1,5 +1,7 @@
+# %% imports
 from __future__ import annotations
 
+# %% AGGREGATOR_PROMPT
 AGGREGATOR_PROMPT = """\
 You are a senior fraud analyst making the FINAL fraud/legit decision.
 

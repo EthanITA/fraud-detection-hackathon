@@ -1,3 +1,4 @@
+# %% imports
 from __future__ import annotations
 
 import json
@@ -7,6 +8,7 @@ from langchain.tools import tool
 from ._types import RiskLevel
 
 
+# %% check_velocity
 @tool
 def check_velocity(txn_json: str, history_json: str) -> str:
     """
@@ -20,6 +22,7 @@ def check_velocity(txn_json: str, history_json: str) -> str:
     return json.dumps({"risk": RiskLevel.LOW, "reason": "TODO"})
 
 
+# %% check_temporal_pattern
 @tool
 def check_temporal_pattern(txn_json: str) -> str:
     """
@@ -31,6 +34,7 @@ def check_temporal_pattern(txn_json: str) -> str:
     return json.dumps({"risk": RiskLevel.LOW, "reason": "TODO"})
 
 
+# %% check_card_testing
 @tool
 def check_card_testing(txn_json: str, history_json: str) -> str:
     """

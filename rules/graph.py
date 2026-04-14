@@ -1,3 +1,4 @@
+# %% imports
 from __future__ import annotations
 
 import json
@@ -7,6 +8,7 @@ from langchain.tools import tool
 from ._types import RiskLevel
 
 
+# %% check_fan_in
 @tool
 def check_fan_in(txn_json: str, graph_json: str) -> str:
     """
@@ -21,6 +23,7 @@ def check_fan_in(txn_json: str, graph_json: str) -> str:
     return json.dumps({"risk": RiskLevel.LOW, "reason": "TODO"})
 
 
+# %% check_fan_out
 @tool
 def check_fan_out(txn_json: str, graph_json: str) -> str:
     """
@@ -35,6 +38,7 @@ def check_fan_out(txn_json: str, graph_json: str) -> str:
     return json.dumps({"risk": RiskLevel.LOW, "reason": "TODO"})
 
 
+# %% check_mule_chain
 @tool
 def check_mule_chain(txn_json: str, graph_json: str) -> str:
     """
@@ -49,6 +53,7 @@ def check_mule_chain(txn_json: str, graph_json: str) -> str:
     return json.dumps({"risk": RiskLevel.LOW, "reason": "TODO"})
 
 
+# %% check_circular_flow
 @tool
 def check_circular_flow(txn_json: str, graph_json: str) -> str:
     """

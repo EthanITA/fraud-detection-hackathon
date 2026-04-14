@@ -1,3 +1,4 @@
+# %% imports
 from __future__ import annotations
 
 import operator
@@ -7,10 +8,12 @@ from rules._types import RiskResult
 from utils import BudgetTracker
 
 
+# %% _merge_dicts
 def _merge_dicts(a: dict, b: dict) -> dict:
     return {**a, **b}
 
 
+# %% PipelineState
 class PipelineState(TypedDict, total=False):
     dataset_path: str
     session_id: str

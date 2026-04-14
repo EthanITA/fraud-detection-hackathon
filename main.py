@@ -1,8 +1,10 @@
+# %% imports
 import sys
 
 from pipeline import build_pipeline
 
 
+# %% main
 def main():
     pipeline = build_pipeline()
     result = pipeline.invoke({"dataset_path": sys.argv[1]})
@@ -14,5 +16,6 @@ def main():
     print(f"Found {len(result['fraud_ids'])} fraudulent transactions")
 
 
+# %% entrypoint
 if __name__ == "__main__":
     main()

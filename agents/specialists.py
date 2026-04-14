@@ -1,3 +1,4 @@
+# %% imports
 from __future__ import annotations
 
 from typing import Literal, TypedDict
@@ -16,6 +17,7 @@ from rules._types import RiskResult
 from utils import extract_json
 
 
+# %% SpecialistResult
 class SpecialistResult(TypedDict):
     agent: str              # "velocity" | "amount" | "behavioral" | "relationship"
     risk_level: str         # "high" | "medium" | "low"
@@ -24,6 +26,7 @@ class SpecialistResult(TypedDict):
     reasoning: str
 
 
+# %% SpecialistOutput
 class SpecialistOutput(BaseModel):
     """Pydantic model for structured output validation (belt-and-suspenders layer 2)."""
     risk_level: Literal["high", "medium", "low"]
@@ -32,6 +35,7 @@ class SpecialistOutput(BaseModel):
     reasoning: str
 
 
+# %% _format_rule_results
 def _format_rule_results(results: list[tuple[str, RiskResult]]) -> str:
     lines = []
     for name, r in results:
@@ -40,6 +44,7 @@ def _format_rule_results(results: list[tuple[str, RiskResult]]) -> str:
     return "\n".join(lines) or "No signals detected by automated rules."
 
 
+# %% _build_specialist_context
 def _build_specialist_context(
     specialist_name: str, state: dict, txn: dict
 ) -> dict:
@@ -83,6 +88,7 @@ def _build_specialist_context(
     raise ValueError(f"Unknown specialist: {specialist_name}")
 
 
+# %% run_velocity_specialist
 def run_velocity_specialist(state: dict) -> dict:
     """Analyze all ambiguous transactions for timing/velocity patterns.
 
@@ -91,6 +97,7 @@ def run_velocity_specialist(state: dict) -> dict:
     raise NotImplementedError("velocity_specialist LLM agent")
 
 
+# %% run_amount_specialist
 def run_amount_specialist(state: dict) -> dict:
     """Analyze all ambiguous transactions for spending/amount patterns.
 
@@ -99,6 +106,7 @@ def run_amount_specialist(state: dict) -> dict:
     raise NotImplementedError("amount_specialist LLM agent")
 
 
+# %% run_behavioral_specialist
 def run_behavioral_specialist(state: dict) -> dict:
     """Analyze all ambiguous transactions for behavioral change patterns.
 
@@ -107,6 +115,7 @@ def run_behavioral_specialist(state: dict) -> dict:
     raise NotImplementedError("behavioral_specialist LLM agent")
 
 
+# %% run_relationship_specialist
 def run_relationship_specialist(state: dict) -> dict:
     """Analyze all ambiguous transactions for network/relationship patterns.
 

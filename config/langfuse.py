@@ -1,3 +1,4 @@
+# %% imports
 from __future__ import annotations
 
 import time
@@ -6,6 +7,7 @@ from typing import Any
 from .env import LANGFUSE_HOST, LANGFUSE_PUBLIC_KEY, LANGFUSE_SECRET_KEY, TEAM_NAME
 
 
+# %% get_langfuse_callback
 def get_langfuse_callback(session_id: str | None = None) -> Any:
     """Return a LangGraph-compatible Langfuse callback handler."""
     from langfuse.callback import CallbackHandler
@@ -18,6 +20,7 @@ def get_langfuse_callback(session_id: str | None = None) -> Any:
     )
 
 
+# %% generate_session_id
 def generate_session_id(dataset_name: str) -> str:
     """Session ID format: {team}-{dataset}-{timestamp}."""
     ts = int(time.time())

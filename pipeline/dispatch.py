@@ -1,9 +1,11 @@
+# %% imports
 from __future__ import annotations
 
 import json
 
 from rules._types import RiskResult
 
+# %% _TOOL_CONTEXT
 _TOOL_CONTEXT: dict[str, tuple[str, ...]] = {
     "check_velocity":             ("txn", "history"),
     "check_temporal_pattern":     ("txn",),
@@ -21,6 +23,7 @@ _TOOL_CONTEXT: dict[str, tuple[str, ...]] = {
 }
 
 
+# %% invoke_tool
 def invoke_tool(tool, context: dict[str, str]) -> RiskResult:
     """Call a rule tool with the subset of context it needs."""
     keys = _TOOL_CONTEXT[tool.name]

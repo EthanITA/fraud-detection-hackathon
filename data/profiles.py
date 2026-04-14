@@ -1,9 +1,11 @@
+# %% imports
 from __future__ import annotations
 
 import statistics
 from collections import defaultdict
 
 
+# %% compute_account_profiles
 def compute_account_profiles(txns: list[dict]) -> dict[str, dict]:
     """Single O(n) pass over all transactions. Builds an AccountProfile per account.
 
@@ -77,6 +79,7 @@ def compute_account_profiles(txns: list[dict]) -> dict[str, dict]:
     return profiles
 
 
+# %% get_account_context
 def get_account_context(
     account_id: str, txns: list[dict], n: int = 20
 ) -> list[dict]:

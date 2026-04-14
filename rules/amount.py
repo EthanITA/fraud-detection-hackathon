@@ -1,3 +1,4 @@
+# %% imports
 from __future__ import annotations
 
 import json
@@ -7,6 +8,7 @@ from langchain.tools import tool
 from ._types import RiskLevel
 
 
+# %% check_amount_anomaly
 @tool
 def check_amount_anomaly(txn_json: str, profile_json: str) -> str:
     """
@@ -21,6 +23,7 @@ def check_amount_anomaly(txn_json: str, profile_json: str) -> str:
     return json.dumps({"risk": RiskLevel.LOW, "reason": "TODO"})
 
 
+# %% check_balance_drain
 @tool
 def check_balance_drain(txn_json: str, profile_json: str) -> str:
     """
@@ -34,6 +37,7 @@ def check_balance_drain(txn_json: str, profile_json: str) -> str:
     return json.dumps({"risk": RiskLevel.LOW, "reason": "TODO"})
 
 
+# %% check_first_large
 @tool
 def check_first_large(txn_json: str, profile_json: str) -> str:
     """

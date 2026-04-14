@@ -122,6 +122,96 @@ reply-hackathon/
 
 ---
 
+## Module Dependency Map
+
+```mermaid
+flowchart LR
+    subgraph foundation ["Foundation (no deps)"]
+        direction TB
+        CONFIG["config/\n<small>env · models · langfuse</small>"]
+        UTILS["utils/\n<small>budget · logging · json_repair</small>"]
+        PROMPTS["prompts/\n<small>4 specialist + 1 aggregator</small>"]
+    end
+
+    subgraph layer0 ["Layer 0 — $0"]
+        DATA["data/\n<small>ingest · profiles · graph</small>"]
+    end
+
+    subgraph layer1 ["Layer 1 — $0"]
+        RULES["rules/\n<small>13 tools × 4 categories\n+ composite risk</small>"]
+    end
+
+    subgraph layer23 ["Layer 2+3 — LLM budget"]
+        AGENTS["agents/\n<small>4 specialists + aggregator\nPydantic structured output</small>"]
+    end
+
+    subgraph orchestrator ["Orchestrator"]
+        PIPELINE["pipeline/\n<small>LangGraph state machine\nSend API fan-out</small>"]
+    end
+
+    MAIN["main.py\n<small>CLI entry point</small>"]
+
+    UTILS -.->|cost rates| CONFIG
+    AGENTS -->|prompts| PROMPTS
+    AGENTS -->|models, keys| CONFIG
+    AGENTS -->|json fallback| UTILS
+    RULES -->|thresholds| CONFIG
+
+    PIPELINE -->|Layer 0| DATA
+    PIPELINE -->|Layer 1| RULES
+    PIPELINE -->|Layer 2+3| AGENTS
+    PIPELINE -->|budget, logging| UTILS
+
+    MAIN --> PIPELINE
+```
+
+### Execution Order
+
+```mermaid
+flowchart TD
+    START(["python main.py dataset.csv"]) --> INGEST
+
+    INGEST["<b>ingest</b>\n<code>data/</code>\nparse → profiles → graph"]
+    INGEST --> RUN_RULES
+
+    RUN_RULES["<b>run_rules</b>\n<code>rules/ × 13 tools</code>\neach txn → 13 risk results"]
+    RUN_RULES --> TRIAGE
+
+    TRIAGE["<b>triage</b>\n<code>rules/composite</code>\nscore + combos + amount thresholds\npriority = score × amount"]
+
+    TRIAGE -->|"auto-legit\n~70-85%"| OUTPUT
+    TRIAGE -->|"auto-fraud\n~5-10%"| OUTPUT
+    TRIAGE -->|"ambiguous\ntop-N by priority"| FAN
+
+    FAN["<b>Send API fan-out</b>"]
+    FAN --> V["<b>velocity</b>\n<code>agents/</code>\ntiming patterns"]
+    FAN --> A["<b>amount</b>\n<code>agents/</code>\nspending patterns"]
+    FAN --> B["<b>behavioral</b>\n<code>agents/</code>\nbehavior changes"]
+    FAN --> R["<b>relationship</b>\n<code>agents/</code>\nnetwork patterns"]
+
+    V --> AGG
+    A --> AGG
+    B --> AGG
+    R --> AGG
+
+    AGG["<b>aggregate</b>\n<code>agents/</code>\neconomic weighting\nfinal verdict"]
+    AGG --> OUTPUT
+
+    OUTPUT["<b>output</b>\noutput.txt + debug.json"]
+    OUTPUT --> DONE([done])
+
+    style INGEST fill:#e8f5e9
+    style RUN_RULES fill:#e8f5e9
+    style TRIAGE fill:#e8f5e9
+    style V fill:#fff3e0
+    style A fill:#fff3e0
+    style B fill:#fff3e0
+    style R fill:#fff3e0
+    style AGG fill:#fce4ec
+```
+
+---
+
 ## Key Design Decisions
 
 ### Data: Minimal Contract + Passthrough

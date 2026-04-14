@@ -1,9 +1,11 @@
+# %% imports
 from __future__ import annotations
 
 import logging
 import sys
 
 
+# %% get_logger
 def get_logger(name: str) -> logging.Logger:
     """Return a configured logger with structured formatting."""
     logger = logging.getLogger(name)

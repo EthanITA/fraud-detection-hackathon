@@ -1,3 +1,4 @@
+# %% imports
 from __future__ import annotations
 
 from ._types import (
@@ -19,6 +20,7 @@ from .graph import check_circular_flow, check_fan_in, check_fan_out, check_mule_
 from .time import check_card_testing, check_temporal_pattern, check_velocity
 
 
+# %% compute_composite_risk
 def compute_composite_risk(
     results: list[tuple[str, RiskResult]],
     amount: float,
@@ -83,6 +85,7 @@ def compute_composite_risk(
     }
 
 
+# %% RULE_TOOLS
 RULE_TOOLS = [
     # time
     check_velocity,

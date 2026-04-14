@@ -1,5 +1,7 @@
+# %% imports
 from __future__ import annotations
 
+# %% VELOCITY_PROMPT
 VELOCITY_PROMPT = """\
 You are a fraud detection specialist analyzing transaction TIMING patterns.
 
@@ -30,6 +32,7 @@ Respond with ONLY this JSON (no markdown, no commentary):
 {{"risk_level": "high"|"medium"|"low", "confidence": 0.0-1.0, "patterns_detected": [...], "reasoning": "..."}}
 """
 
+# %% AMOUNT_PROMPT
 AMOUNT_PROMPT = """\
 You are a fraud detection specialist analyzing transaction AMOUNT patterns.
 
@@ -61,6 +64,7 @@ Respond with ONLY this JSON (no markdown, no commentary):
 {{"risk_level": "high"|"medium"|"low", "confidence": 0.0-1.0, "patterns_detected": [...], "reasoning": "..."}}
 """
 
+# %% BEHAVIORAL_PROMPT
 BEHAVIORAL_PROMPT = """\
 You are a fraud detection specialist analyzing BEHAVIORAL changes in account activity.
 
@@ -96,6 +100,7 @@ Respond with ONLY this JSON (no markdown, no commentary):
 {{"risk_level": "high"|"medium"|"low", "confidence": 0.0-1.0, "patterns_detected": [...], "reasoning": "..."}}
 """
 
+# %% RELATIONSHIP_PROMPT
 RELATIONSHIP_PROMPT = """\
 You are a fraud detection specialist analyzing transaction RELATIONSHIP patterns.
 

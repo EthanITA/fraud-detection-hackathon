@@ -1,8 +1,10 @@
+# %% imports
 from __future__ import annotations
 
 import csv
 import json
 
+# %% field mapping
 # Adjust on hackathon day: map raw field names → guaranteed keys.
 FIELD_MAP: dict[str, str] = {
     "transaction_id": "id",
@@ -16,6 +18,7 @@ FIELD_MAP: dict[str, str] = {
 GUARANTEED_KEYS = {"id", "sender_id", "receiver_id", "amount", "timestamp", "sender_balance"}
 
 
+# %% _normalize
 def _normalize(raw: dict) -> dict:
     txn = dict(raw)
     for src, dst in FIELD_MAP.items():
@@ -32,6 +35,7 @@ def _normalize(raw: dict) -> dict:
     return txn
 
 
+# %% parse_dataset
 def parse_dataset(path: str) -> list[dict]:
     """Parse a JSON or CSV dataset into a list of transaction dicts.
 

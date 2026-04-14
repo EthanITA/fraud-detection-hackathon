@@ -1,9 +1,11 @@
+# %% imports
 from __future__ import annotations
 
 import json
 import re
 
 
+# %% extract_json
 def extract_json(raw: str) -> dict:
     """
     Fallback JSON parser for LLM output.

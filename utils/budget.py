@@ -1,11 +1,14 @@
+# %% imports
 from __future__ import annotations
 
 from config.models import COST_PER_1K_TOKENS
 
+# %% constants
 BUDGET_PANIC_THRESHOLD = 0.15
 DEFAULT_RATE = 0.001
 
 
+# %% BudgetTracker
 class BudgetTracker:
     """
     Tracks token spend against a fixed dollar limit.

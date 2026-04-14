@@ -1,3 +1,4 @@
+# %% imports
 from __future__ import annotations
 
 from langgraph.constants import Send
@@ -17,6 +18,7 @@ from .nodes import (
 from .state import PipelineState
 
 
+# %% _fan_out_to_specialists
 def _fan_out_to_specialists(state: PipelineState) -> list:
     """Route triage output: ambiguous txns fan-out to 4 specialists, rest skip to output."""
     if state.get("ambiguous_prioritized"):
@@ -29,6 +31,7 @@ def _fan_out_to_specialists(state: PipelineState) -> list:
     return [Send("output", state)]
 
 
+# %% build_pipeline
 def build_pipeline():
     g = StateGraph(PipelineState)
 

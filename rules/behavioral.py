@@ -1,3 +1,4 @@
+# %% imports
 from __future__ import annotations
 
 import json
@@ -7,6 +8,7 @@ from langchain.tools import tool
 from ._types import RiskLevel
 
 
+# %% check_new_payee
 @tool
 def check_new_payee(txn_json: str, profile_json: str) -> str:
     """
@@ -20,6 +22,7 @@ def check_new_payee(txn_json: str, profile_json: str) -> str:
     return json.dumps({"risk": RiskLevel.LOW, "reason": "TODO"})
 
 
+# %% check_dormant_reactivation
 @tool
 def check_dormant_reactivation(txn_json: str, profile_json: str) -> str:
     """
@@ -33,6 +36,7 @@ def check_dormant_reactivation(txn_json: str, profile_json: str) -> str:
     return json.dumps({"risk": RiskLevel.LOW, "reason": "TODO"})
 
 
+# %% check_frequency_shift
 @tool
 def check_frequency_shift(txn_json: str, history_json: str, profile_json: str) -> str:
     """

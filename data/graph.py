@@ -1,8 +1,10 @@
+# %% imports
 from __future__ import annotations
 
 from collections import defaultdict
 
 
+# %% build_relationship_graph
 def build_relationship_graph(txns: list[dict]) -> dict:
     """Single upfront pass. Returns {nodes: [...], edges: [...]}.
 

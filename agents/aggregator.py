@@ -1,3 +1,4 @@
+# %% imports
 from __future__ import annotations
 
 from typing import TypedDict
@@ -12,6 +13,7 @@ from utils import extract_json
 from .specialists import SpecialistResult
 
 
+# %% Verdict
 class Verdict(TypedDict):
     transaction_id: str
     is_fraud: bool
@@ -19,6 +21,7 @@ class Verdict(TypedDict):
     reasoning: str
 
 
+# %% AggregatorOutput
 class AggregatorOutput(BaseModel):
     """Pydantic model for structured output validation (belt-and-suspenders layer 2)."""
     is_fraud: bool
@@ -26,6 +29,7 @@ class AggregatorOutput(BaseModel):
     reasoning: str
 
 
+# %% run_aggregator
 def run_aggregator(state: dict) -> dict:
     """Combine specialist opinions into final verdicts with economic weighting.
 

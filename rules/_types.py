@@ -1,9 +1,11 @@
+# %% imports
 from __future__ import annotations
 
 from enum import Enum
 from typing import TypedDict
 
 
+# %% types
 class RiskLevel(str, Enum):
     HIGH = "high"
     MEDIUM = "medium"
@@ -24,6 +26,7 @@ class CompositeResult(TypedDict):
     combo_triggered: str | None
 
 
+# %% risk scores
 _RISK_SCORES: dict[RiskLevel, int] = {
     RiskLevel.HIGH: 3,
     RiskLevel.MEDIUM: 1,
@@ -33,6 +36,7 @@ _RISK_SCORES: dict[RiskLevel, int] = {
 # Reporting limits — amounts just below these are structuring signals
 _STRUCTURING_LIMITS = [5_000, 10_000, 15_000]
 
+# %% tool weights
 # ── Tool weights ──────────────────────────────────────────────────────────────
 # Graph/mule signals are harder to fake and more indicative → higher weight.
 # Temporal alone is weak (legitimate users travel, work late) → lower weight.
@@ -57,6 +61,7 @@ TOOL_WEIGHTS: dict[str, float] = {
     "check_circular_flow": 2.0,
 }
 
+# %% always-flag combos
 # ── Always-flag combos ────────────────────────────────────────────────────────
 # If ALL tools in a combo set fire HIGH → auto-fraud, regardless of score.
 
@@ -66,6 +71,7 @@ ALWAYS_FLAG_COMBOS: list[tuple[str, set[str]]] = [
     ("MULE_CHAIN+STRUCTURING", {"check_mule_chain", "check_amount_anomaly"}),
 ]
 
+# %% amount-aware triage thresholds
 # ── Amount-aware triage thresholds ────────────────────────────────────────────
 # (amount_floor, legit_ceiling, fraud_floor)
 # Checked top-down: first match wins.
@@ -80,6 +86,7 @@ AMOUNT_TRIAGE: list[tuple[float, float, float]] = [
     (0, 2, 8),       # <€100: need very strong signals
 ]
 
+# %% thresholds
 # ── Thresholds ───────────────────────────────────────────────────────────────
 # Every magic number the 13 tools use. Tune these on hackathon day after
 # seeing the data distribution — no other file needs to change.

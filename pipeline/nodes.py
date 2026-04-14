@@ -1,3 +1,4 @@
+# %% imports
 from __future__ import annotations
 
 import json
@@ -14,8 +15,7 @@ from .dispatch import invoke_tool
 from .state import PipelineState
 
 
-# -- Layer 0 ------------------------------------------------------------------
-
+# %% ingest
 def ingest(state: PipelineState) -> dict:
     txns = parse_dataset(state["dataset_path"])
     profiles = compute_account_profiles(txns)
@@ -23,8 +23,7 @@ def ingest(state: PipelineState) -> dict:
     return {"transactions": txns, "profiles": profiles, "graph": graph}
 
 
-# -- Layer 1 ------------------------------------------------------------------
-
+# %% run_rules
 def run_rules(state: PipelineState) -> dict:
     all_results = {}
 
@@ -45,6 +44,7 @@ def run_rules(state: PipelineState) -> dict:
     return {"rule_results": all_results}
 
 
+# %% triage
 def triage(state: PipelineState) -> dict:
     auto_legit, auto_fraud = [], []
     ambiguous_scored: list[tuple[str, float, float]] = []
@@ -86,37 +86,37 @@ def triage(state: PipelineState) -> dict:
     }
 
 
-# -- Layer 2 — Specialists (parallel via Send) --------------------------------
-
+# %% velocity_specialist
 def velocity_specialist(state: PipelineState) -> dict:
     """Analyze ambiguous transactions for timing/velocity patterns."""
     raise NotImplementedError("velocity_specialist LLM agent")
 
 
+# %% amount_specialist
 def amount_specialist(state: PipelineState) -> dict:
     """Analyze ambiguous transactions for spending/amount patterns."""
     raise NotImplementedError("amount_specialist LLM agent")
 
 
+# %% behavioral_specialist
 def behavioral_specialist(state: PipelineState) -> dict:
     """Analyze ambiguous transactions for behavioral change patterns."""
     raise NotImplementedError("behavioral_specialist LLM agent")
 
 
+# %% relationship_specialist
 def relationship_specialist(state: PipelineState) -> dict:
     """Analyze ambiguous transactions for network/relationship patterns."""
     raise NotImplementedError("relationship_specialist LLM agent")
 
 
-# -- Layer 3 ------------------------------------------------------------------
-
+# %% aggregate
 def aggregate(state: PipelineState) -> dict:
     """Combine specialist opinions into final verdicts with economic weighting."""
     raise NotImplementedError("aggregate LLM node")
 
 
-# -- Output --------------------------------------------------------------------
-
+# %% collect_output
 def collect_output(state: PipelineState) -> dict:
     fraud_ids = list(state.get("auto_fraud", []))
 
