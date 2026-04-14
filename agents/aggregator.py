@@ -1,9 +1,21 @@
 # %% imports
 from __future__ import annotations
 
+import json
+import logging
 from typing import TypedDict
 
+from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_openai import ChatOpenAI
 from pydantic import BaseModel
+
+from config import OPENROUTER_API_KEY
+from config.models import AGGREGATOR_MODEL, MAX_TOKENS_AGGREGATOR, TEMPERATURE
+from prompts import AGGREGATOR_PROMPT
+from rules._types import RiskResult
+from utils import extract_json
+
+_log = logging.getLogger(__name__)
 
 
 # %% Verdict
@@ -23,6 +35,39 @@ class AggregatorOutput(BaseModel):
     reasoning: str
 
 
+# %% LLM client
+_llm = ChatOpenAI(
+    model=AGGREGATOR_MODEL,
+    base_url="https://openrouter.ai/api/v1",
+    api_key=OPENROUTER_API_KEY,
+    temperature=TEMPERATURE,
+    max_tokens=MAX_TOKENS_AGGREGATOR,
+)
+
+
+# %% _format_specialist_opinions
+def _format_specialist_opinions(specialist_results: dict) -> str:
+    """Format the 4 specialist outputs into a readable block for the aggregator."""
+    lines = []
+    for name, result in specialist_results.items():
+        lines.append(
+            f"[{name.upper()}] risk={result['risk_level']} "
+            f"confidence={result['confidence']:.2f} "
+            f"patterns={result['patterns_detected']} "
+            f"reasoning=\"{result['reasoning']}\""
+        )
+    return "\n".join(lines) or "No specialist assessments available."
+
+
+# %% _format_rule_results
+def _format_rule_results(results: list[tuple[str, RiskResult]]) -> str:
+    lines = []
+    for name, r in results:
+        if r["risk"] != "low":
+            lines.append(f"- {name}: {r['risk']} -- {r['reason']}")
+    return "\n".join(lines) or "No signals detected by automated rules."
+
+
 # %% run_aggregator
 def run_aggregator(state: dict) -> dict:
     """Combine specialist opinions into final verdicts with economic weighting.
@@ -30,7 +75,61 @@ def run_aggregator(state: dict) -> dict:
     LangGraph node -- receives full PipelineState, returns verdicts update.
     Processes all txns that have entries in specialist_results.
     """
-    # TODO: for each txn in specialist_results, format all 4 specialist opinions + rule results,
-    #   call OpenRouter LLM with AGGREGATOR_PROMPT, validate via AggregatorOutput,
-    #   return {"verdicts": {txn_id: Verdict}}
-    raise NotImplementedError("aggregate LLM node")
+    verdicts: dict[str, Verdict] = {}
+    txn_by_id = {t["id"]: t for t in state.get("transactions", [])}
+    specialist_results = state.get("specialist_results", {})
+
+    for txn_id, sp_results in specialist_results.items():
+        txn = txn_by_id.get(txn_id)
+        if not txn:
+            continue
+
+        rule_results = _format_rule_results(
+            state.get("rule_results", {}).get(txn_id, [])
+        )
+        specialist_summary = _format_specialist_opinions(sp_results)
+
+        user_content = json.dumps({
+            "transaction": txn,
+            "specialist_assessments": specialist_summary,
+            "rule_results": rule_results,
+        }, default=str)
+
+        messages = [
+            SystemMessage(content=AGGREGATOR_PROMPT),
+            HumanMessage(content=user_content),
+        ]
+
+        output = _call_aggregator(messages)
+
+        # Retry once for high-value txns
+        if output is None and txn["amount"] > 1000:
+            _log.info(f"aggregator: retrying high-value txn {txn_id} (€{txn['amount']})")
+            output = _call_aggregator(messages)
+
+        if output is not None:
+            verdicts[txn_id] = {
+                "transaction_id": txn_id,
+                "is_fraud": output.is_fraud,
+                "confidence": output.confidence,
+                "reasoning": output.reasoning,
+            }
+        else:
+            _log.warning(f"aggregator: no verdict for {txn_id}, skipping")
+
+    return {"verdicts": verdicts}
+
+
+# %% _call_aggregator
+def _call_aggregator(messages: list) -> AggregatorOutput | None:
+    """Single LLM call for the aggregator."""
+    try:
+        response = _llm.invoke(messages)
+        data = extract_json(response.content)
+        if "error" in data:
+            _log.warning("aggregator: LLM returned unparseable output")
+            return None
+        return AggregatorOutput.model_validate(data)
+    except Exception as e:
+        _log.warning(f"aggregator: LLM call failed: {e}")
+        return None
