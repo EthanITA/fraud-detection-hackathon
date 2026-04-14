@@ -1,2 +1,2 @@
-from .aggregator import Verdict, run_aggregator
-from .specialists import SpecialistResult, run_all_specialists
+from .aggregator import AggregatorOutput, Verdict, run_aggregator
+from .specialists import SpecialistOutput, SpecialistResult
