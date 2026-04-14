@@ -22,6 +22,7 @@ from prompts import (
 )
 from rules._types import RiskResult
 from utils import extract_json
+from utils.llm_cache import cache_get, cache_set
 
 _log = logging.getLogger(__name__)
 
@@ -153,9 +154,18 @@ def _call_specialist(
     rule_results = context["rule_results"]
     system = _PROMPTS[name].format(rule_results=rule_results)
     user_data = {k: v for k, v in context.items() if k != "rule_results"}
+    user_content = json.dumps(user_data, default=str)
+
+    # Check cache first
+    cached = cache_get(system, user_content)
+    if cached is not None:
+        data = extract_json(cached)
+        if "error" not in data:
+            return SpecialistOutput.model_validate(data)
+
     messages = [
         SystemMessage(content=system),
-        HumanMessage(content=json.dumps(user_data, default=str)),
+        HumanMessage(content=user_content),
     ]
     invoke_config = {}
     if session_id:
@@ -165,6 +175,7 @@ def _call_specialist(
         }
     try:
         response = _llm.invoke(messages, config=invoke_config)
+        cache_set(system, user_content, response.content)
         data = extract_json(response.content)
         if "error" in data:
             _log.warning(f"{name}: LLM returned unparseable output")

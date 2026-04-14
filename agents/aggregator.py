@@ -15,6 +15,7 @@ from config.models import AGGREGATOR_MODEL, LLM_BASE_URL, MAX_TOKENS_AGGREGATOR,
 from prompts import AGGREGATOR_PROMPT
 from rules._types import RiskResult
 from utils import extract_json
+from utils.llm_cache import cache_get, cache_set
 
 _log = logging.getLogger(__name__)
 
@@ -136,6 +137,16 @@ def _call_aggregator(
     messages: list, session_id: str | None = None
 ) -> AggregatorOutput | None:
     """Single LLM call for the aggregator."""
+    system_content = messages[0].content
+    user_content = messages[1].content
+
+    # Check cache first
+    cached = cache_get(system_content, user_content)
+    if cached is not None:
+        data = extract_json(cached)
+        if "error" not in data:
+            return AggregatorOutput.model_validate(data)
+
     invoke_config = {}
     if session_id:
         invoke_config = {
@@ -144,6 +155,7 @@ def _call_aggregator(
         }
     try:
         response = _llm.invoke(messages, config=invoke_config)
+        cache_set(system_content, user_content, response.content)
         data = extract_json(response.content)
         if "error" in data:
             _log.warning("aggregator: LLM returned unparseable output")

@@ -11,6 +11,7 @@ from pydantic import BaseModel
 from config import OPENROUTER_API_KEY
 from config.models import LLM_BASE_URL, MAX_TOKENS_SPECIALIST, SPECIALIST_MODEL, TEMPERATURE
 from config.tracing import get_langfuse_callback
+from utils.llm_cache import cache_get, cache_set
 
 _log = logging.getLogger(__name__)
 
@@ -84,6 +85,13 @@ def analyze_citizen(
         "persona": citizen.get("persona", "No persona available."),
     }, default=str)
 
+    # Check cache first
+    cached = cache_get(CITIZEN_ANALYSIS_PROMPT, user_data)
+    if cached is not None:
+        data = extract_json(cached)
+        if "error" not in data:
+            return CitizenAssessment.model_validate(data)
+
     messages = [
         SystemMessage(content=CITIZEN_ANALYSIS_PROMPT),
         HumanMessage(content=user_data),
@@ -98,6 +106,7 @@ def analyze_citizen(
 
     try:
         response = _llm.invoke(messages, config=invoke_config)
+        cache_set(CITIZEN_ANALYSIS_PROMPT, user_data, response.content)
         data = extract_json(response.content)
         if "error" in data:
             _log.warning("citizen_analyst: unparseable output")
