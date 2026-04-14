@@ -68,7 +68,7 @@ def compute_account_profiles(txns: list[dict]) -> dict[str, dict]:
             "balance": balance,
             "avg_time_between_txns": avg_gap,
             "unique_counterparties": len(cps),
-            "known_counterparties": cps,
+            "known_counterparties": sorted(cps),
             "total_sent": total_sent,
             "total_received": total_received,
             "first_seen": first_seen,
