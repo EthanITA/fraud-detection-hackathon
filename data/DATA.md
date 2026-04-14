@@ -1,62 +1,130 @@
 # data/ — The Prep Kitchen
 
-Before any fraud detection happens, we need to understand the data. This module
-reads the raw dataset and prepares three things every other layer needs:
+Imagine a restaurant kitchen. Before a single dish goes out, the prep cooks wash vegetables, portion proteins, and organize everything into containers. That's what this module does for fraud detection — it takes raw transaction data and prepares three things every downstream layer needs:
 
-1. **Transactions** — the raw records, normalized
-2. **Account profiles** — a statistical summary of each account's history
-3. **Relationship graph** — who sends money to whom
+1. **Transactions** — the raw records, normalized to a common shape
+2. **Account profiles** — a statistical fingerprint of each account's behavior
+3. **Relationship graph** — a network of who sends money to whom
 
-**Cost**: $0 — pure computation.
+**Cost**: $0 — pure computation, no LLM calls.
 
-## What It Builds
+---
 
-### Transactions (`ingest.py`)
+## Why "Minimal Contract + Passthrough"?
 
-Reads JSON or CSV and produces a clean list of dicts. Every transaction has:
+We don't know the exact dataset format until hackathon day. It might be a CSV with 10 columns or a JSON with 50 fields. So instead of defining a rigid schema that breaks when reality hits, we take a different approach:
+
+- **6 guaranteed keys** that all downstream code can rely on (the "contract")
+- **Every other field preserved as-is** (the "passthrough")
+
+This means rules, agents, and tools always find the 6 keys they need. But if the dataset has extra fields like `location`, `device_id`, or `ip_address`, those ride along too — and LLM agents can reason about them without any code changes.
+
+**What's fixed**: The 6 guaranteed keys and their types. Every module depends on these.
+**What's flexible**: Everything else — field name mappings, extra columns, file format.
+
+---
+
+## Guaranteed Keys
+
+Every transaction dict has at least these 6 fields:
+
+| Key | Type | Description |
+|---|---|---|
+| `id` | `str` | Unique transaction identifier |
+| `sender_id` | `str` | Who sent the money |
+| `receiver_id` | `str` | Who received it |
+| `amount` | `float` | Transaction amount in EUR |
+| `timestamp` | `float` | When it happened (Unix epoch) |
+| `sender_balance` | `float \| None` | Sender's balance before this txn — `None` if the dataset doesn't provide it |
+
+Plus **all original fields** from the raw dataset, preserved alongside these.
+
+---
+
+## Modules
+
+### `ingest.py` — Parse and Normalize
+
+`parse_dataset(path: str) -> list[dict]`
+
+Reads JSON or CSV and produces a list of transaction dicts. The heavy lifting is a **field name mapping** — a simple dict at the top of the file that translates whatever the dataset calls its columns into our 6 guaranteed keys:
+
+```python
+FIELD_MAP = {
+    "transaction_id": "id",
+    "from_account": "sender_id",
+    "to_account": "receiver_id",
+    # ... adjust on hackathon day
+}
+```
+
+On hackathon day, you open `ingest.py`, update `FIELD_MAP`, and you're done.
+
+**Key behavior**:
+- If the dataset has a balance field, it becomes `sender_balance`
+- If not, `sender_balance` is set to `None` (profiles.py will estimate it later)
+- All original fields are kept — nothing is dropped
+
+---
+
+### `profiles.py` — Account Fingerprints
+
+**Why precompute?** Every rule needs to ask "what's normal for this account?" If we computed that on the fly for each transaction, we'd scan the full history each time — O(n) per transaction, O(n²) total. Instead, we do one upfront pass over all transactions and cache the result. O(n) once, O(1) lookups forever.
+
+#### `compute_account_profiles(txns: list[dict]) -> dict[str, dict]`
+
+Single O(n) pass. Builds a profile per account with:
+
+| Field | What it tells you |
+|---|---|
+| `txn_count` | How active this account is |
+| `avg_amount` / `std_amount` | Typical transaction size and how much it varies |
+| `min_amount` / `max_amount` | Range of transaction sizes |
+| `balance` | Current balance (from `sender_balance` or estimated as `received - sent`) |
+| `avg_time_between_txns` | How often they transact |
+| `unique_counterparties` | Number of distinct accounts they interact with |
+| `known_counterparties` | Set of account IDs they've transacted with before |
+| `total_sent` / `total_received` | Aggregate flow |
+| `first_seen` / `last_seen` | Activity window |
+| `is_new` | Account has fewer than 3 txns or less than 7 days of history |
+
+#### `get_account_context(account_id, txns, n=20) -> list[dict]`
+
+Returns the last `n` transactions where this account is the **sender**, sorted by timestamp descending. Used as input for velocity checks and behavioral analysis.
+
+---
+
+### `graph.py` — Relationship Network
+
+#### `build_relationship_graph(txns: list[dict]) -> dict`
+
+Single upfront pass. Returns:
+
+```python
+{
+    "nodes": [{"id", "in_degree", "out_degree", "clustering_coefficient", "is_new"}],
+    "edges": [{"source", "target", "count", "total_amount", "avg_amount", "timestamps"}]
+}
+```
+
+**Nodes** = accounts. A node's `clustering_coefficient` measures how interconnected its neighbors are. Legitimate accounts tend to cluster (friends, family, regular shops). Mule accounts have low clustering — they bridge otherwise-disconnected groups.
+
+**Edges** = transaction relationships between two accounts. Each edge aggregates all transactions between a pair: how many, how much total, average size, and when they happened.
+
+---
+
+## Quick Reference
 
 ```
-id            →  unique identifier
-sender_id     →  who sent the money
-receiver_id   →  who received it
-amount        →  how much (EUR)
-timestamp     →  when (Unix epoch)
-sender_balance → sender's balance before this transaction
+parse_dataset("data/txns.csv")
+    → list[dict]  (each dict has 6 guaranteed keys + all raw fields)
+
+compute_account_profiles(txns)
+    → {"ACC001": {txn_count, avg_amount, ...}, ...}
+
+get_account_context("ACC001", txns, n=20)
+    → [last 20 sent txns for ACC001]
+
+build_relationship_graph(txns)
+    → {nodes: [...], edges: [...]}
 ```
-
-### Account Profiles (`profiles.py`)
-
-For every account, we compute a "fingerprint" of their normal behavior.
-This is what rules like `check_amount_anomaly` compare against.
-
-Think of it as: *"What does normal look like for this person?"*
-
-Key fields:
-- **avg_amount / std_amount** — their typical transaction size and how much it varies
-- **max_amount** — the biggest thing they've ever sent (for "first large" detection)
-- **balance** — current balance (for drain detection)
-- **avg_time_between_txns** — how often they transact (for frequency shift detection)
-- **known_counterparties** — who they've sent to before (for new payee detection)
-- **last_seen** — when they last transacted (for dormant reactivation)
-- **is_new** — account has < 3 txns or < 7 days old
-
-Also provides `get_account_context(account_id, n=20)` — returns the last 20
-transactions for an account, used as input to velocity and behavioral tools.
-
-### Relationship Graph (`graph.py`)
-
-A network where accounts are nodes and transactions are edges. This powers
-the graph-based fraud signals (fan-in, fan-out, mule chains, circular flows).
-
-Each **node** knows:
-- `in_degree` — how many distinct senders send to this account
-- `out_degree` — how many distinct receivers this account sends to
-- `clustering_coefficient` — how interconnected this account's neighbors are
-
-Each **edge** knows:
-- How many transactions between this pair
-- Total and average amount
-- When all transactions happened (timestamps)
-
-A legitimate account has a dense local cluster (friends, family, regular shops).
-A mule account has low clustering — it connects otherwise-disconnected parties.
