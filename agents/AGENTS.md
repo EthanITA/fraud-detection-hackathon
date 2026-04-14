@@ -1,109 +1,123 @@
-# agents/ — Layers 2 + 3: LLM Agents
+# agents/ — The Expert Panel
 
-## Architecture
+Layer 1 handled the obvious cases. What's left are the ambiguous transactions —
+the ones where the alarms went off a bit, but not enough to be certain.
 
-```
-ambiguous txns (score 2–5 from Layer 1)
-        │
-        ▼
-┌─────────────────────────────────────────┐
-│  Layer 2: 3 Specialists (parallel)      │
-│                                         │
-│  ┌───────────┐ ┌──────────┐ ┌────────┐ │
-│  │ Velocity  │ │  Amount  │ │ Relat. │ │
-│  │ gpt-4o-   │ │ gpt-4o-  │ │ gpt-4o-│ │
-│  │ mini      │ │ mini     │ │ mini   │ │
-│  └─────┬─────┘ └────┬─────┘ └───┬────┘ │
-│        └─────────────┼───────────┘      │
-└──────────────────────┼──────────────────┘
-                       ▼
-┌──────────────────────────────────────────┐
-│  Layer 3: Aggregator                     │
-│  gpt-4o — economic weighting             │
-│  → {is_fraud, confidence, reasoning}     │
-└──────────────────────────────────────────┘
-```
+This is where we bring in the experts.
 
-## Modules
+## The Metaphor
 
-### `specialists.py` — Layer 2
+Imagine a fraud review meeting. Three specialists each look at the same
+suspicious transaction from their own angle:
 
-```python
-run_all_specialists(
-    txn: dict,
-    history: list[dict],
-    profile: dict,
-    graph: dict,
-    rule_results: list[tuple[str, RiskResult]],
-) → list[SpecialistResult]
-```
+- **The Timing Expert** — "This account normally transacts twice a week. Today it
+  did 12 transactions in 2 hours. The deterministic rules flagged a burst, but
+  I see it's also card-testing: five €1 charges, then this €2,000 one."
 
-Runs 3 specialists in parallel. Each receives:
-- The transaction
-- Domain-specific context (history OR profile OR subgraph)
-- Layer 1 rule results (so it doesn't re-derive what rules already found)
+- **The Money Expert** — "This is €4,800 — just under the €5,000 reporting
+  threshold. The account averages €150 transactions. That's 32× their norm."
 
-**SpecialistResult schema:**
+- **The Network Expert** — "The receiver was created 3 days ago and has already
+  received money from 8 different accounts. Classic mule aggregation pattern."
+
+Then a **senior analyst** (the aggregator) hears all three opinions and makes
+the final call, weighing how much money is at stake.
+
+## Layer 2 — Three Specialists (`specialists.py`)
+
+All three run **in parallel** on the same transaction. Each gets:
+1. The transaction itself
+2. Context specific to their domain (history / profile / subgraph)
+3. What Layer 1's rules already found (so they don't repeat work)
+
+Each returns:
+
 ```
 {
-  agent:              str       # "velocity" | "amount" | "relationship"
-  risk_level:         str       # "high" | "medium" | "low"
-  confidence:         float     # 0.0–1.0
-  patterns_detected:  list[str] # e.g. ["BURST", "CARD_TESTING"]
-  reasoning:          str       # human-readable explanation
+  agent:             "velocity" | "amount" | "relationship"
+  risk_level:        "high" | "medium" | "low"
+  confidence:        0.0–1.0
+  patterns_detected: ["BURST", "CARD_TESTING", ...]
+  reasoning:         "The rapid micro-transactions followed by..."
 }
 ```
 
-#### Specialist Focus Areas
+### What Each Specialist Looks For
 
-| Agent | Context | Patterns |
-|---|---|---|
-| **Velocity** | txn + last 20 txns | BURST, UNUSUAL_HOURS, CARD_TESTING, FREQUENCY_SHIFT, RAPID_ROUND_TRIP |
-| **Amount** | txn + account profile | STATISTICAL_OUTLIER, ROUND_NUMBER, THRESHOLD_EVASION, STRUCTURING, BALANCE_DRAIN, FIRST_LARGE |
-| **Relationship** | txn + 2-hop subgraph | MULE_CHAIN, NEW_PAYEE, FAN_IN, FAN_OUT, DORMANT_REACTIVATION, CIRCULAR_FLOW |
+**Velocity Specialist** — *"How does the timing feel?"*
+- Receives: txn + sender's last 20 transactions
+- Patterns: BURST, UNUSUAL_HOURS, CARD_TESTING, FREQUENCY_SHIFT, RAPID_ROUND_TRIP
+- Model: gpt-4o-mini (~300 tokens)
 
-### `aggregator.py` — Layer 3
+**Amount Specialist** — *"Does the money make sense?"*
+- Receives: txn + sender's account profile
+- Patterns: STATISTICAL_OUTLIER, ROUND_NUMBER, THRESHOLD_EVASION, STRUCTURING, BALANCE_DRAIN, FIRST_LARGE
+- Model: gpt-4o-mini (~300 tokens)
 
-```python
-run_aggregator(
-    txn: dict,
-    specialist_results: list[SpecialistResult],
-    rule_results: list[tuple[str, RiskResult]],
-) → Verdict
-```
+**Relationship Specialist** — *"Who is this money going to?"*
+- Receives: txn + 2-hop subgraph around sender/receiver
+- Patterns: MULE_CHAIN, NEW_PAYEE, FAN_IN, FAN_OUT, DORMANT_REACTIVATION, CIRCULAR_FLOW
+- Model: gpt-4o-mini (~300 tokens)
 
-**Verdict schema:**
+### Why They Get Layer 1 Results
+
+Like a doctor receiving lab results before examining a patient. The specialist
+doesn't re-run the tests — they use the results as context and focus on nuance
+that rules can't capture:
+
+- Rules found "new payee + large" → specialist investigates *whether this is
+  actually unusual* for this type of account
+- Rules found "balance drain" → specialist checks if this account regularly
+  makes large wire transfers
+
+## Layer 3 — The Aggregator (`aggregator.py`)
+
+One capable model makes the final fraud/legit decision.
+
+**Input**: 3 specialist opinions + the transaction + Layer 1 rule results
+
+**Output**:
 ```
 {
   transaction_id: str
-  is_fraud:       bool
-  confidence:     float    # 0.0–1.0
-  reasoning:      str
+  is_fraud:       true | false
+  confidence:     0.0–1.0
+  reasoning:      "Two specialists flagged high risk..."
 }
 ```
 
-**Decision rules (encoded in prompt + post-processing):**
+### Decision Logic
 
-| Condition | Verdict |
-|---|---|
-| 2+ specialists say HIGH | fraud |
-| 1 specialist HIGH + confidence > 0.8 | fraud |
-| amount > €10k + ANY specialist ≥ MEDIUM | fraud |
-| amount €1k–€10k + composite confidence > 0.5 | fraud |
-| amount < €1k + only if 2+ HIGH | fraud |
-| amount < €100 + only if all 3 HIGH | fraud |
+The aggregator's prompt encodes these rules:
 
-**Always-flag pattern combos:**
+**Specialist consensus:**
+- 2+ say HIGH → fraud
+- 1 says HIGH with confidence > 0.8 → fraud
+
+**Economic scaling** (the amount changes how cautious we are):
+- €10k+ → flag if ANY specialist says medium or above
+- €1k–€10k → flag if average confidence > 0.5
+- < €1k → only if 2+ HIGH
+- < €100 → only if ALL 3 say HIGH
+
+**Pattern combos that always flag:**
 - BURST + BALANCE_DRAIN
 - NEW_PAYEE + ROUND_NUMBER + LARGE
 - MULE_CHAIN + THRESHOLD_EVASION
 
-## Token Budget
+### Why a Separate Aggregator?
 
-| Component | Tokens/txn | Model | Cost/txn |
+The specialists are biased by design — each one only sees one dimension. The
+velocity specialist doesn't know the amount is suspicious; the amount specialist
+doesn't know the receiver is a mule. Only the aggregator sees the full picture
+and can reason about cross-domain correlations.
+
+## Budget
+
+| What | Tokens/txn | Model | Cost/txn |
 |---|---|---|---|
-| 3 specialists | ~300 × 3 | gpt-4o-mini | ~$0.012 |
+| 3 specialists | ~900 total | gpt-4o-mini | ~$0.012 |
 | Aggregator | ~800 | gpt-4o | ~$0.020 |
-| **Total per txn** | ~1,700 | | **~$0.032** |
+| **Per transaction** | **~1,700** | | **~$0.032** |
 
-For ~500 ambiguous txns: ~$16 total (within $40 budget for datasets 1-3).
+For ~500 ambiguous txns across datasets 1-3: **~$16** (within $40 budget).

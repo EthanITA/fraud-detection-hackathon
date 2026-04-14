@@ -1,71 +1,79 @@
-# rules/ — Layer 1: Deterministic Triage
+# rules/ — The Alarm System
 
-13 LangChain `@tool` functions across 4 signal categories. Each returns `{risk, reason}`.
-All tools cost $0 tokens — pure Python logic.
+These are 13 fast, cheap alarms. Like a building's fire detection system: smoke
+detectors, heat sensors, motion detectors. Each one is simple and sometimes wrong
+alone, but together they paint a picture.
 
-## Tool Registry
+**Cost**: $0 — pure Python, no LLM calls.
 
-### Time Signals (`time.py`)
+## The Three Questions
 
-| Tool | HIGH | MEDIUM |
+Every rule answers one of three questions about a transaction:
+
+### 1. "Is the timing suspicious?" → `time.py`
+
+Fraudsters race the clock. They drain accounts in minutes, often at 3am when
+the real owner is asleep.
+
+- **`check_velocity`** — Are transactions happening unusually fast? (< 60s gap = alarm)
+- **`check_temporal_pattern`** — Is this happening at 3am? (00:00–05:00 UTC)
+- **`check_card_testing`** — Did tiny test transactions (€0.50, €1, €2) happen right before this big one?
+
+### 2. "Is the amount suspicious?" → `amount.py`
+
+Fraudsters either go all-in (drain the account) or carefully stay below reporting
+thresholds (€4,999 instead of €5,000).
+
+- **`check_amount_anomaly`** — Is this amount wildly different from this account's history? Is it a suspiciously round number?
+- **`check_balance_drain`** — Is this transaction wiping out the account? (>90% of balance)
+- **`check_first_large`** — Has this account *never* sent this much before?
+
+### 3a. "Is the behavior suspicious?" → `behavioral.py`
+
+Account-level patterns that don't fit the profile.
+
+- **`check_new_payee`** — Sending a lot of money to someone you've never transacted with
+- **`check_dormant_reactivation`** — Account was dead for 6 months, suddenly active with big amounts
+- **`check_frequency_shift`** — Normally 2 txns/week, suddenly 30 in one day
+
+### 3b. "Is the network suspicious?" → `graph.py`
+
+The most powerful signals. Individual transactions look clean, but the *network*
+reveals the scheme.
+
+- **`check_fan_in`** — Many accounts sending to one "collector" account (mule aggregation)
+- **`check_fan_out`** — One account distributing to many recipients (mule payout)
+- **`check_mule_chain`** — Money hops A→B→C within minutes (laundering chain)
+- **`check_circular_flow`** — Money loops back to where it started (wash trading)
+
+## How Alarms Combine
+
+Each alarm says HIGH (3 pts), MEDIUM (1 pt), or LOW (0 pts).
+But not all alarms are equal:
+
+| Alarm type | Weight | Why |
 |---|---|---|
-| `check_velocity` | avg gap < 60s | avg gap < 300s |
-| `check_temporal_pattern` | — | hour in [0, 5) |
-| `check_card_testing` | 3+ micro-txns → large | 1–2 micro-txns → large |
+| Off-hours | 0.5× | Lots of innocent reasons to transact at night |
+| Standard signals | 1.0× | Baseline |
+| Drain / card testing | 1.5× | Strong behavioral indicators |
+| **Graph patterns** | **2.0×** | **Hardest to fake, most indicative of organized fraud** |
 
-### Amount Signals (`amount.py`)
+### Auto-Pilot Decisions
 
-| Tool | HIGH | MEDIUM |
+Some combinations are so clear that we skip the LLM entirely:
+
+**Always fraud** (combo triggered):
+- Burst + Balance drain (account being emptied fast)
+- New payee + Suspicious amount (sending a weird amount to a stranger)
+- Mule chain + Structuring (laundering + hiding from reporting)
+
+**Depends on how much money is involved**:
+
+| Amount | "Clearly legit" if score ≤ | "Clearly fraud" if score ≥ |
 |---|---|---|
-| `check_amount_anomaly` | > avg+3σ; round >€1k | within €200 of reporting limit |
-| `check_balance_drain` | drains > 90% balance | drains > 70% balance |
-| `check_first_large` | > 5× max_amount | > 3× max_amount |
+| > €10,000 | 0 (almost nothing is safe) | 4 |
+| €1k–€10k | 1 | 5 |
+| €100–€1k | 1 | 6 |
+| < €100 | 2 (most things are fine) | 8 (need overwhelming evidence) |
 
-### Behavioral Signals (`behavioral.py`)
-
-| Tool | HIGH | MEDIUM |
-|---|---|---|
-| `check_new_payee` | new receiver + amount >€1k | new receiver + amount >€200 |
-| `check_dormant_reactivation` | >180 days silent + large | >90 days silent |
-| `check_frequency_shift` | rate >10× baseline | rate >5× baseline |
-
-### Graph Flow Signals (`graph.py`)
-
-| Tool | HIGH | MEDIUM |
-|---|---|---|
-| `check_fan_in` | receiver in_degree > 10 | > 5 |
-| `check_fan_out` | sender out_degree > 10 (24h) | > 5 |
-| `check_mule_chain` | ≥70% forwarded in 30min | ≥50% in 2h |
-| `check_circular_flow` | path back to sender ≤3 hops | — |
-
-## Composite Risk (`__init__.py`)
-
-```
-compute_composite_risk(results: [(tool_name, RiskResult)], amount: float) → CompositeResult
-```
-
-### Weighted Scoring
-
-| Category | Weight | Rationale |
-|---|---|---|
-| Temporal | 0.5× | Weak alone — legitimate users travel, work late |
-| Standard | 1.0× | Baseline signals |
-| Drain/testing | 1.5× | Strong behavioral indicators |
-| Graph flow | 2.0× | Hardest to fake, most indicative of organized fraud |
-
-### Always-Flag Combos
-
-| Combo | Tools (all must be HIGH) |
-|---|---|
-| BURST + BALANCE_DRAIN | `check_velocity` + `check_balance_drain` |
-| NEW_PAYEE + AMOUNT_ANOMALY | `check_new_payee` + `check_amount_anomaly` |
-| MULE_CHAIN + STRUCTURING | `check_mule_chain` + `check_amount_anomaly` |
-
-### Amount-Aware Triage
-
-| Amount | Auto-legit ≤ | Auto-fraud ≥ | Rationale |
-|---|---|---|---|
-| > €10,000 | 0 | 4 | False negative cost is huge |
-| €1k–€10k | 1 | 5 | Moderate caution |
-| €100–€1k | 1 | 6 | Standard |
-| < €100 | 2 | 8 | False positive cost outweighs fraud value |
+Everything in between → ambiguous → goes to the LLM specialists.

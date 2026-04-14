@@ -1,37 +1,41 @@
-# config/ — Environment & Observability
+# config/ — The Control Panel
 
-## Modules
+Everything you need to configure before running the pipeline. API keys, model
+choices, and observability setup.
 
-### `env.py` — Environment Variables
+## What Lives Here
 
-Loads `.env` and exposes typed constants:
+### Environment (`env.py`)
 
-```python
-OPENROUTER_API_KEY: str    # LLM API access (non-refillable budget)
-LANGFUSE_PUBLIC_KEY: str   # Tracing (mandatory for submission)
-LANGFUSE_SECRET_KEY: str
-LANGFUSE_HOST: str
-TEAM_NAME: str             # Used in session IDs and output metadata
-```
+Loads your `.env` file and exposes typed constants:
 
-### `models.py` — Model Configuration
+- **`OPENROUTER_API_KEY`** — Your token budget. $40 for datasets 1-3, $120 for 4-5.
+  Non-refillable. Treat it like cash.
+- **`LANGFUSE_*`** keys — Mandatory tracing. Every submission needs a session ID,
+  and Langfuse records every LLM call for the judges.
+- **`TEAM_NAME`** — Used in session IDs and output metadata.
 
-Centralized model selection so switching models is a one-line change:
+### Model Selection (`models.py`)
 
-```python
-SPECIALIST_MODEL: str      # cheap model for Layer 2 (e.g. "gpt-4o-mini")
-AGGREGATOR_MODEL: str      # capable model for Layer 3 (e.g. "gpt-4o")
-TEMPERATURE: float         # 0.0 for deterministic fraud detection
-MAX_TOKENS_SPECIALIST: int # ~300 per call
-MAX_TOKENS_AGGREGATOR: int # ~800 per call
-```
+Two models, two roles:
 
-### `langfuse.py` — Tracing & Session Management
+- **`SPECIALIST_MODEL`** — The cheap workhorse. Runs 3× per ambiguous transaction.
+  Default: `gpt-4o-mini`. Pick for speed and cost.
+- **`AGGREGATOR_MODEL`** — The careful judge. Runs 1× per ambiguous transaction.
+  Default: `gpt-4o`. Pick for accuracy on the final verdict.
 
-```python
-init_langfuse() → LangfuseClient
-generate_session_id() → str   # required in every submission
-trace_call(session_id, node_name, input, output, tokens_used)
-```
+Also configures temperature (0.0 — we want deterministic, not creative) and
+max tokens per call.
 
-Session ID format: `{TEAM_NAME}-{dataset_name}-{timestamp}`
+Changing models is a one-line edit here. Nothing else in the codebase knows
+or cares which specific model is running.
+
+### Tracing (`langfuse.py`)
+
+Langfuse records every LLM call: what went in, what came out, how many tokens,
+how long it took. This is mandatory for the competition (judges review traces).
+
+- `init_langfuse()` — creates the client
+- `generate_session_id()` — format: `{team}-{dataset}-{timestamp}`
+
+Session IDs are generated client-side, so they work even if Langfuse is down.
