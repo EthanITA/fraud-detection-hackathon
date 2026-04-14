@@ -10,6 +10,7 @@ from langchain_openai import ChatOpenAI
 from pydantic import BaseModel
 
 from config import OPENROUTER_API_KEY
+from config.tracing import get_langfuse_callback
 from config.models import MAX_TOKENS_SPECIALIST, SPECIALIST_MODEL, TEMPERATURE
 from data import get_account_context
 from prompts import (
@@ -59,6 +60,7 @@ _llm = ChatOpenAI(
     api_key=OPENROUTER_API_KEY,
     temperature=TEMPERATURE,
     max_tokens=MAX_TOKENS_SPECIALIST,
+    model_kwargs={"response_format": {"type": "json_object"}},
 )
 
 
@@ -110,7 +112,9 @@ def _build_specialist_context(specialist_name: str, state: dict, txn: dict) -> d
 
 
 # %% _call_specialist
-def _call_specialist(name: str, context: dict) -> SpecialistOutput | None:
+def _call_specialist(
+    name: str, context: dict, session_id: str | None = None
+) -> SpecialistOutput | None:
     """Single LLM call for one specialist on one transaction."""
     rule_results = context["rule_results"]
     system = _PROMPTS[name].format(rule_results=rule_results)
@@ -119,8 +123,14 @@ def _call_specialist(name: str, context: dict) -> SpecialistOutput | None:
         SystemMessage(content=system),
         HumanMessage(content=json.dumps(user_data, default=str)),
     ]
+    invoke_config = {}
+    if session_id:
+        invoke_config = {
+            "callbacks": [get_langfuse_callback()],
+            "metadata": {"langfuse_session_id": session_id},
+        }
     try:
-        response = _llm.invoke(messages)
+        response = _llm.invoke(messages, config=invoke_config)
         data = extract_json(response.content)
         if "error" in data:
             _log.warning(f"{name}: LLM returned unparseable output")
@@ -136,6 +146,7 @@ def _run_specialist(name: str, state: dict) -> dict:
     """Shared logic for all 4 specialists — loop over ambiguous txns."""
     results: dict[str, dict] = {}
     txn_by_id = {t["id"]: t for t in state.get("transactions", [])}
+    session_id = state.get("session_id")
 
     for txn_id, _priority in state.get("ambiguous_prioritized", []):
         txn = txn_by_id.get(txn_id)
@@ -143,13 +154,13 @@ def _run_specialist(name: str, state: dict) -> dict:
             continue
 
         context = _build_specialist_context(name, state, txn)
-        output = _call_specialist(name, context)
+        output = _call_specialist(name, context, session_id)
 
         # Retry once for high-value txns (>€1k)
         if output is None and txn["amount"] > 1000:
             _log.info(f"{name}: retrying high-value txn {txn_id} (€{txn['amount']})")
             context = _build_specialist_context(name, state, txn)
-            output = _call_specialist(name, context)
+            output = _call_specialist(name, context, session_id)
 
         if output is not None:
             results[txn_id] = {

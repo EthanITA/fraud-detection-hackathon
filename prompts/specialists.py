@@ -28,7 +28,7 @@ CONFIDENCE CALIBRATION:
 - 0.5 = ambiguous — could go either way
 - 0.3 = weak signal, probably legitimate but something feels off
 
-Respond with ONLY this JSON (no markdown, no commentary):
+CRITICAL: Output ONLY the JSON object below. No reasoning, no preamble, no markdown fences. Start your response with {{ and end with }}.
 {{"risk_level": "high"|"medium"|"low", "confidence": 0.0-1.0, "patterns_detected": [...], "reasoning": "..."}}
 """
 
@@ -60,7 +60,7 @@ CONFIDENCE CALIBRATION:
 - 0.5 = amount is unusual but could be a one-off legitimate expense
 - 0.3 = slightly unusual, probably fine
 
-Respond with ONLY this JSON (no markdown, no commentary):
+CRITICAL: Output ONLY the JSON object below. No reasoning, no preamble, no markdown fences. Start your response with {{ and end with }}.
 {{"risk_level": "high"|"medium"|"low", "confidence": 0.0-1.0, "patterns_detected": [...], "reasoning": "..."}}
 """
 
@@ -96,7 +96,7 @@ CONFIDENCE CALIBRATION:
 - 0.5 = behavior is unusual but could reflect a life change (new job, moving)
 - 0.3 = mild deviation from baseline, likely normal variation
 
-Respond with ONLY this JSON (no markdown, no commentary):
+CRITICAL: Output ONLY the JSON object below. No reasoning, no preamble, no markdown fences. Start your response with {{ and end with }}.
 {{"risk_level": "high"|"medium"|"low", "confidence": 0.0-1.0, "patterns_detected": [...], "reasoning": "..."}}
 """
 
@@ -126,6 +126,6 @@ CONFIDENCE CALIBRATION:
 - 0.5 = unusual relationship but could be a new business partner
 - 0.3 = slightly unusual counterparty, probably legitimate
 
-Respond with ONLY this JSON (no markdown, no commentary):
+CRITICAL: Output ONLY the JSON object below. No reasoning, no preamble, no markdown fences. Start your response with {{ and end with }}.
 {{"risk_level": "high"|"medium"|"low", "confidence": 0.0-1.0, "patterns_detected": [...], "reasoning": "..."}}
 """

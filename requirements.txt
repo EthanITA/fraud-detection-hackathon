@@ -4,4 +4,5 @@ langchain-core>=0.3
 langchain-openai>=1.0
 langgraph>=0.4
 python-dotenv>=1.0
-langfuse>=2.0
+langfuse>=3,<4
+ulid-py

@@ -41,6 +41,6 @@ CONFIDENCE CALIBRATION:
 - 0.60 = moderate — more likely fraud than not, but uncertain
 - 0.40 = low — slightly suspicious, probably legitimate
 
-Respond with ONLY this JSON (no markdown, no commentary):
+CRITICAL: Output ONLY the JSON object below. No reasoning, no preamble, no markdown fences. Start your response with {{ and end with }}.
 {{"is_fraud": true|false, "confidence": 0.0-1.0, "reasoning": "..."}}
 """

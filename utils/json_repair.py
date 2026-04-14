@@ -34,7 +34,22 @@ def extract_json(raw: str) -> dict:
     except (json.JSONDecodeError, TypeError):
         pass
 
-    # 3. regex outermost braces
+    # 3. regex: find all {...} candidates, prefer ones with expected keys
+    expected_keys = {"risk_level", "is_fraud", "confidence", "reasoning"}
+    candidates = []
+    for match in re.finditer(r"\{[^{}]*}", raw, re.DOTALL):
+        try:
+            obj = json.loads(match.group())
+            if isinstance(obj, dict):
+                overlap = len(set(obj.keys()) & expected_keys)
+                candidates.append((overlap, obj))
+        except (json.JSONDecodeError, TypeError):
+            pass
+    if candidates:
+        candidates.sort(key=lambda x: x[0], reverse=True)
+        return candidates[0][1]
+
+    # 3b. fallback: outermost braces (may contain nested objects)
     match = re.search(r"\{.*}", raw, re.DOTALL)
     if match:
         try:

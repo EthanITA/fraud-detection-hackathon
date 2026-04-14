@@ -5,7 +5,6 @@ from .env import (
     OPENROUTER_API_KEY,
     TEAM_NAME,
 )
-from .langfuse import generate_session_id, get_langfuse_callback
 from .models import (
     AGGREGATOR_MODEL,
     COST_PER_1K_TOKENS,
@@ -14,3 +13,4 @@ from .models import (
     SPECIALIST_MODEL,
     TEMPERATURE,
 )
+from .tracing import generate_session_id, get_langfuse_callback, langfuse_client

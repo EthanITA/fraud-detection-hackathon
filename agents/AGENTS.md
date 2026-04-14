@@ -79,19 +79,19 @@ needs from the full pipeline state — nothing more.
 
 **Velocity Specialist** — *"How does the timing feel?"*
 - Patterns: BURST, UNUSUAL_HOURS, CARD_TESTING, FREQUENCY_SHIFT, RAPID_ROUND_TRIP
-- Model: gpt-4o-mini (~300 tokens)
+- Model: configurable via `config/models.py` (~512 tokens)
 
 **Amount Specialist** — *"Does the money make sense?"*
 - Patterns: STATISTICAL_OUTLIER, ROUND_NUMBER, THRESHOLD_EVASION, STRUCTURING, BALANCE_DRAIN, FIRST_LARGE
-- Model: gpt-4o-mini (~300 tokens)
+- Model: configurable via `config/models.py` (~512 tokens)
 
 **Behavioral Specialist** — *"Has the account's behavior changed?"*
 - Patterns: NEW_PAYEE, DORMANT_REACTIVATION, FREQUENCY_SHIFT
-- Model: gpt-4o-mini (~300 tokens)
+- Model: configurable via `config/models.py` (~512 tokens)
 
 **Relationship Specialist** — *"Who is this money going to?"*
 - Patterns: MULE_CHAIN, FAN_IN, FAN_OUT, CIRCULAR_FLOW
-- Model: gpt-4o-mini (~300 tokens)
+- Model: configurable via `config/models.py` (~512 tokens)
 
 ### Why They Get Layer 1 Results
 
@@ -124,12 +124,14 @@ Each specialist node returns a dict that the `_merge_dicts` reducer merges:
 
 Belt and suspenders — three layers ensure we always get valid JSON:
 
-1. **API level**: `response_format: {"type": "json_object"}` on the OpenRouter
-   request forces the model to produce valid JSON.
+1. **API level**: `response_format: {"type": "json_object"}` on the LLM request
+   forces the model to produce valid JSON (suppresses chain-of-thought on
+   reasoning models like Nemotron).
 2. **Schema level**: Pydantic models (`SpecialistOutput`, `AggregatorOutput`)
-   with LangChain's `with_structured_output()` validate the shape.
-3. **Fallback**: `utils.extract_json()` as a last-resort parser if the above
-   layers fail (e.g., model wraps JSON in markdown).
+   validate the shape after parsing.
+3. **Fallback**: `utils.extract_json()` as a last-resort parser — prefers JSON
+   objects containing expected keys (`risk_level`, `is_fraud`, `confidence`) over
+   random JSON fragments that may appear in reasoning text.
 
 ### Pydantic Models
 
@@ -209,13 +211,13 @@ and can reason about cross-domain correlations.
 
 ## Token Budget Per Call
 
-| What | Tokens/call | Model | Cost/call |
+| What | Max tokens | Model | Cost/call |
 |---|---|---|---|
-| Specialist (×4) | ~300 each | gpt-4o-mini | ~$0.004 |
-| Aggregator (×1) | ~800 | gpt-4o | ~$0.020 |
-| **Per ambiguous txn** | **~2,000** | | **~$0.036** |
+| Specialist (×4) | 512 each | configurable | depends on provider |
+| Aggregator (×1) | 512 | configurable | depends on provider |
+| **Per ambiguous txn** | **~3,072** | | **varies** |
 
-For ~500 ambiguous txns across datasets 1-3: **~$18** (within $40 budget).
+With local Ollama (`gemma4:31b-cloud`): $0.00 per call.
 All costs tracked via `BudgetTracker` in pipeline state.
 
 ## Implementation Status
@@ -228,10 +230,10 @@ All costs tracked via `BudgetTracker` in pipeline state.
 | `Verdict` TypedDict | Done |
 | `_format_rule_results()` | Done |
 | `_build_specialist_context()` | Done |
-| `run_velocity_specialist(state)` | **Stub** |
-| `run_amount_specialist(state)` | **Stub** |
-| `run_behavioral_specialist(state)` | **Stub** |
-| `run_relationship_specialist(state)` | **Stub** |
-| `run_aggregator(state)` | **Stub** |
+| `run_velocity_specialist(state)` | Done |
+| `run_amount_specialist(state)` | Done |
+| `run_behavioral_specialist(state)` | Done |
+| `run_relationship_specialist(state)` | Done |
+| `run_aggregator(state)` | Done |
 | Prompt templates | Done (in `prompts/`) |
 | LangGraph wiring | Done (in `pipeline/graph.py`) |

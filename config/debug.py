@@ -31,5 +31,5 @@ print(f"Temperature: {TEMPERATURE}")
 # %% session ID
 from config import generate_session_id
 
-session = generate_session_id("dataset-1")
+session = generate_session_id()
 print(f"Session ID: {session}")

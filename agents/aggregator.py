@@ -10,6 +10,7 @@ from langchain_openai import ChatOpenAI
 from pydantic import BaseModel
 
 from config import OPENROUTER_API_KEY
+from config.tracing import get_langfuse_callback
 from config.models import AGGREGATOR_MODEL, MAX_TOKENS_AGGREGATOR, TEMPERATURE
 from prompts import AGGREGATOR_PROMPT
 from rules._types import RiskResult
@@ -42,6 +43,7 @@ _llm = ChatOpenAI(
     api_key=OPENROUTER_API_KEY,
     temperature=TEMPERATURE,
     max_tokens=MAX_TOKENS_AGGREGATOR,
+    model_kwargs={"response_format": {"type": "json_object"}},
 )
 
 
@@ -78,6 +80,7 @@ def run_aggregator(state: dict) -> dict:
     verdicts: dict[str, Verdict] = {}
     txn_by_id = {t["id"]: t for t in state.get("transactions", [])}
     specialist_results = state.get("specialist_results", {})
+    session_id = state.get("session_id")
 
     for txn_id, sp_results in specialist_results.items():
         txn = txn_by_id.get(txn_id)
@@ -100,12 +103,12 @@ def run_aggregator(state: dict) -> dict:
             HumanMessage(content=user_content),
         ]
 
-        output = _call_aggregator(messages)
+        output = _call_aggregator(messages, session_id)
 
         # Retry once for high-value txns
         if output is None and txn["amount"] > 1000:
             _log.info(f"aggregator: retrying high-value txn {txn_id} (€{txn['amount']})")
-            output = _call_aggregator(messages)
+            output = _call_aggregator(messages, session_id)
 
         if output is not None:
             verdicts[txn_id] = {
@@ -121,10 +124,18 @@ def run_aggregator(state: dict) -> dict:
 
 
 # %% _call_aggregator
-def _call_aggregator(messages: list) -> AggregatorOutput | None:
+def _call_aggregator(
+    messages: list, session_id: str | None = None
+) -> AggregatorOutput | None:
     """Single LLM call for the aggregator."""
+    invoke_config = {}
+    if session_id:
+        invoke_config = {
+            "callbacks": [get_langfuse_callback()],
+            "metadata": {"langfuse_session_id": session_id},
+        }
     try:
-        response = _llm.invoke(messages)
+        response = _llm.invoke(messages, config=invoke_config)
         data = extract_json(response.content)
         if "error" in data:
             _log.warning("aggregator: LLM returned unparseable output")

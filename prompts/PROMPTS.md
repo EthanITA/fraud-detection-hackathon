@@ -11,7 +11,8 @@ without rewiring the factory.
 
 ### Specialist Prompts (`specialists.py`)
 
-Three constants: `VELOCITY_PROMPT`, `AMOUNT_PROMPT`, `RELATIONSHIP_PROMPT`.
+Four constants: `VELOCITY_PROMPT`, `AMOUNT_PROMPT`, `BEHAVIORAL_PROMPT`,
+`RELATIONSHIP_PROMPT`.
 
 Each prompt follows the same structure:
 
@@ -40,9 +41,15 @@ This is the most important prompt in the system. It includes:
 
 ## Prompt Engineering Tips for the Hackathon
 
-- **Be explicit about the output schema.** LLMs return better JSON when you show
-  them the exact shape with example values.
+- **Enforce JSON at two levels.** The prompt says "CRITICAL: Output ONLY the
+  JSON object" and the LLM client sets `response_format: {"type": "json_object"}`.
+  Both are needed — some models (e.g., Nemotron reasoning models) ignore prompt
+  instructions but obey API-level format constraints.
 - **Include the rule results in the prompt.** This grounds the LLM — it doesn't
   hallucinate patterns that the deterministic checks already disproved.
 - **Calibrate confidence with examples.** "0.9 = account emptied at 3am to a new
   mule account" vs "0.3 = slightly high amount to a known payee."
+- **Watch token budgets on reasoning models.** Models like Nemotron spend most of
+  their token budget on chain-of-thought before producing output. The
+  `response_format` constraint suppresses this; `max_tokens: 512` provides
+  headroom.

@@ -29,27 +29,32 @@ local dev can work without tracing.
 
 Two models, two roles:
 
-- **`SPECIALIST_MODEL`** — The cheap workhorse. Runs 3x per ambiguous
-  transaction. Default: `gpt-4o-mini`. Pick for speed and cost.
-- **`AGGREGATOR_MODEL`** — The careful judge. Runs 1x per ambiguous
-  transaction. Default: `gpt-4o`. Pick for accuracy on the final verdict.
+- **`SPECIALIST_MODEL`** — The workhorse. Runs 4× per ambiguous transaction
+  (velocity, amount, behavioral, relationship). Default: `gemma4:31b-cloud`.
+- **`AGGREGATOR_MODEL`** — The careful judge. Runs 1× per ambiguous
+  transaction. Default: `gemma4:31b-cloud`.
 
-Also configures `TEMPERATURE` (0.0 — deterministic, not creative) and max
-tokens per call.
+Also configures `TEMPERATURE` (0.0 — deterministic) and max tokens per call
+(512 for both — enough headroom for reasoning models).
+
+**`LLM_BASE_URL`** — Centralized provider endpoint. Switch between local Ollama
+(`http://localhost:11434/v1`) and OpenRouter (`https://openrouter.ai/api/v1`)
+by uncommenting one line. Both are OpenAI-compatible APIs.
 
 **`COST_PER_1K_TOKENS`** centralizes $/1k-token rates for every model we use.
 `utils/budget.py` reads from here — so swapping a model automatically updates
 cost estimates across the pipeline. No duplicate rate tables to keep in sync.
 
-### Tracing (`langfuse.py`)
+### Tracing (`tracing.py`)
 
 Langfuse records every LLM call: what went in, what came out, how many tokens,
 how long it took. This is mandatory for the competition (judges review traces).
 
-- `get_langfuse_callback(session_id)` — returns a LangGraph-compatible callback
-  handler. Wire it into the graph's `config["callbacks"]` and every node gets
-  traced automatically — no manual instrumentation per agent.
-- `generate_session_id(dataset_name)` — format: `{team}-{dataset}-{timestamp}`.
+- `langfuse_client` — singleton Langfuse client for flushing traces on exit.
+- `get_langfuse_callback()` — returns a LangChain-compatible callback handler.
+  In Langfuse v3, credentials are read from env vars automatically. Session ID
+  is passed via LangChain `config.metadata`, not the handler constructor.
+- `generate_session_id()` — format: `{team}-{ULID}` (matches hackathon spec).
   Generated client-side, so it works even if Langfuse is down.
 
 ### `__init__.py`
