@@ -28,18 +28,24 @@
 
 ---
 
-## Architecture: 4-Layer Triage Funnel
+## Architecture: 5-Layer Triage Funnel
 
 The key insight: most transactions are obviously legit. Cheap filters first,
 expensive LLM calls only for the ambiguous middle.
 
 ```
-RAW TRANSACTIONS (100%)
+RAW DATASET (directory)
         │
         ▼
 ┌─────────────────────────────────┐
-│  Layer 0: Data Ingestion        │  $0 — parse, profiles, graph
-│  data/                          │  Minimal contract + passthrough
+│  Layer 0: Data Ingestion        │  $0 — parse transactions + citizen data
+│  data/                          │  profiles, graph, users, locations, status, personas
+└────────────┬────────────────────┘
+             │
+             ▼
+┌─────────────────────────────────┐
+│  Layer 0.5: Citizen Pre-Analysis│  ~1 LLM call per citizen (cached)
+│  agents/citizen_analyst.py      │  Contradictions, vulnerability, expected behavior
 └────────────┬────────────────────┘
              │
              ▼
@@ -64,6 +70,9 @@ RAW TRANSACTIONS (100%)
              │
       output.txt + debug.json
 ```
+
+All LLM calls are cached locally (`.llm_cache/`) — re-runs with identical
+inputs skip the LLM entirely.
 
 ---
 
@@ -100,21 +109,23 @@ reply-hackathon/
 │   ├── specialists.py        # VELOCITY_PROMPT, AMOUNT_PROMPT, BEHAVIORAL_PROMPT, RELATIONSHIP_PROMPT, GEOGRAPHIC_PROMPT
 │   └── aggregator.py         # AGGREGATOR_PROMPT
 │
-├── agents/                  # Layers 2+3 — LLM specialists + aggregator (implemented)
+├── agents/                  # Layers 0.5+2+3 — citizen analyst + specialists + aggregator
 │   ├── AGENTS.md
-│   ├── specialists.py        # 5 specialist nodes + Pydantic SpecialistOutput
-│   └── aggregator.py         # Aggregator node + Pydantic AggregatorOutput
+│   ├── citizen_analyst.py    # Layer 0.5: LLM pre-analysis of citizen risk profiles
+│   ├── specialists.py        # Layer 2: 5 specialist nodes + Pydantic SpecialistOutput
+│   └── aggregator.py         # Layer 3: aggregator node + Pydantic AggregatorOutput
 │
 ├── pipeline/                # LangGraph state machine (implemented)
 │   ├── PIPELINE.md
 │   ├── state.py              # PipelineState with budget + priority + debug output
 │   ├── dispatch.py           # Tool context routing for 14 rule tools
-│   ├── nodes.py              # All node functions (ingest → triage → specialists → aggregate → output)
+│   ├── nodes.py              # All node functions (ingest → analyze_citizens → triage → specialists → aggregate → output)
 │   └── graph.py              # StateGraph wiring with Send API fan-out
 │
 ├── utils/                   # Cross-cutting helpers
 │   ├── UTILS.md
 │   ├── json_repair.py        # Fallback JSON parser (structured output is primary)
+│   ├── llm_cache.py          # Local LLM inference cache (SHA-256 key, JSON file store)
 │   ├── budget.py             # BudgetTracker with panic mode at 15%
 │   └── logging.py            # Structured logger
 │
@@ -317,15 +328,18 @@ Toggle `LLM_BASE_URL` in `config/models.py` between local and remote.
 ## Pre-Challenge Checklist
 
 - [x] Modular architecture: 8 packages with clean boundaries
-- [x] LangGraph pipeline with Send API fan-out
+- [x] LangGraph pipeline with Send API fan-out (11 nodes)
 - [x] 14 rule tools with ~35 configurable thresholds
-- [x] 5 specialist prompts + aggregator prompt
+- [x] 5 specialist prompts + aggregator prompt + citizen analysis prompt
 - [x] Budget tracking with panic mode
 - [x] Structured output enforcement (Pydantic + response_format)
 - [x] Data layer fully implemented (ingest + profiles + graph + citizens)
-- [x] Rule tool bodies implemented (all 14)
+- [x] Multi-modal citizen data ingestion (users, locations, status, personas)
+- [x] Citizen pre-analysis agent (Layer 0.5) with contradiction detection
+- [x] Rule tool bodies implemented (all 14 incl. geographic)
 - [x] Specialist LLM calls wired up (all 5 + aggregator)
 - [x] Langfuse v3 tracing with ULID session IDs
-- [ ] `.env` configured with OpenRouter + Langfuse keys
-- [ ] OpenRouter connection tested
-- [ ] End-to-end test on synthetic data
+- [x] LLM inference cache (instant re-runs for unchanged inputs)
+- [x] End-to-end test on sample data via local Ollama
+- [ ] `.env` configured with challenge API keys (at start)
+- [ ] Update FIELD_MAP for actual dataset format (at start)

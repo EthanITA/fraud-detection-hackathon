@@ -25,6 +25,18 @@ Each prompt follows the same structure:
 5. **Confidence calibration** — "0.9 means you'd bet money on it. 0.5 means it
    could go either way. 0.2 means probably fine but something feels off."
 
+### Citizen Analysis Prompt (`citizen_analyst.py`)
+
+One constant: `CITIZEN_ANALYSIS_PROMPT` (defined in `agents/citizen_analyst.py`,
+not in `prompts/`, since it's tightly coupled to the analyst agent).
+
+This prompt asks the LLM to pre-screen a citizen's risk profile before any
+transaction analysis. It explicitly instructs the LLM to:
+1. Compare the persona text against actual data and flag contradictions
+2. Assess vulnerability (age, health trends, social isolation)
+3. Describe expected transaction behavior
+4. List specific risk factors as tags
+
 ### Aggregator Prompt (`aggregator.py`)
 
 One constant: `AGGREGATOR_PROMPT`.

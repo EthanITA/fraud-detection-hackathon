@@ -13,10 +13,16 @@ flowchart TD
     START([dataset_path]) --> ingest
 
     subgraph "Layer 0 — Free"
-        ingest["ingest\nparse, profile, graph"]
+        ingest["ingest\nparse, profile, graph\ncitizen data"]
     end
 
-    ingest --> run_rules
+    ingest --> analyze_citizens
+
+    subgraph "Layer 0.5 — Citizen Pre-Analysis"
+        analyze_citizens["analyze_citizens\nLLM risk profiling\nper citizen (cached)"]
+    end
+
+    analyze_citizens --> run_rules
 
     subgraph "Layer 1 — Free"
         run_rules["run_rules\n14 deterministic checks"]
@@ -64,6 +70,28 @@ the relationship graph, and load multi-modal citizen data (demographics,
 location history, health status, persona descriptions). Accepts either a
 directory path (scans for transactions + supplementary files) or a single
 file path (backward compatible).
+
+**Status**: Implemented.
+
+### Layer 0.5 — Citizen Pre-Analysis (~1 LLM call per citizen)
+LLM-powered pre-screening of each citizen's risk profile. Runs once per citizen
+before any transaction analysis. For each citizen with available data, the LLM
+receives their full profile (persona, location history, health status) and
+produces a structured assessment:
+
+- **Contradictions** — flags where data contradicts the persona (e.g., "persona
+  says homebound but location data shows Kuala Lumpur")
+- **Vulnerability level** — HIGH/MEDIUM/LOW based on age, health trends, isolation
+- **Expected behavior** — what transactions would be normal for this person
+- **Risk factors** — tagged list (elderly_vulnerable, impossible_travel_detected, etc.)
+
+Results are stored in `citizen_assessments` and passed to all specialists and the
+aggregator. This gives every downstream LLM call rich context about who the
+citizen is and what's suspicious about their data — without each specialist
+needing to reason about it from scratch.
+
+**All calls are cached** via `utils/llm_cache.py` — identical inputs produce
+instant results on re-runs.
 
 **Status**: Implemented.
 
@@ -187,7 +215,7 @@ flushed at exit in `main.py` to ensure all traces land before the process ends.
 
 | File | What it does |
 |---|---|
-| `state.py` | `PipelineState` TypedDict — the data shape flowing through the pipeline (includes citizens) |
+| `state.py` | `PipelineState` TypedDict — the data shape flowing through the pipeline (includes citizens + assessments) |
 | `dispatch.py` | Maps each rule tool to its required context keys, routes invocations |
-| `nodes.py` | All node functions: ingest, run_rules, triage, 5 specialists, aggregate, output |
+| `nodes.py` | All node functions: ingest, analyze_citizens, run_rules, triage, 5 specialists, aggregate, output |
 | `graph.py` | Wires the nodes into a LangGraph state machine with `Send` fan-out/fan-in |

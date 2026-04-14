@@ -233,6 +233,46 @@ reason about cross-domain correlations.
 With local Ollama: $0.00 per call.
 All costs tracked via `BudgetTracker` in pipeline state.
 
+## Layer 0.5 — Citizen Pre-Analysis (`citizen_analyst.py`)
+
+Before any transaction analysis, the citizen analyst runs **once per citizen**
+with available supplementary data. It receives the full citizen profile (persona,
+location history, health status, demographics) and outputs a structured
+assessment.
+
+**Input**: citizen profile (demographics + location summary + health status + persona text)
+
+**Output**:
+```python
+CitizenAssessment(
+    vulnerability_level="high",
+    contradictions=["persona says homebound but location shows Kuala Lumpur"],
+    expected_behavior="Small local purchases, pharmacy, bakery. No international.",
+    risk_factors=["elderly_vulnerable", "impossible_travel_detected"],
+    summary="95yo homebound retiree with impossible travel pings — likely compromised."
+)
+```
+
+**Why a separate pre-analysis step?** Without it, every specialist must
+independently reason about "is this transaction plausible for this person?" from
+raw data. With pre-analysis, the specialists receive a pre-computed assessment
+that surfaces the key contradictions and risk factors. This improves both quality
+(consistent citizen interpretation across all 5 specialists) and efficiency
+(citizen reasoning is done once and cached, not repeated 5× per transaction).
+
+## LLM Inference Cache
+
+All LLM calls (specialists, aggregator, citizen analyst) are cached locally
+in `.llm_cache/responses.json`. Cache key = SHA-256 of (system prompt + user
+prompt). On cache hit, the response is returned instantly (~0ms vs ~5s).
+
+This is critical for the hackathon workflow: tune thresholds in `_types.py`,
+re-run the pipeline, and only fresh inputs trigger new LLM calls. Citizen
+pre-analysis runs once ever. Specialist calls for unchanged transactions are
+free on re-run.
+
+Clear the cache by deleting `.llm_cache/responses.json`.
+
 ## Implementation Status
 
 | Component | Status |
@@ -240,14 +280,17 @@ All costs tracked via `BudgetTracker` in pipeline state.
 | `SpecialistResult` TypedDict | Done |
 | `SpecialistOutput` Pydantic model | Done |
 | `AggregatorOutput` Pydantic model | Done |
+| `CitizenAssessment` Pydantic model | Done |
 | `Verdict` TypedDict | Done |
 | `_format_rule_results()` | Done |
 | `_build_specialist_context()` | Done |
+| `run_citizen_analysis(state)` | Done |
 | `run_velocity_specialist(state)` | Done |
 | `run_amount_specialist(state)` | Done |
 | `run_behavioral_specialist(state)` | Done |
 | `run_relationship_specialist(state)` | Done |
 | `run_geographic_specialist(state)` | Done |
 | `run_aggregator(state)` | Done |
+| LLM inference cache | Done (in `utils/llm_cache.py`) |
 | Prompt templates | Done (in `prompts/`) |
 | LangGraph wiring | Done (in `pipeline/graph.py`) |

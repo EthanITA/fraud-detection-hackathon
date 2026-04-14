@@ -29,8 +29,9 @@ local dev can work without tracing.
 
 Two models, two roles:
 
-- **`SPECIALIST_MODEL`** — The workhorse. Runs 5x per ambiguous transaction
-  (velocity, amount, behavioral, relationship, geographic). Default: `gemma3:27b-cloud`.
+- **`SPECIALIST_MODEL`** — The workhorse. Used for 5 specialists per ambiguous
+  transaction (velocity, amount, behavioral, relationship, geographic) and for
+  citizen pre-analysis (once per citizen, cached). Default: `gemma3:27b-cloud`.
 - **`AGGREGATOR_MODEL`** — The careful judge. Runs 1x per ambiguous
   transaction. Default: `gemma3:27b-cloud`.
 

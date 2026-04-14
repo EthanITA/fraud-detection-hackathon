@@ -5,8 +5,9 @@ Imagine a restaurant kitchen. Before a single dish goes out, the prep cooks wash
 1. **Transactions** — the raw records, normalized to a common shape
 2. **Account profiles** — a statistical fingerprint of each account's behavior
 3. **Relationship graph** — a network of who sends money to whom
+4. **Citizen profiles** — multi-modal context from supplementary data (demographics, locations, health, personas)
 
-**Cost**: $0 — pure computation, no LLM calls.
+**Cost**: $0 — pure computation, no LLM calls. (Citizen *analysis* via LLM happens in a separate pipeline step.)
 
 ---
 
