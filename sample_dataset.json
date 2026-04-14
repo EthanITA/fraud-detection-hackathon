@@ -1,0 +1,12 @@
+[
+  {"transaction_id": "TXN-8401", "from_account": "ACC-1001", "to_account": "ACC-2001", "amount": 87.50, "timestamp": 1700000000, "balance": 3412.80},
+  {"transaction_id": "TXN-8402", "from_account": "ACC-1001", "to_account": "ACC-2002", "amount": 142.00, "timestamp": 1700003600, "balance": 3325.30},
+  {"transaction_id": "TXN-8403", "from_account": "ACC-1002", "to_account": "ACC-2003", "amount": 4999.00, "timestamp": 1700010800, "balance": 52000.00},
+  {"transaction_id": "TXN-8404", "from_account": "ACC-1003", "to_account": "ACC-2004", "amount": 320.75, "timestamp": 1700050000, "balance": 1890.40},
+  {"transaction_id": "TXN-8405", "from_account": "ACC-1003", "to_account": "ACC-2005", "amount": 310.00, "timestamp": 1700050015, "balance": 1569.65},
+  {"transaction_id": "TXN-8406", "from_account": "ACC-1003", "to_account": "ACC-2006", "amount": 290.50, "timestamp": 1700050045, "balance": 1259.65},
+  {"transaction_id": "TXN-8407", "from_account": "ACC-1004", "to_account": "ACC-2007", "amount": 14200.00, "timestamp": 1700086400, "balance": 15000.00},
+  {"transaction_id": "TXN-8408", "from_account": "ACC-1005", "to_account": "ACC-2008", "amount": 5.99, "timestamp": 1700100000, "balance": 420.00},
+  {"transaction_id": "TXN-8409", "from_account": "ACC-1006", "to_account": "ACC-2008", "amount": 2750.00, "timestamp": 1700100300, "balance": 9800.00},
+  {"transaction_id": "TXN-8410", "from_account": "ACC-1007", "to_account": "ACC-2008", "amount": 1800.00, "timestamp": 1700100600, "balance": 7200.00}
+]
