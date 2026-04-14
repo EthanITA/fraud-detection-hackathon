@@ -77,3 +77,60 @@ Some combinations are so clear that we skip the LLM entirely:
 | < €100 | 2 (most things are fine) | 8 (need overwhelming evidence) |
 
 Everything in between → ambiguous → goes to the LLM specialists.
+
+## Threshold Tuning Guide
+
+Every magic number in the rules lives in one place: `_types.py`. On hackathon day,
+open that file, look at the data distribution, adjust the numbers. No other file
+needs to change — every tool reads its thresholds from there.
+
+### Time thresholds
+
+| Constant | Default | Controls | Used by |
+|---|---|---|---|
+| `VELOCITY_HIGH_GAP` | 60 | Avg gap (seconds) between recent txns → HIGH | `check_velocity` |
+| `VELOCITY_MEDIUM_GAP` | 300 | Avg gap (seconds) → MEDIUM | `check_velocity` |
+| `OFF_HOURS_START` | 0 | Start of suspicious window (UTC hour) | `check_temporal_pattern` |
+| `OFF_HOURS_END` | 5 | End of suspicious window (UTC hour) | `check_temporal_pattern` |
+| `CARD_TEST_MICRO_LIMIT` | 10 | Max amount (€) to count as a "micro" test txn | `check_card_testing` |
+| `CARD_TEST_LARGE_LIMIT` | 500 | Min amount (€) for the "real" txn after tests | `check_card_testing` |
+| `CARD_TEST_WINDOW` | 300 | Lookback window (seconds) for micro-txns | `check_card_testing` |
+| `CARD_TEST_HIGH_COUNT` | 3 | Micro-txn count in window → HIGH | `check_card_testing` |
+
+### Amount thresholds
+
+| Constant | Default | Controls | Used by |
+|---|---|---|---|
+| `OUTLIER_SIGMA` | 3 | Standard deviations above mean → HIGH | `check_amount_anomaly` |
+| `ROUND_NUMBER_MIN` | 1000 | Min round amount (€) that looks suspicious | `check_amount_anomaly` |
+| `STRUCTURING_PROXIMITY` | 200 | € below a reporting limit to flag as structuring | `check_amount_anomaly` |
+| `DRAIN_HIGH` | 0.9 | Balance fraction drained → HIGH | `check_balance_drain` |
+| `DRAIN_MEDIUM` | 0.7 | Balance fraction drained → MEDIUM | `check_balance_drain` |
+| `FIRST_LARGE_HIGH` | 5 | Multiple of max historical amount → HIGH | `check_first_large` |
+| `FIRST_LARGE_MEDIUM` | 3 | Multiple of max historical amount → MEDIUM | `check_first_large` |
+| `FIRST_LARGE_MIN_TXNS` | 5 | Min historical txns before HIGH can trigger | `check_first_large` |
+
+### Behavioral thresholds
+
+| Constant | Default | Controls | Used by |
+|---|---|---|---|
+| `NEW_PAYEE_HIGH_AMOUNT` | 1000 | Amount (€) to unknown payee → HIGH | `check_new_payee` |
+| `NEW_PAYEE_MEDIUM_AMOUNT` | 200 | Amount (€) to unknown payee → MEDIUM | `check_new_payee` |
+| `DORMANT_HIGH_DAYS` | 180 | Days inactive → HIGH (if amount > avg) | `check_dormant_reactivation` |
+| `DORMANT_MEDIUM_DAYS` | 90 | Days inactive → MEDIUM | `check_dormant_reactivation` |
+| `FREQUENCY_SHIFT_HIGH` | 10 | Rate multiplier vs. baseline → HIGH | `check_frequency_shift` |
+| `FREQUENCY_SHIFT_MEDIUM` | 5 | Rate multiplier vs. baseline → MEDIUM | `check_frequency_shift` |
+
+### Graph thresholds
+
+| Constant | Default | Controls | Used by |
+|---|---|---|---|
+| `FAN_IN_HIGH` | 10 | In-degree (distinct senders) → HIGH | `check_fan_in` |
+| `FAN_IN_MEDIUM` | 5 | In-degree → MEDIUM | `check_fan_in` |
+| `FAN_OUT_HIGH` | 10 | Out-degree (distinct receivers in 24h) → HIGH | `check_fan_out` |
+| `FAN_OUT_MEDIUM` | 5 | Out-degree → MEDIUM | `check_fan_out` |
+| `MULE_FORWARD_HIGH` | 0.7 | Fraction of received amount forwarded → HIGH | `check_mule_chain` |
+| `MULE_FORWARD_MEDIUM` | 0.5 | Fraction forwarded → MEDIUM | `check_mule_chain` |
+| `MULE_WINDOW_HIGH` | 1800 | Forward window (seconds, 30 min) → HIGH | `check_mule_chain` |
+| `MULE_WINDOW_MEDIUM` | 7200 | Forward window (seconds, 2h) → MEDIUM | `check_mule_chain` |
+| `CIRCULAR_MAX_HOPS` | 3 | Max hops to detect circular flow → HIGH | `check_circular_flow` |
