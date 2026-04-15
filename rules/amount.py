@@ -11,6 +11,8 @@ from ._types import (
     FIRST_LARGE_HIGH,
     FIRST_LARGE_MEDIUM,
     FIRST_LARGE_MIN_TXNS,
+    MAD_CONSISTENCY,
+    MAD_MULTIPLIER,
     OUTLIER_SIGMA,
     ROUND_NUMBER_MIN,
     STRUCTURING_PROXIMITY,
@@ -24,20 +26,28 @@ from ._types import (
 def check_amount_anomaly(txn_json: str, profile_json: str) -> str:
     """
     Detect amount-based fraud signals.
-      HIGH   — amount > avg + 3σ (statistical outlier)
-      HIGH   — round number > €1k (e.g. €5,000.00)
-      MEDIUM — amount within €200 below a reporting limit (structuring)
+      HIGH   — MAD-based outlier (modified Z-score > 3.5) or 3σ fallback
+      MEDIUM — round number ≥ €1k, or within €200 below a reporting limit
 
     txn_json:     Transaction (needs: amount)
-    profile_json: AccountProfile (needs: avg_amount, std_amount)
+    profile_json: AccountProfile (needs: avg_amount, std_amount, median_amount, mad_amount)
     """
     txn = json.loads(txn_json)
     profile = json.loads(profile_json)
     amount = txn.get("amount", 0)
     avg = profile.get("avg_amount", 0)
     std = profile.get("std_amount", 0)
+    median = profile.get("median_amount", 0)
+    mad = profile.get("mad_amount", 0)
 
-    # 1. Statistical outlier
+    # 1. MAD-based outlier (preferred — robust to skew and single-outlier masking)
+    if mad > 0:
+        modified_mad = MAD_CONSISTENCY * mad
+        z = (amount - median) / modified_mad
+        if z > MAD_MULTIPLIER:
+            return json.dumps({"risk": RiskLevel.HIGH, "reason": f"Amount {amount} is a MAD outlier (z={z:.1f}, median={median:.0f}, MAD={mad:.0f})"})
+
+    # 2. 3σ fallback (when MAD unavailable — e.g. all prior amounts identical)
     if std > 0 and amount > avg + OUTLIER_SIGMA * std:
         return json.dumps({"risk": RiskLevel.HIGH, "reason": f"Amount {amount} exceeds {OUTLIER_SIGMA}σ above mean ({avg:.0f} + {OUTLIER_SIGMA}×{std:.0f})"})
 

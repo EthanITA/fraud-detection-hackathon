@@ -71,7 +71,10 @@ ALWAYS_FLAG_COMBOS: list[tuple[str, set[str]]] = [
     ("BURST+BALANCE_DRAIN", {"check_velocity", "check_balance_drain"}),
     ("NEW_PAYEE+AMOUNT_ANOMALY", {"check_new_payee", "check_amount_anomaly"}),
     ("MULE_CHAIN+STRUCTURING", {"check_mule_chain", "check_amount_anomaly"}),
-    ("IMPOSSIBLE_TRAVEL+BALANCE_DRAIN", {"check_impossible_travel", "check_balance_drain"}),
+    (
+        "IMPOSSIBLE_TRAVEL+BALANCE_DRAIN",
+        {"check_impossible_travel", "check_balance_drain"},
+    ),
 ]
 
 # %% amount-aware triage thresholds
@@ -98,14 +101,16 @@ AMOUNT_TRIAGE: list[tuple[float, float, float]] = [
 VELOCITY_HIGH_GAP = 60  # seconds — avg gap between recent txns → HIGH
 VELOCITY_MEDIUM_GAP = 300  # seconds → MEDIUM
 OFF_HOURS_START = 0  # UTC hour — suspicious window start
-OFF_HOURS_END = 5  # UTC hour — suspicious window end
-CARD_TEST_MICRO_LIMIT = 10  # € — max amount to count as micro test txn
+OFF_HOURS_END = 7  # UTC hour — suspicious window end
+CARD_TEST_MICRO_LIMIT = 5  # € — max amount to count as micro test txn
 CARD_TEST_LARGE_LIMIT = 500  # € — min amount for the "real" txn after tests
 CARD_TEST_WINDOW = 300  # seconds — lookback for micro-txns before current
 CARD_TEST_HIGH_COUNT = 3  # micro-txns in window → HIGH (fewer → MEDIUM)
 
 # Amount
-OUTLIER_SIGMA = 3  # std devs above mean → HIGH
+OUTLIER_SIGMA = 3  # std devs above mean → HIGH (fallback when MAD unavailable)
+MAD_MULTIPLIER = 3.5  # modified Z-score threshold → HIGH
+MAD_CONSISTENCY = 1.4826  # scale factor: MAD × 1.4826 ≈ σ for normal distributions
 ROUND_NUMBER_MIN = 1_000  # € — min round amount that looks suspicious
 STRUCTURING_PROXIMITY = 200  # € below a reporting limit → structuring signal
 DRAIN_HIGH = 0.9  # balance fraction drained → HIGH

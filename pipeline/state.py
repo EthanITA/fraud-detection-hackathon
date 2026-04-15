@@ -24,7 +24,8 @@ class PipelineState(TypedDict, total=False):
     session_id: str
     budget: BudgetTracker
     transactions: list[dict]
-    profiles: dict  # account_id → AccountProfile
+    profiles: dict  # account_id → AccountProfile (full dataset, for specialists)
+    temporal_profiles: dict  # txn_id → AccountProfile (prior-only, for rules)
     graph: dict  # relationship graph
     citizens: dict  # user_id → citizen profile (demographics, location, status, persona)
     citizen_assessments: dict  # user_id → LLM pre-analysis (vulnerability, contradictions, expected behavior)

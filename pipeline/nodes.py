@@ -7,6 +7,7 @@ from data import (
     build_citizen_profiles,
     build_relationship_graph,
     compute_account_profiles,
+    compute_temporal_profiles,
     get_account_context,
     parse_dataset,
 )
@@ -36,11 +37,13 @@ def ingest(state: PipelineState) -> dict:
     dataset_path = state["dataset_path"]
     txns = parse_dataset(dataset_path)
     profiles = compute_account_profiles(txns)
+    temporal_profiles = compute_temporal_profiles(txns)
     graph = build_relationship_graph(txns)
     citizens = build_citizen_profiles(dataset_path)
     return {
         "transactions": txns,
         "profiles": profiles,
+        "temporal_profiles": temporal_profiles,
         "graph": graph,
         "citizens": citizens,
     }
@@ -56,15 +59,18 @@ def analyze_citizens(state: PipelineState) -> dict:
 def run_rules(state: PipelineState) -> dict:
     all_results = {}
 
+    temporal = state.get("temporal_profiles", {})
     for txn in state["transactions"]:
         sender_id = txn["sender_id"]
         citizen = state.get("citizens", {}).get(sender_id, {})
+        # Use temporal (prior-only) profile for rules — prevents data leak
+        profile = temporal.get(txn["id"]) or state["profiles"].get(sender_id, {})
         context = {
             "txn": json.dumps(txn),
             "history": json.dumps(
                 get_account_context(sender_id, state["transactions"])
             ),
-            "profile": json.dumps(state["profiles"].get(sender_id, {})),
+            "profile": json.dumps(profile),
             "graph": json.dumps(state["graph"]),
             "citizen": json.dumps(citizen.get("location", {})),
         }
