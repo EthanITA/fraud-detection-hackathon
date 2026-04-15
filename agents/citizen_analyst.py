@@ -106,6 +106,7 @@ def analyze_citizen(
 
     try:
         response = _llm.invoke(messages, config=invoke_config)
+        print(" done")
         cache_set(CITIZEN_ANALYSIS_PROMPT, user_data, response.content)
         data = extract_json(response.content)
         if "error" in data:
@@ -124,11 +125,14 @@ def run_citizen_analysis(state: dict) -> dict:
     session_id = state.get("session_id")
     assessments: dict[str, dict] = {}
 
+    print(f"Analyzing {len(citizens)} citizens...")
     for uid, citizen in citizens.items():
         # Skip citizens with no meaningful data
         if not citizen.get("persona") and not citizen.get("location"):
             continue
 
+        name = citizen.get("user", {}).get("first_name", uid)
+        print(f"  [{uid}] {name}...", end="", flush=True)
         output = analyze_citizen(citizen, session_id)
         if output is not None:
             assessments[uid] = {

@@ -83,10 +83,13 @@ def run_aggregator(state: dict) -> dict:
     specialist_results = state.get("specialist_results", {})
     session_id = state.get("session_id")
 
-    for txn_id, sp_results in specialist_results.items():
+    items = list(specialist_results.items())
+    print(f"[aggregator] processing {len(items)} txns")
+    for i, (txn_id, sp_results) in enumerate(items, 1):
         txn = txn_by_id.get(txn_id)
         if not txn:
             continue
+        print(f"  ({i}/{len(items)}) {txn_id} €{txn['amount']:.0f}")
 
         rule_results = _format_rule_results(
             state.get("rule_results", {}).get(txn_id, [])
@@ -145,8 +148,10 @@ def _call_aggregator(
     if cached is not None:
         data = extract_json(cached)
         if "error" not in data:
+            print("  [aggregator] cached")
             return AggregatorOutput.model_validate(data)
 
+    print("  [aggregator] calling LLM...", end="", flush=True)
     invoke_config = {}
     if session_id:
         invoke_config = {
@@ -155,6 +160,7 @@ def _call_aggregator(
         }
     try:
         response = _llm.invoke(messages, config=invoke_config)
+        print(" done")
         cache_set(system_content, user_content, response.content)
         data = extract_json(response.content)
         if "error" in data:

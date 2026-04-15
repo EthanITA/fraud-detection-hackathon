@@ -161,8 +161,10 @@ def _call_specialist(
     if cached is not None:
         data = extract_json(cached)
         if "error" not in data:
+            print(f"  [{name}] cached")
             return SpecialistOutput.model_validate(data)
 
+    print(f"  [{name}] calling LLM...", end="", flush=True)
     messages = [
         SystemMessage(content=system),
         HumanMessage(content=user_content),
@@ -175,6 +177,7 @@ def _call_specialist(
         }
     try:
         response = _llm.invoke(messages, config=invoke_config)
+        print(" done")
         cache_set(system, user_content, response.content)
         data = extract_json(response.content)
         if "error" in data:
@@ -193,11 +196,14 @@ def _run_specialist(name: str, state: dict) -> dict:
     txn_by_id = {t["id"]: t for t in state.get("transactions", [])}
     session_id = state.get("session_id")
 
-    for txn_id, _priority in state.get("ambiguous_prioritized", []):
+    ambiguous = state.get("ambiguous_prioritized", [])
+    print(f"[{name}] processing {len(ambiguous)} txns")
+    for i, (txn_id, _priority) in enumerate(ambiguous, 1):
         txn = txn_by_id.get(txn_id)
         if not txn:
             continue
 
+        print(f"  ({i}/{len(ambiguous)}) {txn_id} €{txn['amount']:.0f}")
         context = _build_specialist_context(name, state, txn)
         output = _call_specialist(name, context, session_id)
 
