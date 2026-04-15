@@ -1,0 +1,594 @@
+[
+  {
+    "txn_id": "T001",
+    "amount": 150.0,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "T002",
+    "amount": 200.0,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "T003",
+    "amount": 500.0,
+    "triage": "ambiguous",
+    "rule_summary": "check_velocity: Avg gap 30s between recent txns indicates burst activity. | check_temporal_pattern: Transaction at 2:00 UTC falls in off-hours window. | check_new_payee: New payee with moderate amount (\u20ac500.0).",
+    "priority_rank": 7,
+    "specialist_results": {
+      "velocity": {
+        "agent": "velocity",
+        "risk_level": "high",
+        "confidence": 0.8,
+        "patterns_detected": [
+          "BURST",
+          "UNUSUAL_HOURS",
+          "FREQUENCY_SHIFT"
+        ],
+        "reasoning": "The transaction history shows three transactions within 60 seconds. The current transaction and the two previous ones all occurred at 2:00-2:01 UTC, which is an unusual hour. The automated rules confirm high velocity and a medium temporal pattern. This strongly suggests a burst of activity, potentially an account being drained."
+      },
+      "amount": {
+        "agent": "amount",
+        "risk_level": "medium",
+        "confidence": 0.5,
+        "patterns_detected": [
+          "STATISTICAL_OUTLIER"
+        ],
+        "reasoning": "The transaction amount is at the upper end of the historical range, but within 2 standard deviations of the average. The account is new, and the amount is the minimum observed, which is slightly unusual. The velocity check indicates burst activity, adding to the concern, but the amount itself isn't drastically out of line."
+      },
+      "behavioral": {
+        "agent": "behavioral",
+        "risk_level": "high",
+        "confidence": 0.8,
+        "patterns_detected": [
+          "FREQUENCY_SHIFT",
+          "NEW_PAYEE"
+        ],
+        "reasoning": "The account is very new (first_seen and last_seen are almost identical) and exhibits a significant frequency shift \u2013 three transactions within 60 seconds. While the amount is within the historical range, the rapid succession of transactions to a new payee is highly suspicious. The automated rules confirm high velocity and a new payee."
+      },
+      "relationship": {
+        "agent": "relationship",
+        "risk_level": "high",
+        "confidence": 0.8,
+        "patterns_detected": [
+          "FAN_OUT",
+          "check_velocity"
+        ],
+        "reasoning": "Sender A003 has three recent transactions to new receivers (A004, A005, A006) within seconds of each other. This, combined with the high velocity signal, strongly suggests a fan-out pattern, potentially indicative of mule activity. The new payee signal also supports this assessment."
+      },
+      "geographic": {
+        "agent": "geographic",
+        "risk_level": "low",
+        "confidence": 0.3,
+        "patterns_detected": [],
+        "reasoning": "Insufficient data to determine risk. The transaction details and citizen profile are missing. A low confidence score is assigned due to the lack of information, assuming a default state of legitimacy until proven otherwise."
+      }
+    },
+    "verdict": {
+      "transaction_id": "T003",
+      "is_fraud": true,
+      "confidence": 0.85,
+      "reasoning": "Multiple specialists (Velocity, Behavioral, Relationship) assess HIGH risk with confidence > 0.8. The 'BURST' pattern is flagged by Velocity and confirmed by the rule results. The 'NEW_PAYEE' pattern is flagged by Behavioral and confirmed by the rule results. This combination strongly suggests fraudulent activity, likely a fan-out or account drain scenario."
+    },
+    "final": "fraud"
+  },
+  {
+    "txn_id": "T004",
+    "amount": 600.0,
+    "triage": "ambiguous",
+    "rule_summary": "check_velocity: Avg gap 30s between recent txns indicates burst activity. | check_temporal_pattern: Transaction at 2:00 UTC falls in off-hours window. | check_new_payee: New payee with moderate amount (\u20ac600.0).",
+    "priority_rank": 5,
+    "specialist_results": {
+      "velocity": {
+        "agent": "velocity",
+        "risk_level": "high",
+        "confidence": 0.8,
+        "patterns_detected": [
+          "BURST",
+          "UNUSUAL_HOURS",
+          "FREQUENCY_SHIFT"
+        ],
+        "reasoning": "The transaction history shows three transactions within 60 seconds. The current transaction and the first history transaction occur at the same timestamp, which is highly suspicious. The automated rules confirm high velocity and off-hours activity. This pattern strongly suggests an account takeover and rapid draining of funds."
+      },
+      "amount": {
+        "agent": "amount",
+        "risk_level": "medium",
+        "confidence": 0.5,
+        "patterns_detected": [
+          "STATISTICAL_OUTLIER"
+        ],
+        "reasoning": "The transaction amount is at the upper bound of the account's historical maximum, representing a statistical outlier. While not drastically outside the range, combined with the high velocity and new payee signals, it warrants further investigation. It's not a clear balance drain or structuring attempt."
+      },
+      "behavioral": {
+        "agent": "behavioral",
+        "risk_level": "medium",
+        "confidence": 0.7,
+        "patterns_detected": [
+          "FREQUENCY_SHIFT",
+          "NEW_PAYEE"
+        ],
+        "reasoning": "The account is very new (first seen just hours ago) and is exhibiting a significant increase in transaction frequency. While the amount is within the historical range, the rapid succession of transactions to multiple new payees is concerning. The automated rules also flagged high velocity and a new payee."
+      },
+      "relationship": {
+        "agent": "relationship",
+        "risk_level": "medium",
+        "confidence": 0.7,
+        "patterns_detected": [
+          "FAN_OUT",
+          "check_velocity"
+        ],
+        "reasoning": "Sender A003 has three recent outgoing transactions to previously unseen receivers (A004, A005, A006) within a short timeframe (30 seconds), indicated by the 'check_velocity' signal. This suggests a potential fan-out pattern, where A003 is distributing funds. While not a definitive mule chain, the burst activity and new payees raise suspicion."
+      },
+      "geographic": {
+        "agent": "geographic",
+        "risk_level": "low",
+        "confidence": 0.3,
+        "patterns_detected": [],
+        "reasoning": "Insufficient data to determine risk. The transaction details are minimal, and the citizen profile is missing. Without knowing anything about the sender, it's impossible to assess plausibility. Assuming a low risk due to lack of evidence, but this requires further investigation once citizen data is available."
+      }
+    },
+    "verdict": {
+      "transaction_id": "T004",
+      "is_fraud": true,
+      "confidence": 0.85,
+      "reasoning": "Velocity specialist flags HIGH with confidence 0.80, citing BURST and unusual hours. Behavioral and Relationship specialists also flag MEDIUM with confidence > 0.70, highlighting new payee and fan-out patterns. The combination of BURST + NEW_PAYEE + FAN_OUT strongly suggests fraudulent activity, even though the amount is not exceptionally high. The 'check_velocity' rule also confirms burst activity."
+    },
+    "final": "fraud"
+  },
+  {
+    "txn_id": "T005",
+    "amount": 550.0,
+    "triage": "ambiguous",
+    "rule_summary": "check_velocity: Avg gap 30s between recent txns indicates burst activity. | check_temporal_pattern: Transaction at 2:00 UTC falls in off-hours window. | check_new_payee: New payee with moderate amount (\u20ac550.0).",
+    "priority_rank": 6,
+    "specialist_results": {
+      "velocity": {
+        "agent": "velocity",
+        "risk_level": "high",
+        "confidence": 0.8,
+        "patterns_detected": [
+          "BURST",
+          "UNUSUAL_HOURS",
+          "FREQUENCY_SHIFT"
+        ],
+        "reasoning": "The transaction history shows three transactions within 60 seconds. The automated rules flagged high velocity and off-hours activity. This rapid series of transactions, especially at 2:00 UTC, strongly suggests an account compromise and potential draining attempt."
+      },
+      "amount": {
+        "agent": "amount",
+        "risk_level": "medium",
+        "confidence": 0.5,
+        "patterns_detected": [
+          "STATISTICAL_OUTLIER"
+        ],
+        "reasoning": "The transaction amount is within the historical range (min 500, max 600), but the automated rules indicate high velocity and a new payee. While not a clear outlier in amount, the burst activity and new payee raise concerns. The amount is a round number, but not significantly so. It's not a balance drain or threshold evasion."
+      },
+      "behavioral": {
+        "agent": "behavioral",
+        "risk_level": "high",
+        "confidence": 0.8,
+        "patterns_detected": [
+          "NEW_PAYEE",
+          "FREQUENCY_SHIFT"
+        ],
+        "reasoning": "The account is very new (first seen just hours ago) and is exhibiting a very high transaction frequency (3 transactions in quick succession). All transactions are to different payees. While the amounts are within the historical average, the rapid pace and multiple new payees are highly suspicious. The automated rules confirm high velocity and a new payee."
+      },
+      "relationship": {
+        "agent": "relationship",
+        "risk_level": "medium",
+        "confidence": 0.7,
+        "patterns_detected": [
+          "FAN_OUT",
+          "check_velocity"
+        ],
+        "reasoning": "Sender A003 has three recent outgoing transactions to previously unseen receivers (A004, A005, A006) within a short timeframe (30 seconds), as indicated by the 'check_velocity' signal. This suggests a potential fan-out pattern, where A003 is distributing funds. While not a definitive mule chain, the burst activity and new payees raise suspicion."
+      },
+      "geographic": {
+        "agent": "geographic",
+        "risk_level": "low",
+        "confidence": 0.3,
+        "patterns_detected": [],
+        "reasoning": "Insufficient data to determine risk. The transaction details are minimal, and the citizen profile is missing. Without knowing anything about the sender, it's impossible to assess plausibility. Assuming a low risk due to lack of evidence, but this requires further investigation once citizen data is available."
+      }
+    },
+    "verdict": {
+      "transaction_id": "T005",
+      "is_fraud": true,
+      "confidence": 0.85,
+      "reasoning": "Multiple specialists (Velocity, Behavioral) assess HIGH risk with high confidence (>= 0.8). The combination of 'BURST' and 'NEW_PAYEE' patterns is highly indicative of fraud. While the amount is not exceptionally large, the rapid series of transactions to new payees strongly suggests account compromise and potential fraudulent activity."
+    },
+    "final": "fraud"
+  },
+  {
+    "txn_id": "T006",
+    "amount": 9500.0,
+    "triage": "auto_fraud",
+    "rule_summary": "check_temporal_pattern: Transaction at 5:00 UTC falls in off-hours window. | check_balance_drain: Transaction drains 95% of account balance | check_new_payee: New payee with large amount (\u20ac9500.0).",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "fraud"
+  },
+  {
+    "txn_id": "T007",
+    "amount": 4999.0,
+    "triage": "ambiguous",
+    "rule_summary": "check_amount_anomaly: Suspicious amount pattern: just below reporting limit | check_new_payee: New payee with large amount (\u20ac4999.0).",
+    "priority_rank": 1,
+    "specialist_results": {
+      "velocity": {
+        "agent": "velocity",
+        "risk_level": "high",
+        "confidence": 0.8,
+        "patterns_detected": [
+          "check_new_payee",
+          "check_amount_anomaly"
+        ],
+        "reasoning": "The transaction amount is suspiciously close to a reporting limit, and it's to a new payee. The history only contains this single transaction, making it impossible to assess frequency or typical behavior. This, combined with the automated rule results, strongly suggests a potential fraudulent attempt to extract funds."
+      },
+      "amount": {
+        "agent": "amount",
+        "risk_level": "high",
+        "confidence": 0.8,
+        "patterns_detected": [
+          "THRESHOLD_EVASION",
+          "FIRST_LARGE",
+          "BALANCE_DRAIN"
+        ],
+        "reasoning": "The transaction amount is just below a common reporting threshold (\u20ac5,000), it's the account's first large transaction, and it represents over 99% of the account balance being sent in a single transaction. The automated rules also flagged a new payee with a large amount."
+      },
+      "behavioral": {
+        "agent": "behavioral",
+        "risk_level": "high",
+        "confidence": 0.9,
+        "patterns_detected": [
+          "NEW_PAYEE",
+          "DORMANT_REACTIVATION"
+        ],
+        "reasoning": "The account is brand new (first_seen == timestamp of this transaction) and is sending a large amount to a new payee. This is a classic dormant reactivation + new payee fraud pattern. The amount is also just below a reporting limit, as flagged by the automated rules."
+      },
+      "relationship": {
+        "agent": "relationship",
+        "risk_level": "high",
+        "confidence": 0.8,
+        "patterns_detected": [
+          "check_amount_anomaly",
+          "check_new_payee",
+          "MULE_CHAIN"
+        ],
+        "reasoning": "The transaction amount is just below the reporting limit, and the receiver is a new payee with a large amount. The graph shows a chain-like structure (A019->A020->A021) and A009->A010, suggesting potential layering. While not a classic fan-in/out, the new payee and amount anomaly combined with the chain-like structure raise significant concerns."
+      },
+      "geographic": {
+        "agent": "geographic",
+        "risk_level": "low",
+        "confidence": 0.3,
+        "patterns_detected": [],
+        "reasoning": "Insufficient data to determine risk. The transaction details and citizen profile are missing. A low confidence score is assigned due to the lack of information, assuming a baseline level of risk until more data is available."
+      }
+    },
+    "verdict": {
+      "transaction_id": "T007",
+      "is_fraud": true,
+      "confidence": 0.9,
+      "reasoning": "Four out of five specialists assess the risk as HIGH with high confidence. The behavioral specialist flags a classic dormant reactivation + new payee pattern with very high confidence (0.90). The amount is just below a reporting threshold, and represents a very large percentage of the sender's balance, triggering multiple automated rules and specialist concerns (THRESHOLD_EVASION, BALANCE_DRAIN, FIRST_LARGE). This strongly indicates a fraudulent attempt to quickly extract funds."
+    },
+    "final": "fraud"
+  },
+  {
+    "txn_id": "T008",
+    "amount": 1000.0,
+    "triage": "ambiguous",
+    "rule_summary": "check_amount_anomaly: Suspicious amount pattern: round number (1000.0) | check_new_payee: New payee with moderate amount (\u20ac1000.0).",
+    "priority_rank": 8,
+    "specialist_results": {
+      "velocity": {
+        "agent": "velocity",
+        "risk_level": "medium",
+        "confidence": 0.7,
+        "patterns_detected": [
+          "BURST",
+          "check_amount_anomaly",
+          "check_new_payee"
+        ],
+        "reasoning": "The transaction history only contains one transaction, which is the current one under review. This is highly unusual and suggests a potential burst or account takeover. The amount is a round number, flagged by the amount anomaly check, and the payee is new. While a single transaction isn't definitive, the lack of history combined with the other signals raises concerns."
+      },
+      "amount": {
+        "agent": "amount",
+        "risk_level": "medium",
+        "confidence": 0.6,
+        "patterns_detected": [
+          "ROUND_NUMBER",
+          "FIRST_LARGE",
+          "BALANCE_DRAIN"
+        ],
+        "reasoning": "The transaction amount is a round number and represents a significant portion (20%) of the sender's balance. This is the account's first large transaction, increasing suspicion. While not a statistical outlier given the limited history, the combination of factors warrants a medium risk assessment."
+      },
+      "behavioral": {
+        "agent": "behavioral",
+        "risk_level": "high",
+        "confidence": 0.9,
+        "patterns_detected": [
+          "NEW_PAYEE",
+          "DORMANT_REACTIVATION"
+        ],
+        "reasoning": "The account is brand new (is_new: true) and this is its first transaction. The profile shows first_seen and last_seen are the same timestamp as the current transaction, indicating immediate activity upon account creation. The transaction is to a new payee (A011) and the amount matches the average and max amount sent, but given the account's newness, this is highly suspicious. This represents a dormant reactivation combined with a new payee."
+      },
+      "relationship": {
+        "agent": "relationship",
+        "risk_level": "medium",
+        "confidence": 0.7,
+        "patterns_detected": [
+          "FAN_IN"
+        ],
+        "reasoning": "A011 has an in-degree of 3, receiving transactions from A012, A013, and A014. This suggests a potential FAN_IN pattern, where multiple senders are directing funds to a single receiver. The amount (\u20ac1000.0) is flagged as potentially anomalous (round number), and the receiver is a new payee, increasing suspicion. While not a definitive mule chain, the converging flows warrant further investigation."
+      },
+      "geographic": {
+        "agent": "geographic",
+        "risk_level": "low",
+        "confidence": 0.3,
+        "patterns_detected": [],
+        "reasoning": "Insufficient data to determine risk. The transaction details and citizen profile are missing. A risk assessment cannot be performed without this information."
+      }
+    },
+    "verdict": {
+      "transaction_id": "T008",
+      "is_fraud": true,
+      "confidence": 0.85,
+      "reasoning": "Multiple specialists (Behavioral, Velocity, Relationship, Amount) indicate medium to high risk. The Behavioral specialist's HIGH confidence (0.90) assessment of NEW_PAYEE and DORMANT_REACTIVATION is particularly concerning. The Velocity assessment flags BURST and a new payee, and the Amount assessment flags ROUND_NUMBER and BALANCE_DRAIN. While the Geographic assessment is inconclusive, the convergence of signals from other specialists strongly suggests fraudulent activity. The amount is within the \u20ac1,000-\u20ac10,000 range, and the average confidence across specialists exceeds 0.5, triggering a flag."
+    },
+    "final": "fraud"
+  },
+  {
+    "txn_id": "T009",
+    "amount": 1500.0,
+    "triage": "ambiguous",
+    "rule_summary": "check_new_payee: New payee with large amount (\u20ac1500.0).",
+    "priority_rank": 4,
+    "specialist_results": {
+      "velocity": {
+        "agent": "velocity",
+        "risk_level": "medium",
+        "confidence": 0.7,
+        "patterns_detected": [
+          "BURST",
+          "check_new_payee"
+        ],
+        "reasoning": "The transaction history only contains one transaction, which is the current one under review. This is highly unusual and suggests a potential burst or account takeover scenario. The automated rule 'check_new_payee' also flags a high risk due to the large amount sent to a new payee. While more history is needed, the current data points towards a potentially fraudulent transaction."
+      },
+      "amount": {
+        "agent": "amount",
+        "risk_level": "medium",
+        "confidence": 0.6,
+        "patterns_detected": [
+          "FIRST_LARGE",
+          "STATISTICAL_OUTLIER"
+        ],
+        "reasoning": "The transaction amount is equal to the account's average and maximum transaction amount, but this is the account's first transaction. The amount represents a significant portion (18.75%) of the sender's balance, raising concerns. The automated rule 'check_new_payee' also flagged a high risk due to a new payee and large amount."
+      },
+      "behavioral": {
+        "agent": "behavioral",
+        "risk_level": "high",
+        "confidence": 0.9,
+        "patterns_detected": [
+          "NEW_PAYEE",
+          "DORMANT_REACTIVATION"
+        ],
+        "reasoning": "The account is brand new (is_new: true) and this is its first transaction. The amount is significant, and the automated rule check_new_payee flagged it as high risk. This represents a dramatic behavioral shift with no innocent explanation."
+      },
+      "relationship": {
+        "agent": "relationship",
+        "risk_level": "medium",
+        "confidence": 0.7,
+        "patterns_detected": [
+          "FAN_IN"
+        ],
+        "reasoning": "Receiver A011 has a high in-degree (3) and receives funds from multiple sources (A012, A013, A014). This suggests a potential FAN_IN pattern, where multiple accounts are sending funds to a single account. The 'check_new_payee' signal further supports this, as the transaction involves a new payee with a large amount. While not a definitive mule chain, the converging flows raise suspicion."
+      },
+      "geographic": {
+        "agent": "geographic",
+        "risk_level": "low",
+        "confidence": 0.3,
+        "patterns_detected": [],
+        "reasoning": "Insufficient data to determine risk. The transaction details are minimal and the citizen profile is missing. Without knowing anything about the sender, it's impossible to assess plausibility."
+      }
+    },
+    "verdict": {
+      "transaction_id": "T009",
+      "is_fraud": true,
+      "confidence": 0.85,
+      "reasoning": "The Behavioral specialist has high confidence (0.90) and flags NEW_PAYEE and DORMANT_REACTIVATION. This, combined with the BURST and check_new_payee flags from Velocity and Amount, strongly suggests fraud. The amount is significant relative to the sender's balance, and the account is new with its first transaction being a large one to a new payee. While the Geographic assessment is low, the other signals outweigh it."
+    },
+    "final": "fraud"
+  },
+  {
+    "txn_id": "T010",
+    "amount": 2000.0,
+    "triage": "ambiguous",
+    "rule_summary": "check_amount_anomaly: Suspicious amount pattern: round number (2000.0) | check_new_payee: New payee with large amount (\u20ac2000.0).",
+    "priority_rank": 3,
+    "specialist_results": {
+      "velocity": {
+        "agent": "velocity",
+        "risk_level": "medium",
+        "confidence": 0.7,
+        "patterns_detected": [
+          "check_new_payee",
+          "check_amount_anomaly"
+        ],
+        "reasoning": "The transaction involves a new payee and a round amount, flagged by automated rules. The history only contains one transaction, which is the current one, making it impossible to assess frequency shift or other timing patterns. The lack of prior history is suspicious."
+      },
+      "amount": {
+        "agent": "amount",
+        "risk_level": "high",
+        "confidence": 0.8,
+        "patterns_detected": [
+          "ROUND_NUMBER",
+          "FIRST_LARGE",
+          "BALANCE_DRAIN"
+        ],
+        "reasoning": "The transaction amount is a round number, it's the account's first large transaction, and it represents 20% of the account balance. The automated rules also flagged a new payee with a large amount. This combination strongly suggests fraudulent activity."
+      },
+      "behavioral": {
+        "agent": "behavioral",
+        "risk_level": "high",
+        "confidence": 0.9,
+        "patterns_detected": [
+          "NEW_PAYEE",
+          "DORMANT_REACTIVATION"
+        ],
+        "reasoning": "The account is brand new (is_new: true) and this is its first transaction. The transaction amount matches the account's average and max amount, but the account was just created and immediately sent a large amount to a new payee. This is a classic dormant reactivation + new payee fraud pattern."
+      },
+      "relationship": {
+        "agent": "relationship",
+        "risk_level": "high",
+        "confidence": 0.8,
+        "patterns_detected": [
+          "FAN_IN",
+          "check_new_payee",
+          "check_amount_anomaly"
+        ],
+        "reasoning": "A011 has a high in-degree (3) and receives transactions from multiple sources (A012, A013, A014). The amount (\u20ac2000.0) is flagged as anomalous (round number) and the receiver (A011) is a new payee. This suggests a potential 'collector' account (FAN_IN) being used for aggregation, potentially indicative of fraudulent activity. The new payee flag further increases suspicion."
+      },
+      "geographic": {
+        "agent": "geographic",
+        "risk_level": "low",
+        "confidence": 0.3,
+        "patterns_detected": [],
+        "reasoning": "Insufficient data to determine risk. The transaction details and citizen profile are missing. A low confidence score is assigned due to the lack of information, assuming a neutral stance until more data is available."
+      }
+    },
+    "verdict": {
+      "transaction_id": "T010",
+      "is_fraud": true,
+      "confidence": 0.9,
+      "reasoning": "Multiple specialists (Amount, Behavioral, Relationship) assess the risk as HIGH with confidence > 0.8. The transaction exhibits several red flags: a new payee, a round number amount, a large percentage of the account balance being transferred, and a newly activated account making an immediate large transaction. This aligns with known fraud patterns (dormant reactivation + new payee, FAN_IN). The amount is between \u20ac1,000 and \u20ac10,000, and the average specialist confidence exceeds 0.5."
+    },
+    "final": "fraud"
+  },
+  {
+    "txn_id": "T011",
+    "amount": 3000.0,
+    "triage": "ambiguous",
+    "rule_summary": "check_temporal_pattern: Transaction at 1:00 UTC falls in off-hours window. | check_amount_anomaly: Suspicious amount pattern: round number (3000.0) | check_new_payee: New payee with large amount (\u20ac3000.0).",
+    "priority_rank": 2,
+    "specialist_results": {
+      "velocity": {
+        "agent": "velocity",
+        "risk_level": "high",
+        "confidence": 0.8,
+        "patterns_detected": [
+          "UNUSUAL_HOURS",
+          "check_new_payee",
+          "check_amount_anomaly"
+        ],
+        "reasoning": "The transaction occurred at 1:00 UTC (UNUSUAL_HOURS), involves a new payee with a large amount (check_new_payee), and the amount is a round number (check_amount_anomaly). While the history is limited, the combination of these factors strongly suggests fraudulent activity. The limited history doesn't allow for a frequency shift analysis, but the other signals are strong enough to warrant a high risk assessment."
+      },
+      "amount": {
+        "agent": "amount",
+        "risk_level": "high",
+        "confidence": 0.7,
+        "patterns_detected": [
+          "ROUND_NUMBER",
+          "FIRST_LARGE",
+          "check_new_payee"
+        ],
+        "reasoning": "The transaction amount is a round number and represents the account's maximum transaction to date. It's also a new payee. While not a statistical outlier (amount is equal to max_amount), the combination of factors raises significant concern."
+      },
+      "behavioral": {
+        "agent": "behavioral",
+        "risk_level": "high",
+        "confidence": 0.9,
+        "patterns_detected": [
+          "NEW_PAYEE",
+          "DORMANT_REACTIVATION"
+        ],
+        "reasoning": "Account was created recently and was dormant for approximately 8 days before sending a large amount (\u20ac3000.0) to a new payee. This is a strong indicator of potential fraud."
+      },
+      "relationship": {
+        "agent": "relationship",
+        "risk_level": "high",
+        "confidence": 0.8,
+        "patterns_detected": [
+          "FAN_IN",
+          "MULE_CHAIN",
+          "check_new_payee",
+          "check_amount_anomaly"
+        ],
+        "reasoning": "A011 is a central node receiving transactions from multiple sources (A012, A013, A014). A003 sends to multiple nodes. The transaction involves a new payee (A015) with a large, round amount. The transaction also occurs during off-hours. This suggests a potential mule structure where funds are aggregated at A011 and then distributed, or a mule chain where funds are quickly moved through intermediaries. The combination of these factors indicates a high risk of fraudulent activity."
+      },
+      "geographic": {
+        "agent": "geographic",
+        "risk_level": "low",
+        "confidence": 0.3,
+        "patterns_detected": [],
+        "reasoning": "Insufficient data to determine risk. The transaction details and citizen profile are missing. A risk assessment cannot be performed without this information."
+      }
+    },
+    "verdict": {
+      "transaction_id": "T011",
+      "is_fraud": true,
+      "confidence": 0.9,
+      "reasoning": "Multiple specialists (Velocity, Amount, Behavioral, Relationship) assessed HIGH risk with high confidence scores. The combination of NEW_PAYEE, ROUND_NUMBER, LARGE amount, and potential MULE_CHAIN patterns is a strong indicator of fraud. The account was recently created and reactivated after dormancy, further supporting this assessment."
+    },
+    "final": "fraud"
+  },
+  {
+    "txn_id": "T012",
+    "amount": 25.0,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "T013",
+    "amount": 30.0,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "T014",
+    "amount": 5000.0,
+    "triage": "auto_fraud",
+    "rule_summary": "check_amount_anomaly: Amount 5000.0 is a MAD outlier (z=1341.6, median=28, MAD=2) | check_balance_drain: Transaction drains 84% of account balance | check_first_large: Amount is 166.7x the historical max | check_new_payee: New payee with large amount (\u20ac5000.0).",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "fraud"
+  },
+  {
+    "txn_id": "T015",
+    "amount": 8000.0,
+    "triage": "auto_fraud",
+    "rule_summary": "check_temporal_pattern: Transaction at 0:00 UTC falls in off-hours window. | check_amount_anomaly: Suspicious amount pattern: round number (8000.0) | check_new_payee: New payee with large amount (\u20ac8000.0). | check_mule_chain: Receiver forwarded 94% of amount within 30min",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "fraud"
+  },
+  {
+    "txn_id": "T016",
+    "amount": 7500.0,
+    "triage": "auto_fraud",
+    "rule_summary": "check_temporal_pattern: Transaction at 1:00 UTC falls in off-hours window. | check_balance_drain: Transaction drains 94% of account balance | check_new_payee: New payee with large amount (\u20ac7500.0).",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "fraud"
+  }
+]
