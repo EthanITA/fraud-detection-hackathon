@@ -26,8 +26,8 @@ from ._types import (
 def check_amount_anomaly(txn_json: str, profile_json: str) -> str:
     """
     Detect amount-based fraud signals.
-      HIGH   — MAD-based outlier (modified Z-score > 3.5) or 3σ fallback
-      MEDIUM — round number ≥ €1k, or within €200 below a reporting limit
+      HIGH   — MAD outlier (modified Z-score > 3.5) or amount > avg + 3σ
+      MEDIUM — round number ≥€1k, or within €200 below reporting limit (€5k/€10k/€15k)
 
     txn_json:     Transaction (needs: amount)
     profile_json: AccountProfile (needs: avg_amount, std_amount, median_amount, mad_amount)
@@ -71,9 +71,9 @@ def check_amount_anomaly(txn_json: str, profile_json: str) -> str:
 @tool
 def check_balance_drain(txn_json: str, profile_json: str) -> str:
     """
-    Detect near-total balance wipeout.
-      HIGH   — txn drains > 90% of sender balance
-      MEDIUM — txn drains > 70% of sender balance
+    Detect near-total balance wipeout in a single transaction.
+      HIGH   — drains >90% of sender balance
+      MEDIUM — drains >70% of sender balance
 
     txn_json:     Transaction (needs: amount)
     profile_json: AccountProfile (needs: balance)
@@ -101,8 +101,8 @@ def check_balance_drain(txn_json: str, profile_json: str) -> str:
 def check_first_large(txn_json: str, profile_json: str) -> str:
     """
     Flag an account's first-ever unusually large transaction.
-      HIGH   — amount > 5× profile.max_amount AND txn_count > 5
-      MEDIUM — amount > 3× profile.max_amount
+      HIGH   — amount >5× historical max AND ≥6 prior txns
+      MEDIUM — amount >3× historical max
 
     txn_json:     Transaction (needs: amount)
     profile_json: AccountProfile (needs: max_amount, txn_count)

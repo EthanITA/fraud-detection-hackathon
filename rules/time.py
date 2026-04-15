@@ -24,8 +24,8 @@ from ._types import (
 def check_velocity(txn_json: str, history_json: str) -> str:
     """
     Detect anomalous transaction burst rate for the sender.
-      HIGH   — avg gap between recent txns < 60s
-      MEDIUM — avg gap < 300s
+      HIGH   — avg gap < 60s (VELOCITY_HIGH_GAP)
+      MEDIUM — avg gap < 5min (VELOCITY_MEDIUM_GAP=300s)
 
     txn_json:     Transaction (needs: timestamp)
     history_json: list[Transaction] — last 20 from same sender
@@ -49,8 +49,8 @@ def check_velocity(txn_json: str, history_json: str) -> str:
 @tool
 def check_temporal_pattern(txn_json: str) -> str:
     """
-    Flag off-hours activity (00:00–05:00 UTC) as medium risk.
-      MEDIUM — transaction hour in [0, 5)
+    Flag off-hours activity as medium risk.
+      MEDIUM — transaction hour in [0:00, 7:00) UTC
 
     txn_json: Transaction (needs: timestamp — Unix epoch)
     """
@@ -66,9 +66,8 @@ def check_temporal_pattern(txn_json: str) -> str:
 @tool
 def check_card_testing(txn_json: str, history_json: str) -> str:
     """
-    Detect card-testing pattern: rapid micro-transactions (< €10) immediately
-    preceding a large transaction.
-      HIGH   — 3+ micro-txns in last 5 min followed by current large txn (> €500)
+    Detect card-testing pattern: rapid micro-transactions preceding a large one.
+      HIGH   — ≥3 micro-txns (<€5) in last 5min before a large txn (>€500)
       MEDIUM — 1–2 micro-txns before a large txn
 
     txn_json:     Transaction (needs: amount, timestamp)
