@@ -618,12 +618,12 @@
     "specialist_results": {
       "velocity": {
         "agent": "velocity",
-        "risk_level": "high",
-        "confidence": 0.85,
+        "risk_level": "medium",
+        "confidence": 0.7,
         "patterns_detected": [
           "FREQUENCY_SHIFT"
         ],
-        "reasoning": "The transaction amount (\u20ac465.22) is a significant outlier compared to the sender's recent history (median transaction amount is around \u20ac150-\u20ac300 for recurring payments/withdrawals, with rent being the largest at \u20ac787.59). This large, unusual amount, combined with the automated signal for amount anomaly and a new payee, strongly suggests fraud. Although no immediate burst or card testing is evident, the deviation from established spending norms (FREQUENCY_SHIFT) combined with high external risk factors (phishing target, inconsistent travel history) elevates the risk significantly."
+        "reasoning": "The transaction amount (\u20ac465.22) is a significant outlier compared to the sender's recent history (median transaction amount is around \u20ac150-\u20ac300, with many small ATM withdrawals and regular rent payments). This aligns with the automated 'check_amount_anomaly: high' signal. The transaction is to a new payee, which is also flagged. However, the transaction occurred at 15:46 (3:46 PM), which is not unusual hours. There is no evidence of a rapid burst or card testing. The primary concern is the large, anomalous transfer to a new recipient, which suggests potential account takeover or successful social engineering, despite the time being normal business hours."
       },
       "amount": {
         "agent": "amount",
@@ -632,7 +632,7 @@
         "patterns_detected": [
           "STATISTICAL_OUTLIER"
         ],
-        "reasoning": "The transaction amount of \u20ac465.22 is flagged as a significant statistical outlier based on the sender's profile (MAD outlier, z=4.4). While the amount is not suspiciously round or near a common reporting threshold, the strong statistical deviation combined with the high-risk citizen profile (84yo, phishing target, uncharacteristic international travel) elevates the risk. The automated check confirms the anomaly."
+        "reasoning": "The transaction amount of \u20ac465.22 is flagged as a significant statistical outlier based on the sender's historical data (MAD outlier, z=4.4). While the amount is not suspiciously round or near a common reporting threshold, the strong statistical deviation combined with the high-risk profile (84yo, phishing target) elevates the risk. The recipient is new, which adds context, but the primary driver here is the amount being far outside the user's established spending norms."
       },
       "behavioral": {
         "agent": "behavioral",
@@ -640,35 +640,34 @@
         "confidence": 0.9,
         "patterns_detected": [
           "NEW_PAYEE",
-          "AMOUNT_OUTLIER"
+          "DORMANT_REACTIVATION"
         ],
-        "reasoning": "The transaction involves a brand new recipient ('TRDDN59197' is not in the known counterparties list) combined with an amount (\u20ac465.22) that is a significant outlier compared to the sender's average transaction size (\u20ac259.36 overall, \u20ac524.18 within system). Furthermore, the automated check confirms the amount is a strong outlier (z=4.4). Given the high inherent risk profile of the sender (84yo, high phishing exposure, inconsistent travel history suggesting potential compromise), the combination of a new, large transfer strongly indicates high risk behavior consistent with fraud or social engineering success."
+        "reasoning": "The transaction involves a brand new recipient ('TRDDN59197' is not in known counterparties) combined with an amount (\u20ac465.22) that is a significant outlier compared to the sender's average transaction amount (\u20ac259.36) and especially compared to the average for external transfers (\u20ac44.44). Furthermore, the profile indicates the account has been dormant for 60+ days (last seen 3724422140.0, current transaction is at 3696504386.0, a gap of approximately 37 days, which is borderline but significant given the other factors). The combination of a large, anomalous amount sent to a completely new payee immediately following a period of relative quiet strongly suggests account takeover or successful social engineering, especially given the high vulnerability score (84yo, high phishing exposure)."
       },
       "relationship": {
         "agent": "relationship",
-        "risk_level": "high",
-        "confidence": 0.9,
+        "risk_level": "medium",
+        "confidence": 0.7,
         "patterns_detected": [
           "FAN_OUT"
         ],
-        "reasoning": "The sender (NNLL-BRTU-7D3-RAV-0) has an out-degree of 15 in the 2-hop graph, indicating it is distributing funds to many counterparties, which is characteristic of a potential mule payout operation (FAN_OUT). This structural pattern, combined with the automated signal indicating a high amount anomaly (465.22 is a significant outlier relative to the median of 80), strongly suggests suspicious activity. The recipient (TRDDN59197) is a new payee, further increasing suspicion when paired with an anomalous amount and a FAN_OUT structure from the sender."
+        "reasoning": "The transaction amount is highly anomalous (check_amount_anomaly: high). The sender (NNLL-BRTU-7D3-RAV-0) has a high out-degree (15 outgoing edges in the 2-hop graph), suggesting it might be distributing funds (potential FAN_OUT pattern). While the recipient (TRDDN59197) is new, the graph structure shows the sender is connected to several other high-out-degree nodes (FCHN-VTSI-7FA-BRE-0 with 29 out-edges, CSPR-GRHL-800-ILM-1 with 26 out-edges, WTZL-TNAI-80B-PFA-0 with 29 out-edges), indicating this transaction is part of a larger network flow, which is suspicious. The combination of high amount anomaly and network distribution points towards potential mule activity."
       },
       "geographic": {
         "agent": "geographic",
-        "risk_level": "medium",
-        "confidence": 0.5,
+        "risk_level": "low",
+        "confidence": 0.3,
         "patterns_detected": [
-          "LIFESTYLE_MISMATCH",
-          "VULNERABILITY_EXPLOITATION"
+          "AGE_CONSISTENCY_CHECK"
         ],
-        "reasoning": "The transaction is a small donation (\u20ac465.22) originating from an Italian IBAN (IT) to an Italian recipient IBAN (IT). This is geographically consistent with the citizen's home base in Ravenna, Italy. However, the citizen is 84 years old and flagged as a high phishing target, indicating high vulnerability. While the amount is small for a donation, the context of high vulnerability suggests this could be a successful social engineering attempt (e.g., a charity scam targeting the elderly). The transaction itself does not violate the travel history (as it's local), but it aligns with the 'VULNERABILITY_EXPLOITATION' risk factor identified in the pre-assessment."
+        "reasoning": "The transaction is a small donation (\u20ac465.22) originating from an Italian IBAN (IT30...) to another Italian IBAN (IT38...). The citizen is 84, retired, and lives in Ravenna, Italy. Although the citizen is flagged as high vulnerability due to phishing attempts, the transaction itself is domestic (Italy to Italy) and the amount is relatively small for a donation, making it plausible for a retired individual with a balance of over \u20ac18k. The citizen profile notes 'high mobility/travel' and lists recent travel to Kusapin and Port Chester, indicating they are capable of international movement, which mitigates concerns about being strictly homebound. Since the transaction location is not specified, we assume it is local/domestic given the IBANs, which is consistent with the subject's primary location in Ravenna. No immediate geographic or lifestyle mismatch is detected."
       }
     },
     "verdict": {
       "transaction_id": "4566e181-b897-4c40-86a4-fe015ec9b69f",
       "is_fraud": true,
-      "confidence": 0.9,
-      "reasoning": "Four out of five specialists (Velocity, Amount, Behavioral, Relationship) have assessed this transaction as HIGH risk with high confidence. The transaction meets the criteria for fraud under the Specialist Consensus rule (2+ specialists say HIGH). Furthermore, the sender's profile as a high-risk phishing target, combined with the 'FAN_OUT' structural pattern and the statistical anomaly of the transaction amount, strongly indicates that this is a successful social engineering or account takeover event."
+      "confidence": 0.85,
+      "reasoning": "The transaction meets the criteria for fraud based on the specialist consensus (2+ specialists rated risk as HIGH). Specifically, the behavioral and amount specialists identified a significant statistical outlier in a vulnerable 84-year-old subject who is a known phishing target. The combination of a new payee, a dormant account reactivation, and the network-level 'fan-out' pattern identified by the relationship specialist strongly suggests social engineering or account takeover rather than a legitimate donation."
     },
     "final": "fraud"
   },
@@ -924,7 +923,7 @@
         "patterns_detected": [
           "FAN_OUT"
         ],
-        "reasoning": "The sender (CSPR-GRHL-800-ILM-1) is sending money to RENT75951, but the graph shows that CSPR-GRHL-800-ILM-1 is connected to 26 other outgoing edges (high FAN_OUT potential, though only one edge is shown in the immediate 2-hop context). More critically, the automated signal indicates the transaction amount is a significant outlier (z=5.5). Combined with the citizen profile indicating high phishing vulnerability and the transaction occurring shortly after a phishing window, this suggests a likely unauthorized transfer or mule activity originating from a compromised account. The recipient ID 'RENT75951' suggests a legitimate rent payment, but the anomalous amount and timing override this context, pointing towards a classic mule payout scenario or immediate fund diversion post-phishing."
+        "reasoning": "The sender (CSPR-GRHL-800-ILM-1) is sending a single transaction of an anomalous amount (1073.94) to RENT75951. Reviewing the graph, the sender CSPR-GRHL-800-ILM-1 has 26 outgoing edges, indicating a FAN_OUT pattern, suggesting this account might be distributing funds, which is common in mule activity. Furthermore, the automated signal check_amount_anomaly is 'high' for this transaction amount. The context provided about the sender being a high phishing risk and having inconsistent travel patterns further elevates the suspicion that this payment, despite being labeled 'Rent payment', could be part of a fraudulent scheme (e.g., payment redirection after a successful phishing attack, as suggested by the 'medium' phishing window signal)."
       },
       "geographic": {
         "agent": "geographic",
@@ -940,7 +939,7 @@
       "transaction_id": "fc5c78ed-edd8-4c19-98f3-b7fd908c6e05",
       "is_fraud": true,
       "confidence": 0.85,
-      "reasoning": "Despite the transaction appearing to be a recurring rent payment, the consensus among 4 out of 5 specialists is HIGH risk. The transaction follows a significant phishing event (1.5 days prior) and exhibits a DORMANT_REACTIVATION pattern. The statistical anomaly (z=5.5) and the high FAN_OUT potential suggest that even if the recipient is a known entity, the account has likely been compromised and is being used for unauthorized transfers or mule activity."
+      "reasoning": "Four out of five specialists (Velocity, Amount, Behavioral, Relationship) have assessed this transaction as HIGH risk. The transaction exhibits a clear pattern of Account Takeover (ATO) indicators: it follows a recent phishing event, involves a dormant account reactivation, and shows a significant statistical anomaly in transaction amount (z=5.5). While the description mimics a recurring rent payment, the combination of the phishing window, the fan-out pattern, and the account's high-risk profile overrides the appearance of a routine payment."
     },
     "final": "fraud"
   },
@@ -1269,7 +1268,7 @@
           "UNUSUAL_HOURS",
           "FREQUENCY_SHIFT"
         ],
-        "reasoning": "The transaction occurred at 07:45:08 UTC, which, given the customer's home location (Gautier, likely US Central Time Zone, UTC-6/UTC-5), translates to 01:45 AM or 02:45 AM local time, strongly indicating UNUSUAL_HOURS activity (supported by automated rule). Furthermore, the transaction amount (\u20ac199.83) is flagged as a significant monetary anomaly (MAD outlier). While the history doesn't show a clear BURST or CARD_TESTING sequence immediately preceding this, the combination of the highly suspicious timing (deep off-hours for a retiree) and the statistically anomalous amount, coupled with the pre-assessment noting high risk due to lifestyle contradiction and phishing history, pushes the overall risk to high. The frequency of withdrawals/ATM usage is also slightly elevated compared to the regular monthly bills."
+        "reasoning": "The transaction occurred at 07:45:08 UTC, which corresponds to 00:45 local time in Gautier, MS (CST/CDT). This falls squarely within the UNUSUAL_HOURS window (00:00-05:00 local time is typical for sleep, but 00:45 is still highly unusual for this user based on history). Furthermore, the transaction amount of \u20ac199.83 is flagged as a high magnitude anomaly against the user's median transaction size (\u20ac38). While the history doesn't show a clear BURST, the combination of an off-hours withdrawal and a significant amount anomaly, especially given the high pre-assessment risk factors (phishing exposure, impossible travel history), strongly suggests fraudulent activity, likely an account takeover resulting in an immediate cash withdrawal."
       },
       "amount": {
         "agent": "amount",
@@ -1278,17 +1277,17 @@
         "patterns_detected": [
           "STATISTICAL_OUTLIER"
         ],
-        "reasoning": "The transaction amount of 199.83 is flagged as a high anomaly by the automated rules (MAD outlier, z=5.9). While this amount is not statistically extreme relative to the account's overall average (\u20ac257.03), it is significantly outside the distribution of the user's 'external' transactions (avg \u20ac40.99) and 'cash_out' transactions (avg \u20ac148.08). Given the high contextual risk (phishing target, impossible travel history suggesting potential compromise), an amount that is a clear statistical outlier relative to the user's typical small/external spending habits warrants a high risk assessment, aligning with the 'STATISTICAL_OUTLIER' pattern when viewed against the relevant sub-profiles."
+        "reasoning": "The transaction amount of 199.83 is flagged as a high anomaly by the automated system (MAD outlier, z=5.9). While this amount is below the sender's overall average (\u20ac257.03), it is significantly higher than their typical external/cash-out transactions (external avg: \u20ac40.99, cash_out avg: \u20ac148.08). Given the high external risk context (phishing target, impossible travel history contradicting stated profile), this statistically anomalous amount, especially when combined with the off-hours timing, elevates the risk. The confidence is set at 0.7 because it is a clear statistical outlier, but it does not meet the criteria for draining the account or evading a major reporting threshold."
       },
       "behavioral": {
         "agent": "behavioral",
         "risk_level": "high",
         "confidence": 0.9,
         "patterns_detected": [
-          "NEW_PAYEE",
-          "DORMANT_REACTIVATION"
+          "DORMANT_REACTIVATION",
+          "NEW_PAYEE"
         ],
-        "reasoning": "The transaction is a DEBIT CARD WITHDRAWAL at an ATM, which is unusual for this account's primary activity (which leans towards internal transfers and in-person payments). Crucially, the transaction amount ($199.83) is flagged as a high statistical outlier compared to the sender's median transaction amount ($38). Furthermore, the transaction occurred at 5:00 UTC, which is an off-hours time for this user. While the recipient is not explicitly listed as a new payee (it's an ATM withdrawal), the combination of a high amount anomaly, off-hours activity, and the context of the citizen profile (high phishing risk, high mobility contradicting stated lifestyle) strongly suggests compromised behavior. The profile analysis already flagged high risk due to travel inconsistencies, making any anomalous transaction highly suspicious."
+        "reasoning": "The transaction is a withdrawal at an ATM in Gautier, which is the user's home location. However, the transaction amount ($199.83) is flagged as a high anomaly (MAD outlier). Crucially, the user profile indicates high risk due to extreme location anomalies (recent travel to Brazil and Pakistan, contradicting the 'retired homemaker' profile) and high phishing exposure. While this specific transaction is a local ATM withdrawal, the combination of the high amount anomaly coinciding with severe underlying profile risk factors (location inconsistency, phishing exposure) elevates the overall risk significantly. Since the transaction type is ATM withdrawal, there is no explicit NEW_PAYEE, but the context of high underlying risk and amount anomaly drives the high rating."
       },
       "relationship": {
         "agent": "relationship",
@@ -1297,7 +1296,7 @@
         "patterns_detected": [
           "FAN_OUT"
         ],
-        "reasoning": "The transaction amount ($199.83) is a high statistical outlier for this sender (MAD z=5.9). Furthermore, the sender (RTZO-JMIX-7D1-GAU-0) has a high out-degree (13 outgoing edges in the 2-hop graph) distributing funds to many unique recipients, which strongly suggests a FAN_OUT pattern typical of a mule payout operation. This structural pattern, combined with the high amount anomaly and off-hours timing, points to high fraud risk, regardless of the conflicting citizen profile data."
+        "reasoning": "The transaction amount ($199.83) is a high statistical outlier for this sender, suggesting potential mule activity or account compromise, especially when combined with the off-hours timing (5:00 UTC). The graph structure shows the sender (RTZO-JMIX-7D1-GAU-0) has 13 outgoing edges, indicating a potential FAN_OUT pattern where the sender is distributing funds to numerous counterparties (many of which are entities like 'PAY' or 'WEB' nodes, suggesting payment processing or distribution). The automated signals (high amount anomaly, off-hours) strongly support the suspicion raised by the graph structure and the citizen profile's high risk assessment (impossible travel/phishing target)."
       },
       "geographic": {
         "agent": "geographic",
@@ -1306,14 +1305,14 @@
         "patterns_detected": [
           "TRANSACTION_CONSISTENT_WITH_HOME_LOCATION"
         ],
-        "reasoning": "The transaction is a small cash withdrawal ($199.83) occurring in Gautier, which is the citizen's home city. The location matches the vast majority of the citizen's recent activity pings. Although the citizen profile indicates high vulnerability (phishing target) and contradictory travel history (international trips), this specific transaction is entirely routine and local, suggesting legitimate use of funds near home, despite the underlying risk factors present in the overall profile."
+        "reasoning": "The transaction is a small ATM withdrawal ($199.83) occurring in Gautier City Center, which is the citizen's home city. Although the citizen profile notes significant, unusual international travel history (Thal, Cha da Alegria, Buzen) and high vulnerability to phishing, this specific transaction is entirely routine and consistent with local activity for any resident of Gautier. The small amount further reduces immediate suspicion, despite the high overall risk profile of the citizen."
       }
     },
     "verdict": {
       "transaction_id": "3f9fbebf-13a0-46d8-91f9-32aed035626f",
       "is_fraud": true,
       "confidence": 0.95,
-      "reasoning": "The transaction meets the criteria for fraud based on a strong consensus from 4 out of 5 specialists (Velocity, Amount, Behavioral, and Relationship) who all rated the risk as HIGH with confidence levels of 0.70 to 0.90. The transaction exhibits multiple red flags: it occurred during deep off-hours (unusual for an 86-year-old retiree), represents a significant statistical outlier in amount, and the account shows a 'FAN_OUT' pattern indicative of mule activity. Despite the geographic location being local, the high vulnerability profile (phishing target) and the clear discrepancy between the user's lifestyle and their travel history strongly suggest account takeover."
+      "reasoning": "The transaction meets the criteria for fraud based on the specialist consensus (4 out of 5 specialists rated the risk as HIGH). Despite the amount being under \u20ac1,000, the consensus of high-confidence assessments (0.90) from velocity, behavioral, and relationship specialists, combined with the user's high-risk profile (phishing target, impossible travel, and account takeover indicators), confirms this as a fraudulent event. The off-hours timing and statistical anomaly further corroborate the compromise of the account."
     },
     "final": "fraud"
   },
@@ -1856,11 +1855,11 @@
       "relationship": {
         "agent": "relationship",
         "risk_level": "high",
-        "confidence": 0.9,
+        "confidence": 0.85,
         "patterns_detected": [
           "FAN_OUT"
         ],
-        "reasoning": "The transaction exhibits strong indicators of mule activity. The sender (VLNT-SLVS-7DC-PIO-0) is sending money to HOME36805, which is one of 19 recipients this sender has transacted with recently (high FAN_OUT from the sender perspective, although the graph only shows the 2-hop neighborhood). Crucially, the transaction amount (1267.59) is a significant outlier (MAD=53, z=15.3), which is highly suspicious for a payment described as 'Rent payment May - Rent&Go'. Furthermore, the transaction occurred at 6:00 UTC (off-hours for the sender's home location in Italy), aligning with the temporal anomaly signal. Given the combination of extreme amount anomaly, off-hours activity, and the sender's high-risk profile (75yo, high phishing vulnerability), this strongly suggests fraudulent disbursement, likely part of a payout phase (FAN_OUT) from a compromised account or a mule operation."
+        "reasoning": "The transaction exhibits strong indicators of mule activity combined with high financial anomaly signals. The sender (VLNT-SLVS-7DC-PIO-0) has a high out-degree (19) in the 2-hop graph, suggesting a potential FAN_OUT pattern (distributing funds). The transaction amount ($1267.59) is a significant outlier based on MAD analysis (z=15.3, median=$72), which is common in mule operations trying to stay below manual review thresholds or mimic specific payment types (like rent, as described). Furthermore, the transaction occurred at 6:00 UTC (off-hours), adding to the suspicion. The recipient (HOME36805) is receiving funds from this sender, who is also connected to several other high-out-degree nodes (FCHN-VTSI-7FA-BRE-0 with 29 outgoing edges, JNSO-PLNA-7D0-FEL-1 with 21 outgoing edges), suggesting the sender is part of a larger network distributing funds, likely acting as a payout point or a collection point for a larger scheme. Given the high financial anomaly and the graph structure pointing towards distribution, the risk is high."
       },
       "geographic": {
         "agent": "geographic",
@@ -1876,7 +1875,7 @@
       "transaction_id": "f2cb6c11-a6e6-436d-9267-e3d4094ebca3",
       "is_fraud": true,
       "confidence": 0.85,
-      "reasoning": "The transaction meets the criteria for fraud based on the specialist consensus (4 out of 5 specialists rated the risk as HIGH). Despite the description appearing to be a routine rent payment, the transaction is a significant statistical outlier (z=15.3) for this user, whose median transaction is only 72. The combination of high-risk demographic profile (75yo, high phishing susceptibility), the high FAN_OUT activity, and the temporal anomalies reported by multiple specialists outweighs the geographic consistency. The transaction amount and timing are inconsistent with the user's established behavioral baseline."
+      "reasoning": "The transaction triggers multiple high-risk signals: 4 out of 5 specialists assessed the risk as HIGH. The amount is a significant statistical outlier (z=15.3) compared to the user's median transaction of \u20ac72. While the description claims it is a rent payment, the timing is inconsistent with a standard monthly cycle (35 days since the last payment), and the sender's profile as a high-vulnerability phishing target combined with the 'FAN_OUT' network pattern identified by the relationship specialist strongly suggests account takeover or coerced payment."
     },
     "final": "fraud"
   },
@@ -1922,7 +1921,7 @@
         "patterns_detected": [
           "FAN_OUT"
         ],
-        "reasoning": "The transaction amount ($1064.64) is a significant outlier, flagged by automated rules. The recipient, RENT75951, has received 2 transactions in total, one from the sender (CSPR-GRHL-800-ILM-1) and one from VLNT-SLVS-7DC-PIO-0. The sender (CSPR-GRHL-800-ILM-1) is a high-volume sender, having 26 outgoing edges in the 2-hop graph, suggesting a potential FAN_OUT pattern (mule payout) originating from this account, even if this specific recipient only received one payment. Furthermore, the sender's profile indicates high phishing vulnerability and recent travel inconsistent with their stated lifestyle, suggesting potential account compromise or mule activity. The combination of the high anomaly score and the sender's suspicious activity profile strongly suggests fraud."
+        "reasoning": "The transaction amount ($1064.64) is a significant outlier based on automated checks (MAD anomaly). The recipient, RENT75951, has received 2 transactions in the 2-hop graph, suggesting it might be a collection point, although not a massive FAN_IN. More critically, the sender (CSPR-GRHL-800-ILM-1) is highly active in outgoing transactions (26 out-degree) and is connected to several other high-out-degree nodes (FCHN-VTSI-7FA-BRE-0 with 29 out-degree, WTZL-TNAI-80B-PFA-0 with 29 out-degree, JNSO-PLNA-7D0-FEL-1 with 21 out-degree, VLNT-SLVS-7DC-PIO-0 with 19 out-degree). This structure strongly suggests the sender is part of a distribution network (FAN_OUT/mule payout) or is interacting with one. Combined with the high amount anomaly and the context that the sender is a known phishing target, this transaction is highly suspicious."
       },
       "geographic": {
         "agent": "geographic",
@@ -1938,7 +1937,7 @@
       "transaction_id": "2ce7d879-2514-42ab-bf53-3b3a79185f78",
       "is_fraud": true,
       "confidence": 0.85,
-      "reasoning": "Three out of five specialists (Amount, Behavioral, Relationship) assessed the risk as HIGH. The transaction meets the economic scaling criteria for the \u20ac1,000\u2013\u20ac10,000 range, as the average confidence of the specialists is well above 0.5. The combination of the sender being a high-risk phishing target, the transaction occurring shortly after a phishing event, and the suspicious 'FAN_OUT' pattern identified by the relationship specialist strongly indicates an account takeover scenario, despite the transaction being labeled as rent."
+      "reasoning": "The transaction meets the criteria for fraud based on the consensus of 3 specialists (Amount, Behavioral, Relationship) rating the risk as HIGH. Despite the description suggesting a recurring rent payment, the sender is a high-risk phishing target, and the transaction occurred within 1.3 days of a phishing event. The Relationship specialist identified the sender as part of a potential distribution network (FAN_OUT), and the Behavioral specialist noted that the amount is a significant statistical outlier. The combination of high-risk phishing vulnerability, network connectivity to potential mule nodes, and the timing of the transaction strongly suggests an account takeover scenario mimicking a legitimate recurring payment."
     },
     "final": "fraud"
   },
@@ -2043,9 +2042,10 @@
         "risk_level": "high",
         "confidence": 0.9,
         "patterns_detected": [
-          "FAN_OUT"
+          "FAN_OUT",
+          "MULE_CHAIN"
         ],
-        "reasoning": "The recipient 'JNSO-PLNA-7D0-FEL-1' has a very high out-degree (21) in the 2-hop neighborhood, indicating it is distributing funds to many counterparties. This structure strongly suggests a FAN_OUT pattern, typical of a money mule payout operation. This is compounded by the high anomaly score on the transaction amount (3475.76 is a significant outlier) and the off-hours timing, leading to a high-risk assessment."
+        "reasoning": "The sender (EMP25643) is sending a transaction that is a significant outlier in amount (high z-score) and occurs during off-hours, suggesting suspicious activity. Furthermore, the recipient (JNSO-PLNA-7D0-FEL-1) is a high-out-degree node (out_degree=21) that receives funds from the sender and immediately distributes funds to many other accounts (21 outgoing edges in the 2-hop graph), which is characteristic of a payout mule or a central aggregation/distribution point. The presence of multiple high-out-degree nodes (FCHN-VTSI-7FA-BRE-0 with 29 out-edges, WTZL-TNAI-80B-PFA-0 with 29 out-edges, CSPR-GRHL-800-ILM-1 with 26 out-edges) suggests a complex network structure, likely involving laundering or mule activity. The combination of amount anomaly, temporal anomaly, and the recipient acting as a distribution hub strongly points towards fraud."
       },
       "geographic": {
         "agent": "geographic",
@@ -2061,7 +2061,7 @@
       "transaction_id": "a751f6ff-b4ad-46f0-80ff-f032db24f821",
       "is_fraud": false,
       "confidence": 0.65,
-      "reasoning": "While the relationship specialist flagged a potential fan-out pattern and the amount is a statistical outlier, the transaction exhibits strong indicators of a legitimate recurring salary payment. The recipient is consistent, the description matches historical patterns, and the amount is within a very tight historical range (standard deviation of ~32). The 'high' risk from the relationship specialist is noted, but the behavioral evidence of a long-standing, consistent payment relationship outweighs the structural risk in this specific context."
+      "reasoning": "While the relationship specialist flagged the recipient as a potential mule node, the transaction itself exhibits strong characteristics of a recurring, legitimate salary payment. The amount is consistent with historical patterns (standard deviation is very low), the description is clear, and the sender has a long-standing relationship with the recipient. The 'off-hours' flag is mitigated by the fact that the sender's historical activity consistently occurs in the morning hours. The statistical outlier flag is a result of the sender's extremely consistent payment behavior rather than suspicious activity. The risk of a mule network is noted, but the transaction itself does not show signs of balance draining or threshold evasion."
     },
     "final": "legit"
   },
@@ -2423,11 +2423,11 @@
       "relationship": {
         "agent": "relationship",
         "risk_level": "high",
-        "confidence": 0.9,
+        "confidence": 0.7,
         "patterns_detected": [
           "FAN_OUT"
         ],
-        "reasoning": "The sender (FCHN-VTSI-7FA-BRE-0) is sending funds to 29 distinct recipients in the 2-hop graph, which strongly suggests a FAN_OUT pattern, characteristic of a mule payout operation. This structural pattern, combined with the automated signal indicating a high amount anomaly (2131.91 is a significant outlier) and the context that the sender is a known phishing target with high mobility, elevates the risk significantly. The transaction itself appears to be a small part of a larger, structured disbursement activity."
+        "reasoning": "The sender (FCHN-VTSI-7FA-BRE-0) exhibits a high out-degree (29) in the 2-hop graph, indicating it is distributing funds to many counterparties, which is characteristic of a FAN_OUT or potential mule payout scenario. This structural pattern, combined with the automated signal indicating a high amount anomaly (2131.91 is a significant outlier) and the medium risk signal linking the transfer to a recent phishing event (possible redirect), elevates the overall risk assessment. The recipient (DOM58085) has only one incoming edge in the 2-hop view, but the sender's broad distribution pattern is the primary structural concern here."
       },
       "geographic": {
         "agent": "geographic",
@@ -2444,7 +2444,7 @@
       "transaction_id": "82276209-5088-4f66-8399-0e4a9be927a7",
       "is_fraud": true,
       "confidence": 0.85,
-      "reasoning": "The transaction triggers multiple high-risk signals. While the payment is labeled as 'Rent', the Behavioral and Relationship specialists identified a 'FAN_OUT' pattern and a significant statistical amount anomaly. Crucially, the transaction occurred immediately (0.0 days) after a phishing window, and the sender is a known high-vulnerability target. With two specialists (Behavioral and Relationship) providing high-risk assessments with confidence > 0.8, the transaction meets the criteria for a fraud decision."
+      "reasoning": "The transaction triggers multiple high-risk signals: 3 out of 5 specialists (Amount, Behavioral, Relationship) assessed the risk as HIGH. The transaction occurs immediately (0.0 days) after a phishing window, and the amount is a significant statistical outlier (z=12.3). While the description suggests a rent payment, the combination of the sender's high-risk profile (phishing target), the structural 'fan-out' pattern, and the immediate proximity to a phishing event strongly suggests an account takeover or coerced payment rather than a legitimate transaction."
     },
     "final": "fraud"
   },
@@ -3017,12 +3017,12 @@
     "specialist_results": {
       "velocity": {
         "agent": "velocity",
-        "risk_level": "high",
-        "confidence": 0.85,
+        "risk_level": "medium",
+        "confidence": 0.7,
         "patterns_detected": [
           "FREQUENCY_SHIFT"
         ],
-        "reasoning": "The transaction amount (\u20ac461.87) is flagged as a significant outlier compared to the user's historical median transaction size (\u20ac249.65, based on recent history). This large, anomalous amount, combined with the automated signal for amount anomaly and a new payee, strongly suggests potential fraud. While no immediate burst or card testing is evident, the deviation from established spending norms (FREQUENCY_SHIFT) is a key indicator, especially given the high-risk citizen profile (age, phishing target, unusual travel locations)."
+        "reasoning": "The transaction amount (\u20ac461.87) is flagged as a significant outlier compared to the user's historical median transaction size (\u20ac179.69, based on available history). This aligns with the automated rule flagging an amount anomaly. The history shows regular, smaller transactions (rent, utilities, ATM withdrawals) clustered around typical monthly/weekly cycles. This single, large transfer to a new payee, especially when combined with the high vulnerability score (age, phishing target), raises suspicion. However, the transaction occurred at 12:55 PM local time (based on timestamp 3708154534.0, which is mid-day for Ravenna), ruling out UNUSUAL_HOURS. No rapid burst or card testing is evident in the immediate history. The primary flag is the deviation in transaction size/type from established norms."
       },
       "amount": {
         "agent": "amount",
@@ -3031,26 +3031,26 @@
         "patterns_detected": [
           "STATISTICAL_OUTLIER"
         ],
-        "reasoning": "The transaction amount of \u20ac461.87 is flagged as a strong statistical outlier (MAD outlier, z=6.4) compared to the sender's historical average (\u20ac259.36) and median transaction size. While the amount is not suspiciously round or near a common reporting threshold, the automated anomaly check strongly supports flagging it. Given the high-risk profile (84yo, phishing target, inconsistent travel history), this statistical deviation elevates the risk significantly, aligning with the 0.7 confidence calibration for a clear statistical outlier."
+        "reasoning": "The transaction amount of \u20ac461.87 is flagged as a strong statistical outlier (MAD outlier, z=6.4) compared to the sender's overall average transaction amount (\u20ac259.36) and especially compared to their external/cash-out history (avg \u20ac44.44 and \u20ac147.85 respectively). While the amount is not suspiciously round or near a reporting threshold, the automated anomaly check strongly suggests this amount is unusual for this profile. Given the citizen profile indicates high vulnerability (84yo, phishing target), this statistical deviation warrants a high risk assessment."
       },
       "behavioral": {
         "agent": "behavioral",
         "risk_level": "high",
-        "confidence": 0.9,
+        "confidence": 0.85,
         "patterns_detected": [
           "NEW_PAYEE",
-          "DORMANT_REACTIVATION"
+          "AMOUNT_ANOMALY"
         ],
-        "reasoning": "The transaction amount (\u20ac461.87) is a significant outlier compared to the sender's average transaction amount (\u20ac259.36 overall, \u20ac524.18 within system), flagged by the automated check. Crucially, the recipient ('ENTLN84976') is listed as a known counterparty in the profile, meaning this is NOT a NEW_PAYEE, which slightly mitigates the NEW_PAYEE risk factor. However, the profile summary indicates the user is 84, lives in Ravenna, and has high phishing exposure, suggesting high susceptibility to social engineering. The history shows the last transaction was 10 days ago (July 24th, 2087, based on the current transaction timestamp of July 4th, 2087, which seems chronologically reversed in the provided data, but assuming the current transaction is the latest event), and the account is not dormant. Given the high amount anomaly combined with the high-risk citizen profile (age, phishing history, inconsistent travel), the risk is elevated. Since the recipient is known, the primary driver is the amount anomaly combined with the high-risk citizen context, pushing the confidence high."
+        "reasoning": "The transaction amount of \u20ac461.87 is a significant outlier compared to the sender's historical average (\u201cavg_amount\u201d: \u20ac259.36 overall, \u20ac524.18 within system). Crucially, the automated signal indicates this is a NEW_PAYEE, and the amount is far above the sender's average for new counterparties (external average is only \u20ac44.44). This combination (high amount + new payee) is a strong indicator of potential fraud, especially given the high vulnerability score of the 84-year-old sender who is a known phishing target."
       },
       "relationship": {
         "agent": "relationship",
-        "risk_level": "high",
-        "confidence": 0.9,
+        "risk_level": "medium",
+        "confidence": 0.7,
         "patterns_detected": [
           "FAN_OUT"
         ],
-        "reasoning": "The sender (NNLL-BRTU-7D3-RAV-0) has 15 outgoing edges in the 2-hop graph, indicating a potential distribution pattern (FAN_OUT). This is strongly correlated with the automated signal 'check_amount_anomaly: high' (\u20ac461.87 is a significant outlier for this sender's typical activity, given the context of the sender's profile). The recipient (ENTLN84976) is a new payee, which, combined with the high anomalous amount and the sender's high-risk profile (phishing target, unusual travel), suggests this transaction is likely part of a mule operation or a direct result of compromise, warranting a high-risk assessment."
+        "reasoning": "The transaction amount ($461.87) is a significant outlier based on the sender's historical median transaction size ($89.95 average from RTZO-JMIX-7D1-GAU-0, or $101.04 average from NNLL-BRTU-7D3-RAV-0's smallest transactions), which is flagged by the automated check. The sender (NNLL-BRTU-7D3-RAV-0) is a high-volume sender, distributing funds to 15 different recipients, suggesting a potential FAN_OUT/payout structure, which is common in mule activity. Although the recipient (ENTLN84976) is new, the graph structure shows several other high-volume senders (FCHN-VTSI-7FA-BRE-0, CSPR-GRHL-800-ILM-1, WTZL-TNAI-80B-PFA-0, JNSO-PLNA-7D0-FEL-1) acting as distributors to many small, often new, recipients. This specific transaction fits the pattern of a small payout from one of these distributors to a new entity, making the relationship suspicious despite the 'Loan payment' description. The high amount anomaly combined with the sender's role as a distributor elevates the risk."
       },
       "geographic": {
         "agent": "geographic",
@@ -3058,16 +3058,16 @@
         "confidence": 0.5,
         "patterns_detected": [
           "MOBILITY_VIOLATION",
-          "VULNERABILITY_EXPLOITATION"
+          "LIFESTYLE_MISMATCH"
         ],
-        "reasoning": "The transaction is an internal Italian bank transfer ('Loan payment' between two Italian IBANs) for a moderate amount (\u20ac461.87). This is generally consistent with the expected behavior of a resident in Ravenna, Italy. However, the citizen profile indicates the subject is 84 years old, has high vulnerability to phishing (10 attempts noted), and has recently visited Kusapin (Panama) and Port Chester (USA). The recent travel history shows a trip to Port Chester around July 3rd, 2087, and a trip to Kusapin in late September/early October 2087. The transaction timestamp is July 4th, 2087 (3708154534.0). On July 3rd, 2087, the citizen was pinged in Port Chester, USA. A transfer initiated from Italy (implied by the Italian IBAN) on July 4th, while the last known location was the USA, suggests a potential IMPOSSIBLE_TRAVEL scenario if the transaction location was outside Italy, but since the transaction location is blank and the IBANs are Italian, we must assume the transaction originated from Italy unless proven otherwise. Given the high vulnerability to phishing and the recent international travel (which is unusual for his age/retirement status), the transaction itself is low risk (domestic payment), but the context of the profile suggests elevated risk due to potential social engineering/account takeover, even for a routine payment. The confidence is 0.5 because the transaction type is routine, but the underlying profile risk is high."
+        "reasoning": "The transaction is a domestic transfer within Italy (IT IBANs) for a 'Loan payment' of \u20ac461.87. This amount and purpose are generally plausible for an 84-year-old retiree. However, the citizen profile shows recent activity in Port Chester (USA) and Kusapin (Panama) in July and September 2087, respectively, indicating high mobility. The current transaction timestamp (2087-07-04) is before the Port Chester ping (2087-07-03), but the transaction location field is empty. Given the high mobility history, a domestic payment is not inherently suspicious. The risk is medium because the transaction description ('Loan payment') is vague, and the subject is a high phishing target, meaning the payment could be initiated under duress or social engineering, even if the location is local. Since the location is unknown, we cannot confirm IMPOSSIBLE_TRAVEL, but the context of high vulnerability keeps the risk elevated above low."
       }
     },
     "verdict": {
       "transaction_id": "539787af-84fb-4932-8141-ed03e40fa2e4",
       "is_fraud": true,
-      "confidence": 0.9,
-      "reasoning": "The transaction meets the criteria for fraud based on the specialist consensus, with 4 out of 5 specialists assessing the risk as HIGH. The combination of a significant statistical amount anomaly (z=6.4), the sender's high-risk profile (84yo, high phishing target, recent impossible travel patterns), and the identified FAN_OUT relationship pattern strongly indicates account compromise or social engineering. Despite the 'loan payment' description, the behavioral and velocity signals confirm this deviates significantly from the user's established norms."
+      "confidence": 0.85,
+      "reasoning": "The transaction meets the criteria for fraud based on the specialist consensus (2+ specialists rated risk as HIGH) and the behavioral pattern of a new payee combined with a significant amount anomaly. The subject's high vulnerability profile (84yo, frequent phishing target) and the relationship specialist's observation of a potential fan-out/mule structure further corroborate the risk. Despite the 'Loan payment' description, the statistical deviation and the sender's profile suggest this is likely a social engineering or unauthorized transfer."
     },
     "final": "fraud"
   },
@@ -3281,12 +3281,12 @@
       "velocity": {
         "agent": "velocity",
         "risk_level": "high",
-        "confidence": 0.85,
+        "confidence": 0.9,
         "patterns_detected": [
           "UNUSUAL_HOURS",
           "FREQUENCY_SHIFT"
         ],
-        "reasoning": "The transaction occurred at 06:16:24 UTC, which is 04:16 local time in Gautier (assuming UTC-2 for standard time, or 05:16 if DST is active, both falling within the 00:00-05:00 UNUSUAL_HOURS window for a likely sleeping 86-year-old). Furthermore, the automated check flagged the amount ($299.77) as a significant outlier compared to the account's median transaction size ($58). While the history doesn't show a classic 'burst' or 'card testing' pattern immediately preceding this, the combination of an off-hours withdrawal and a statistically anomalous amount, coupled with the pre-assessment flagging high mobility/phishing risk inconsistent with the stated profile, elevates the risk significantly. The withdrawal itself is a high-value ATM withdrawal, which is often a target for fraudsters post-compromise."
+        "reasoning": "The transaction occurred at 06:16:24 UTC, which is 00:16:24 local time in Gautier, MS (CST/CDT). This falls squarely within the UNUSUAL_HOURS window (00:00\u201305:00 local time) for a typical user, supported by the automated rule. Furthermore, the transaction amount ($299.77) is flagged as a significant statistical outlier (MAD z=3.7) compared to the user's typical spending, indicating a FREQUENCY_SHIFT in value. Given the high pre-assessment risk due to lifestyle contradiction (retired vs. high international travel) and phishing exposure, these temporal and amount anomalies strongly suggest fraudulent activity, likely an account takeover scenario."
       },
       "amount": {
         "agent": "amount",
@@ -3295,17 +3295,17 @@
         "patterns_detected": [
           "STATISTICAL_OUTLIER"
         ],
-        "reasoning": "The transaction amount of 299.77 is flagged as a high anomaly by the automated system (MAD outlier). While the amount itself is not statistically extreme relative to the account's historical maximum (\u20ac960.38), it is significantly outside the typical spending distribution (as confirmed by the high z-score/MAD). Combined with the high external risk factors identified in the pre-assessment (phishing target, impossible travel history suggesting potential compromise), this anomalous withdrawal warrants a high risk assessment, even if the amount is not a classic structuring or threshold evasion value."
+        "reasoning": "The transaction amount of 299.77 is flagged as a high anomaly by the automated system (MAD outlier). While the amount itself is not statistically extreme relative to the account's historical maximum (\u20ac960.38), it is significantly outside the typical spending distribution (z=3.7 from median). Combined with the high external risk factors identified in the pre-assessment (phishing target, impossible travel history suggesting potential account compromise), this anomalous withdrawal supports a high-risk assessment, even if the amount isn't a classic structuring or balance drain event."
       },
       "behavioral": {
         "agent": "behavioral",
         "risk_level": "high",
-        "confidence": 0.85,
+        "confidence": 0.9,
         "patterns_detected": [
           "DORMANT_REACTIVATION",
           "NEW_PAYEE"
         ],
-        "reasoning": "The transaction is an ATM withdrawal, which is unusual given the sender's profile (86yo retiree, high phishing risk, high mobility contradictions). Crucially, the transaction amount ($299.77) is a significant outlier compared to the sender's average cash withdrawal amount ($148.08 avg for cash_out category) and is flagged as a high anomaly by automated rules. While this specific transaction is a withdrawal (not a transfer to a new payee), the combination of the high amount anomaly, the off-hours timing (4:00 UTC), and the context of the profile (high vulnerability, contradictory travel history suggesting potential compromise) elevates the risk significantly. Since the transaction type is withdrawal, the NEW_PAYEE flag is not directly applicable, but the amount anomaly combined with temporal risk strongly suggests fraudulent activity, likely cash-out following a compromise."
+        "reasoning": "The transaction is a cash withdrawal at an ATM, which is unusual given the sender's profile (86yo, retired, usually performs local in-person payments or internal transfers). Crucially, the transaction amount ($299.77) is flagged as a high outlier compared to the sender's average transaction amount ($257.03 overall, but $148.08 for cash_out transactions). Furthermore, the transaction occurred at 4:00 UTC (off-hours) and coincides with a high amount anomaly. While this specific transaction is a withdrawal (not a transfer to a new payee), the context provided by the profile shows extreme behavioral inconsistency (stated homebody vs. documented international travel) and high phishing vulnerability, elevating the risk significantly. The combination of high amount anomaly, off-hours activity, and severe profile contradiction points to high risk, consistent with the profile's assessment of high risk due to impossible travel/location discrepancies."
       },
       "relationship": {
         "agent": "relationship",
@@ -3314,23 +3314,23 @@
         "patterns_detected": [
           "FAN_OUT"
         ],
-        "reasoning": "The transaction amount ($299.77) is a high statistical outlier based on MAD analysis. Furthermore, the sender (RTZO-JMIX-7D1-GAU-0) has a high out-degree (13) in the 2-hop graph, indicating it is distributing funds to many counterparties, which strongly suggests a FAN_OUT pattern typical of a mule payout operation. This structural pattern, combined with the high amount anomaly and off-hours timing (from automated checks), points strongly towards fraudulent activity, likely related to the sender's high phishing vulnerability noted in the citizen profile."
+        "reasoning": "The transaction amount (299.77) is a high anomaly based on MAD analysis. The sender (RTZO-JMIX-7D1-GAU-0) has a high out-degree (13) in the 2-hop graph, indicating it is distributing funds to many counterparties, which is characteristic of a FAN_OUT/mule payout pattern. Furthermore, the sender's profile shows extreme behavioral inconsistency (high international travel contradicting a 'retired' profile), suggesting the account is compromised or being used as a mule. The combination of high anomaly amount, clear FAN_OUT structure, and compromised profile strongly suggests fraud."
       },
       "geographic": {
         "agent": "geographic",
         "risk_level": "low",
         "confidence": 0.3,
         "patterns_detected": [
-          "CONSISTENT_LOCATION"
+          "TRANSACTION_CONSISTENT_WITH_LOCATION"
         ],
-        "reasoning": "The transaction is a low-value ATM withdrawal ($299.77) occurring in Gautier, which is the citizen's home city. The transaction location matches the location of the vast majority of the citizen's recent pings. Although the citizen profile notes high vulnerability to phishing and contradictory travel history (international trips), this specific transaction is entirely consistent with routine local activity for a resident of Gautier. The low amount and local ATM withdrawal do not trigger immediate high-risk flags based on lifestyle or location mismatch."
+        "reasoning": "The transaction is a small ATM withdrawal ($299.77) occurring in Gautier, MS, which is the citizen's home city. The location matches the most recent pings (all within Gautier since March 16, 2087, except for the last one in Buzen on July 31st, which is an anomaly but the current transaction location is local). The amount is small and consistent with routine cash needs for an 86-year-old retiree. While the profile notes high mobility/international travel history (Thal, Cha da Alegria, Buzen), this specific transaction location is entirely expected and low-risk based on immediate context."
       }
     },
     "verdict": {
       "transaction_id": "1580eccc-514c-439e-bd76-25e3fc0db2df",
       "is_fraud": true,
-      "confidence": 0.92,
-      "reasoning": "The transaction meets the criteria for fraud based on specialist consensus (4 out of 5 specialists rated the risk as HIGH). The combination of an off-hours ATM withdrawal, a significant statistical amount anomaly, and the account's high-risk profile (phishing target with evidence of a fan-out mule pattern) strongly indicates account takeover and unauthorized cash-out. Despite the geographic consistency, the behavioral and structural evidence outweighs the location data."
+      "confidence": 0.95,
+      "reasoning": "The transaction meets the criteria for fraud based on a strong consensus from 4 out of 5 specialists (Velocity, Amount, Behavioral, and Relationship) who all rated the risk as HIGH with confidence levels of 0.70 to 0.90. The transaction exhibits multiple red flags: it occurred during off-hours (00:16 local time), represents a statistical amount outlier, and the account shows a 'FAN_OUT' pattern indicative of mule activity. Furthermore, the extreme discrepancy between the user's stated profile (86yo retiree) and the documented high-mobility/international travel history, combined with high phishing vulnerability, confirms this is an account takeover."
     },
     "final": "fraud"
   },
@@ -4017,7 +4017,7 @@
         "patterns_detected": [
           "FAN_OUT"
         ],
-        "reasoning": "The transaction amount ($934.73) is a significant outlier based on the sender's historical transaction median ($82), which strongly suggests potential fraud or mule activity. Furthermore, the sender (CSPR-GRHL-800-ILM-1) has a high out-degree (26 outgoing edges in the 2-hop graph) and is sending to a recipient (PAYCL92396) that appears to be a new entity (is_new: true). The sender's profile indicates high phishing vulnerability and inconsistent travel patterns, suggesting potential account compromise or mule usage. The combination of a massive amount anomaly and the sender's high-risk profile, coupled with the graph structure showing the sender distributing funds (FAN_OUT potential), warrants a high-risk assessment."
+        "reasoning": "The transaction amount ($934.73) is a significant outlier based on the sender's historical median transaction size (MAD outlier). Furthermore, the sender (CSPR-GRHL-800-ILM-1) exhibits a strong FAN_OUT pattern, having sent 26 transactions in the 2-hop graph, suggesting it might be acting as a distributor or mule source. Combined with the high anomaly score for the amount and the off-hours timing, this strongly suggests fraudulent activity, likely related to the high phishing vulnerability noted in the sender's profile."
       },
       "geographic": {
         "agent": "geographic",
@@ -4032,8 +4032,8 @@
     "verdict": {
       "transaction_id": "e36fba08-7232-4b40-b055-2f89f8bf7fd4",
       "is_fraud": true,
-      "confidence": 0.95,
-      "reasoning": "The transaction meets the criteria for fraud based on a strong consensus from 4 out of 5 specialists (Velocity, Amount, Behavioral, Relationship) all rating the risk as HIGH. The transaction is a significant statistical outlier (z=10.4) and involves a new payee, which, when combined with the sender's high-risk profile (75% phishing susceptibility and recent phishing event), strongly indicates account takeover. The transaction also triggers multiple automated risk flags including amount anomaly and temporal off-hours patterns."
+      "confidence": 0.92,
+      "reasoning": "The transaction meets the criteria for fraud based on a strong consensus from 4 out of 5 specialists (Velocity, Amount, Behavioral, and Relationship) all rating the risk as HIGH. The transaction is a significant statistical outlier (z=10.4) and involves a new payee, which, when combined with the sender's high-risk profile as a frequent phishing target and the identified 'FAN_OUT' pattern, strongly indicates account takeover or mule activity. The amount is substantial enough to warrant immediate intervention given the high confidence scores across multiple independent risk vectors."
     },
     "final": "fraud"
   },
@@ -4119,7 +4119,7 @@
         "patterns_detected": [
           "FAN_OUT"
         ],
-        "reasoning": "The transaction amount ($1134.28) is a significant outlier based on the sender's historical median transaction size ($92.39 for VLNT-SLVS-7DC-PIO-0), flagged by the automated check. Furthermore, the sender (VLNT-SLVS-7DC-PIO-0) has a high out-degree (19 outgoing edges in the 2-hop graph) and sends money to many distinct recipients (including HOME36805 in this transaction), suggesting a potential FAN_OUT pattern, characteristic of a mule payout operation. This structural pattern, combined with the high amount anomaly and the sender's known high vulnerability to phishing (as detailed in the citizen profile), strongly suggests fraudulent activity, likely related to a recent social engineering attack."
+        "reasoning": "The sender (VLNT-SLVS-7DC-PIO-0) has a high out-degree (19 nodes connected to it in the 2-hop graph) and is sending money to HOME36805, which appears to be a destination node receiving funds from multiple sources (though HOME36805 itself only has an in-degree of 1 in the provided subgraph, the sender's high out-degree suggests a potential distribution pattern, which aligns with FAN_OUT if this transaction is part of a larger payout scheme). Crucially, the automated signal check_amount_anomaly is 'high' (1134.28 is a significant outlier), and the context shows the sender is a known phishing target, making the transaction highly suspicious, especially given the recent phishing activity (0.9d prior). The combination of high anomaly amount, known vulnerability, and graph structure pointing towards distribution strongly suggests fraud, likely related to the phishing event."
       },
       "geographic": {
         "agent": "geographic",
@@ -4135,7 +4135,7 @@
       "transaction_id": "f17ea00f-cc51-45c3-9190-e91c23b8da41",
       "is_fraud": true,
       "confidence": 0.85,
-      "reasoning": "Four out of five specialists (Velocity, Amount, Behavioral, Relationship) have assessed this transaction as HIGH risk. The consensus is driven by a significant statistical anomaly in transaction amount, a suspicious timing relative to a recent phishing event (0.9 days), and a structural 'fan-out' pattern in the sender's network. Despite the description appearing to be a rent payment, the inconsistency in payment cycles and the sender's high-vulnerability profile (75yo, frequent phishing target) strongly suggest that this is a fraudulent redirection of funds following a successful social engineering attack."
+      "reasoning": "The transaction meets the criteria for fraud based on specialist consensus (4/5 specialists rated risk as HIGH). The transaction amount is a significant statistical outlier (z=15.7) and occurs within a critical 0.9-day window following a confirmed phishing event. The behavioral analysis notes an inconsistency in the payment cycle (September payment when previous payments were Oct-Dec), and the high vulnerability profile of the sender (75yo, high phishing target) combined with the high-confidence specialist assessments strongly indicates account takeover or coerced payment."
     },
     "final": "fraud"
   },
@@ -4227,12 +4227,12 @@
       },
       "relationship": {
         "agent": "relationship",
-        "risk_level": "medium",
+        "risk_level": "high",
         "confidence": 0.7,
         "patterns_detected": [
           "FAN_OUT"
         ],
-        "reasoning": "The transaction amount (1949.13) is a significant outlier compared to the sender's median transaction size (253), and it drains 81% of the sender's balance, which is highly suspicious. The sender (FCHN-VTSI-7FA-BRE-0) is a high-degree sender (out_degree=29) in the 2-hop graph, indicating a potential FAN_OUT pattern (distributing funds to many recipients). While the description suggests a legitimate 'Rent payment Sep - Living Spaces', the combination of the high outlier amount, balance drain, and the sender's role as a distributor strongly suggests potential mule activity or account compromise, despite the seemingly legitimate description. The recipient (DOM58085) has an in_degree of 1 and out_degree of 0 in this local view, making it a potential sink/collector, but the sender's high out-degree is the more prominent structural signal here."
+        "reasoning": "The sender (FCHN-VTSI-7FA-BRE-0) has a very high out-degree (29) in the 2-hop graph, indicating it is distributing funds to many counterparties. This structure is highly characteristic of a FAN_OUT pattern, often associated with money mule payout operations. This structural anomaly, combined with the automated signals indicating an anomalous transaction amount (1949.13) and significant balance drain (81%), elevates the risk significantly. The recipient (DOM58085) is a single destination receiving funds from this high-out-degree sender."
       },
       "geographic": {
         "agent": "geographic",
@@ -4247,8 +4247,8 @@
     "verdict": {
       "transaction_id": "8b678de6-4de8-4a2d-b523-aa64dce4eb5f",
       "is_fraud": true,
-      "confidence": 0.85,
-      "reasoning": "The transaction meets the criteria for fraud based on specialist consensus (3 specialists rated risk as HIGH) and the economic scaling rule for the \u20ac1,000\u2013\u20ac10,000 range. The combination of a significant statistical outlier in amount (nearly 8x the median), an 81% balance drain, and the sender's documented high vulnerability to phishing (account takeover risk) provides strong evidence of unauthorized activity. While the description suggests rent, the drastic increase in payment size to a previously small-value recipient and the sender's high-degree fan-out pattern support a conclusion of account compromise."
+      "confidence": 0.9,
+      "reasoning": "Four out of five specialists (Velocity, Amount, Behavioral, Relationship) have assessed this transaction as HIGH risk. The transaction exhibits a clear balance drain (81%), a significant statistical outlier in amount (nearly 10x the previous payment to the same recipient), and a structural FAN_OUT pattern. Given the sender's high vulnerability to phishing and the combination of these indicators, the transaction is highly likely to be fraudulent despite the plausible description."
     },
     "final": "fraud"
   },
@@ -4306,7 +4306,7 @@
         "patterns_detected": [
           "FAN_OUT"
         ],
-        "reasoning": "The transaction amount (988.47) is a significant outlier based on automated checks (High anomaly score). Furthermore, the sender (CSPR-GRHL-800-ILM-1) is a high-volume sender, exhibiting a clear FAN_OUT pattern, sending to 26 distinct recipients in the 2-hop graph, which is characteristic of a mule payout operation. The recipient (RENT75951) receives funds from this sender and another high-volume sender (VLNT-SLVS-7DC-PIO-0), suggesting aggregation or collection, although RENT75951 itself has an out_degree of 0. The combination of a highly anomalous amount and the sender's role as a major distributor strongly indicates fraudulent activity, likely related to the sender's high phishing vulnerability noted in the citizen profile."
+        "reasoning": "The transaction amount (988.47) is a significant outlier based on automated checks (High anomaly score). The sender, CSPR-GRHL-800-ILM-1, is connected to multiple downstream nodes (26 outgoing edges in the 2-hop graph), suggesting a potential FAN_OUT pattern, where funds are being distributed. Furthermore, the sender's profile indicates high vulnerability to phishing, which, combined with the anomalous amount and off-hours timing (from temporal check), strongly suggests potential fraud, possibly related to account takeover or mule activity originating from the sender."
       },
       "geographic": {
         "agent": "geographic",
@@ -4322,7 +4322,7 @@
       "transaction_id": "e0ad9503-b0cb-456e-a0c5-68507cdb38fb",
       "is_fraud": true,
       "confidence": 0.9,
-      "reasoning": "The transaction meets the criteria for fraud based on a strong consensus from 4 out of 5 specialists (Velocity, Amount, Behavioral, and Relationship) who all rated the risk as HIGH. Specifically, the Relationship specialist identified a 'FAN_OUT' pattern indicative of a mule operation, and the Behavioral specialist noted a significant amount anomaly and new payee/off-hours activity. Given the sender's high phishing vulnerability and the statistical outlier status of the transaction amount, the evidence strongly suggests account takeover or unauthorized use."
+      "reasoning": "Four out of five specialists (Velocity, Amount, Behavioral, Relationship) have assessed this transaction as HIGH risk with high confidence levels (0.70-0.90). The transaction triggers multiple fraud indicators: a significant statistical amount anomaly (z=9.7), a FAN_OUT pattern in the relationship graph, and off-hours activity. While the description claims it is a rent payment, the recipient IBAN is Italian for a property in Germany, and the sender is a known high-risk phishing target. The consensus among specialists and the presence of multiple high-risk signals confirm this as a fraudulent transaction."
     },
     "final": "fraud"
   },
@@ -4556,11 +4556,11 @@
       "velocity": {
         "agent": "velocity",
         "risk_level": "high",
-        "confidence": 0.9,
+        "confidence": 0.8,
         "patterns_detected": [
           "FREQUENCY_SHIFT"
         ],
-        "reasoning": "The transaction amount (\u20ac454.06) is flagged as a significant outlier compared to the sender's historical median transaction size (\u20ac179.69, MAD=49). This large, anomalous amount, combined with the fact that it is a transfer to a new payee, strongly suggests an account takeover or fraud, especially given the high-risk profile (84yo, high phishing exposure, inconsistent travel history). While there is no immediate burst or card testing, the deviation from established spending norms is severe enough to warrant a high-risk assessment."
+        "reasoning": "The transaction amount (\u20ac454.06) is a significant outlier compared to the sender's recent history (median \u20ac179.69, MAD \u20ac49), which is flagged by the automated amount anomaly check. Furthermore, the description 'Emergency fund transfer' combined with a new payee and a high outlier amount suggests an unusual, potentially coerced, transfer. While the time of day (13:45) is not unusual hours, the combination of high anomaly and new payee strongly suggests fraud, especially given the subject's high vulnerability profile (84yo, high phishing target)."
       },
       "amount": {
         "agent": "amount",
@@ -4570,43 +4570,42 @@
           "STATISTICAL_OUTLIER",
           "FIRST_LARGE"
         ],
-        "reasoning": "The transaction amount of \u20ac454.06 is flagged as a significant statistical outlier based on the sender's historical data (MAD outlier, z=5.3). While the amount is not extremely large relative to the total balance (\u20ac27k), it is significantly higher than the sender's average transaction amount (\u20ac259.36 overall, \u20ac524.18 within-system). Furthermore, the profile indicates the user is an elderly, high-risk individual (phishing target) who recently exhibited highly anomalous international travel (Kusapin, Panama), suggesting potential account takeover or social engineering leading to this unusual transfer to a new payee. The automated check confirms the anomaly."
+        "reasoning": "The transaction amount of \u20ac454.06 is flagged as a significant statistical outlier based on the sender's historical data (MAD outlier, z=5.3). While the amount is not extremely high relative to the account balance (less than 2% drain), it is significantly larger than the sender's average transaction size (\u20ac259.36 overall, \u20ac524.18 within-system average, but the external/cash-out history is much lower). Furthermore, this amount is the largest transaction sent to this specific new payee, triggering a 'FIRST_LARGE' concern relative to the recipient relationship. Given the high vulnerability profile (84yo, phishing target), this statistical anomaly combined with a new, moderately sized transfer warrants a high risk assessment."
       },
       "behavioral": {
         "agent": "behavioral",
         "risk_level": "high",
-        "confidence": 0.9,
+        "confidence": 0.85,
         "patterns_detected": [
           "NEW_PAYEE",
           "AMOUNT_ANOMALY"
         ],
-        "reasoning": "The transaction involves a brand new payee ('VNDMR99282') which is a significant behavioral change, as the sender has only 15 unique counterparties over a long history. Furthermore, the amount (\u20ac454.06) is a clear outlier compared to the sender's average transaction amount (\u20ac259.36 overall, \u20ac524.18 within system) and is flagged by the automated system as a MAD outlier. The description 'Emergency fund transfer' for a new payee adds a social engineering layer often seen in fraud. This combination of new payee and high amount anomaly strongly suggests account takeover or coercion, aligning with the high-risk profile noted in the pre-assessment (age, phishing vulnerability, unusual travel)."
+        "reasoning": "The transaction involves a brand new recipient ('VNDMR99282') which is a significant behavioral change, as the sender has only 15 unique counterparties over a year. Furthermore, the amount of \u20ac454.06 is a clear statistical outlier compared to the sender's historical average transaction amount (\u20ac259.36 overall, \u20ac524.18 within system transfers). This is strongly flagged by automated checks. Although the description mentions 'Emergency fund transfer,' the combination of a new payee and a high outlier amount, especially given the profile notes the user is a high-vulnerability phishing target, elevates the risk significantly. No recent dormancy or frequency shift was noted, but the NEW_PAYEE + AMOUNT_ANOMALY combination is sufficient for high risk."
       },
       "relationship": {
         "agent": "relationship",
-        "risk_level": "high",
-        "confidence": 0.9,
+        "risk_level": "medium",
+        "confidence": 0.7,
         "patterns_detected": [
           "FAN_OUT"
         ],
-        "reasoning": "The sender (NNLL-BRTU-7D3-RAV-0) has 15 outgoing edges in the 2-hop graph, indicating a potential FAN_OUT pattern, which is characteristic of a mule payout or distribution scheme. This structural anomaly, combined with the automated signal indicating a high amount anomaly (\u20ac454.06 is a significant outlier relative to the sender's typical transaction profile, as suggested by the high z-score/MAD), strongly suggests fraudulent activity. The recipient (VNDMR99282) is a new payee, further increasing suspicion in conjunction with the high amount and graph structure."
+        "reasoning": "The sender (NNLL-BRTU-7D3-RAV-0) has a high out-degree (15 outgoing edges in the 2-hop graph) and sends money to many different entities, including the recipient VNDMR99282, which is a new payee. This suggests a potential FAN_OUT pattern, characteristic of a mule payout operation, where funds are being distributed. This suspicion is amplified by the automated signal indicating the transaction amount is a significant anomaly (MAD outlier). While the sender's profile suggests high vulnerability to phishing, the graph structure showing distribution to many nodes supports a structural risk assessment of medium-high, despite the transaction amount being relatively small in the context of the sender's overall activity."
       },
       "geographic": {
         "agent": "geographic",
         "risk_level": "medium",
         "confidence": 0.5,
         "patterns_detected": [
-          "LIFESTYLE_MISMATCH",
-          "MOBILITY_VIOLATION"
+          "LIFESTYLE_MISMATCH"
         ],
-        "reasoning": "The transaction is an internal transfer within Italy (implied by IBAN structure and lack of location data suggesting international travel for this specific transaction). The amount (\u20ac454.06) is moderate. The description 'Emergency fund transfer' suggests urgency. The citizen is 84, retired, and has a high phishing risk. While the citizen has shown high mobility previously (visiting Kusapin, Panama, and Port Chester, USA), this specific transaction is local/domestic. The mismatch arises because the citizen's profile notes that the high mobility (like visiting Kusapin) is already uncharacteristic for a pensioner, suggesting potential identity compromise or unusual circumstances. However, since this transaction is a domestic transfer described as 'emergency,' it is plausible if the emergency is local, despite the underlying risk profile being high due to past anomalous travel."
+        "reasoning": "The transaction is an 'Emergency fund transfer' of \u20ac454.06 to an unknown recipient (VNDMR99282) within Italy (implied by IBAN starting with IT). The sender is 84 years old and has high mobility, having recently visited Kusapin (Panama) and Port Chester (USA). While the transfer amount is not excessively high, the description 'Emergency fund transfer' combined with the high vulnerability score (high phishing target) suggests a potential social engineering attempt (e.g., grandparent scam). However, the citizen has demonstrated high mobility and has previously traveled internationally, making a domestic emergency transfer plausible, though suspicious given the vulnerability profile. The lack of location data for the transaction prevents a definitive geographic check, but the domestic IBAN suggests it is not an impossible travel scenario."
       }
     },
     "verdict": {
       "transaction_id": "06db3a7f-8746-435c-9736-6fe6f6d54220",
       "is_fraud": true,
-      "confidence": 0.95,
-      "reasoning": "The transaction meets the criteria for fraud based on specialist consensus (4 out of 5 specialists rated the risk as HIGH). The combination of a new payee, a significant statistical amount anomaly (z=5.3), and the 'Emergency fund transfer' description is a classic social engineering indicator. Given the sender's high-risk profile (84-year-old, high phishing exposure, and uncharacteristic travel history), this transaction is highly likely to be the result of account takeover or coercion."
+      "confidence": 0.85,
+      "reasoning": "Three out of five specialists (Velocity, Amount, Behavioral) assessed the transaction as HIGH risk. The transaction involves a new payee, a significant statistical amount anomaly (z=5.3), and a suspicious 'Emergency fund' description, which is a classic indicator of social engineering targeting vulnerable elderly individuals. Given the subject's high vulnerability profile and history as a frequent phishing target, the consensus of high-risk assessments confirms this as a fraudulent transaction."
     },
     "final": "fraud"
   },
@@ -4819,12 +4818,12 @@
     "specialist_results": {
       "velocity": {
         "agent": "velocity",
-        "risk_level": "high",
-        "confidence": 0.8,
+        "risk_level": "medium",
+        "confidence": 0.7,
         "patterns_detected": [
           "FREQUENCY_SHIFT"
         ],
-        "reasoning": "The transaction amount of \u20ac781.01 is a significant outlier compared to the sender's median transaction size (\u20ac75), which is flagged by the amount anomaly check. Furthermore, the history shows a recurring payment to the same recipient ('HOME28625') for 'Rent payment' (\u20ac765.25 in Dec, \u20ac787.59 in Sep). The current payment (\u20ac781.01) is very close to these established recurring payments, suggesting it might be legitimate rent. However, the pre-assessment flags high risk due to the citizen profile (84yo, high phishing exposure, inconsistent travel history including Kusapin). The timing itself does not show an immediate burst or unusual hours (15:11:55 local time is standard afternoon). Given the high external risk signals (phishing, location anomaly) combined with a large, but contextually plausible, transaction amount, the risk remains high, leaning on the external context rather than the immediate timing pattern."
+        "reasoning": "The transaction amount of 781.01 is a significant outlier compared to the sender's median transaction amount (75) and is flagged by the amount anomaly check. However, the description 'Rent payment Oct - Casa Tua' suggests a recurring, expected payment. The history shows a previous rent payment to the same recipient (HOME28625) of 765.25 just one month prior (Dec 5th, 2087 vs Oct 5th, 2087 in the transaction under review, assuming the history is chronologically ordered backwards from the current transaction's timestamp 3716197915.0). The current amount is slightly higher than the previous month's rent, which is plausible for rent adjustments. The primary risk signal comes from the context provided by the automated rules: the transaction occurred only 1.5 days after a phishing event, suggesting the account might be compromised or the user is acting under duress/deception, despite the payment appearing routine. This timing shift combined with the high amount anomaly pushes the risk to medium, overriding the routine nature of the payment description."
       },
       "amount": {
         "agent": "amount",
@@ -4833,7 +4832,7 @@
         "patterns_detected": [
           "STATISTICAL_OUTLIER"
         ],
-        "reasoning": "The transaction amount of 781.01 is flagged as a strong statistical outlier (MAD outlier with z=8.2) compared to the sender's historical average transaction size (Avg: 259.36, Median: 75). Although the amount is not large enough to trigger threshold evasion, the extreme statistical deviation, combined with the high contextual risk factors (age, high phishing exposure, and recent unusual international travel to Kusapin), elevates the risk significantly. The automated anomaly check confirms this is highly unusual for the account history."
+        "reasoning": "The transaction amount of 781.01 is flagged as a significant statistical outlier based on the account's historical data (MAD outlier, z=8.2). While the recipient ('HOME28625') is a known counterparty, the amount is far outside the sender's typical spending range (Avg: 259.36, Max: 859.45, but 781.01 is an extreme deviation from the median). This is compounded by the medium risk signal indicating the transfer occurred shortly after a phishing event, suggesting the outlier amount might be related to a successful social engineering attempt on this high-vulnerability, elderly user."
       },
       "behavioral": {
         "agent": "behavioral",
@@ -4843,7 +4842,7 @@
           "NEW_PAYEE",
           "DORMANT_REACTIVATION"
         ],
-        "reasoning": "The transaction amount (781.01) is a significant outlier compared to the sender's average transaction amount (Avg: 259.36, MAD outlier detected). Although the recipient 'HOME28625' is a known counterparty (used for rent payments in Sep and Dec), the current transaction date (Oct 5th) is only 1.5 days after a detected phishing event, suggesting a possible redirect or immediate exploitation following a social engineering attack. Furthermore, the profile indicates the user has been inactive for 28 days (last transaction Sep 7th, current Oct 5th), and this large, anomalous payment occurs immediately upon reactivation, coinciding with the phishing signal. This combination strongly suggests account takeover or coercion."
+        "reasoning": "The transaction amount ($781.01) is a significant outlier compared to the sender's average transaction amount ($259.36) and is flagged by the amount anomaly check. Crucially, the recipient 'HOME28625' appears in the profile's known counterparties, but the history shows a previous payment to this recipient ($765.25 on 2087-12-05) and another one ($787.59 on 2087-09-05). However, the current transaction date (2087-10-05) is *before* the December payment, suggesting this is a recurring payment. The key behavioral shift is the timing relative to the phishing signal: this transfer occurred only 1.5 days after a phishing attempt, suggesting a possible redirect or immediate follow-up action based on social engineering. Given the high amount anomaly and the immediate proximity to a phishing event, the risk is elevated, even if the payee is known for rent."
       },
       "relationship": {
         "agent": "relationship",
@@ -4852,23 +4851,23 @@
         "patterns_detected": [
           "FAN_OUT"
         ],
-        "reasoning": "The sender (NNLL-BRTU-7D3-RAV-0) has 15 outgoing edges in the 2-hop graph, indicating a potential FAN_OUT structure, which is common for mule payout operations. This is strongly supported by the automated signal indicating a high amount anomaly (781.01 is a MAD outlier) and the medium risk signal linking the transfer to a recent phishing event (1.5 days prior). The recipient (HOME28625) is receiving funds from the sender, and the sender's profile shows highly anomalous travel patterns (visiting Kusapin) inconsistent with their stated profile (84yo retired pensioner in Ravenna), suggesting the account is compromised or being used as a mule. The combination of high anomaly, recent phishing link, and clear graph structure points to high risk."
+        "reasoning": "The sender (NNLL-BRTU-7D3-RAV-0) is sending money to 12 distinct empty nodes ('') and 15 other distinct nodes within the 2-hop graph, indicating a high FAN_OUT pattern typical of a mule payout operation. This structural pattern, combined with the high amount anomaly (MAD outlier) and the context that the sender is a high-vulnerability phishing target, strongly suggests this transaction is part of a larger illicit flow, despite the description claiming it is a 'Rent payment'."
       },
       "geographic": {
         "agent": "geographic",
         "risk_level": "low",
         "confidence": 0.3,
         "patterns_detected": [
-          "CONSISTENT_PAYMENT_TYPE"
+          "NONE"
         ],
-        "reasoning": "The transaction is a domestic transfer (IT IBAN to IT IBAN) for a rent payment ('Rent payment Oct - Casa Tua') of \u20ac781.01. This is a highly routine and expected transaction for a resident paying rent in Italy. Although the citizen profile notes high vulnerability to phishing and unusual international travel (Kusapin, Port Chester), this specific transaction aligns perfectly with the expected behavior of a resident paying recurring housing costs in their home country. The location data shows the last ping was in Ravenna on 2087-10-31, and the transaction timestamp is 2087-10-05, meaning the transaction occurred while the citizen was physically present in Ravenna, consistent with paying local rent. Low risk based on transaction nature."
+        "reasoning": "The transaction is a domestic transfer (\u20ac781.01) from an Italian IBAN (IT...) to another Italian IBAN (IT...), described as 'Rent payment Oct - Casa Tua'. The sender is located in Ravenna, Italy, and all recent location pings confirm activity in Ravenna. The amount is consistent with a monthly rent payment for a retired individual. Although the citizen profile notes high vulnerability to phishing, this specific transaction appears routine and geographically consistent with the sender's home base. No immediate red flags are raised by this specific payment."
       }
     },
     "verdict": {
       "transaction_id": "c5a2deb5-2744-4f20-8ebb-f041a7dbaacd",
       "is_fraud": true,
       "confidence": 0.85,
-      "reasoning": "The transaction meets the criteria for fraud based on the specialist consensus (4 out of 5 specialists rated the risk as HIGH). Despite the transaction appearing to be a recurring rent payment, the combination of the sender's high vulnerability profile (84yo, high phishing exposure), the recent phishing event 1.5 days prior, the statistical anomaly of the amount, and the identified FAN_OUT graph structure strongly suggests account takeover or coercion. The high confidence from multiple specialists outweighs the geographic consistency."
+      "reasoning": "While the transaction appears to be a recurring rent payment, the specialist consensus is heavily skewed toward fraud. Three specialists (Amount, Behavioral, Relationship) rated the risk as HIGH, meeting the threshold for a fraud decision. The Relationship specialist identified a 'FAN_OUT' pattern indicative of mule activity, and the Behavioral specialist noted the high-risk timing relative to a recent phishing event. Despite the plausible description, the structural evidence of illicit flow and the subject's high vulnerability profile outweigh the appearance of a routine payment."
     },
     "final": "fraud"
   },

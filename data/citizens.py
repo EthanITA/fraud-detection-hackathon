@@ -6,6 +6,8 @@ import math
 import re
 from pathlib import Path
 
+from .audio import transcribe_audio_files
+
 
 # %% _haversine_km
 def _haversine_km(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
@@ -187,6 +189,27 @@ def _classify_comms(texts: list[str]) -> dict:
     }
 
 
+# %% _classify_audio
+def _classify_audio(transcripts: list[dict]) -> dict:
+    """Classify audio transcripts for fraud-relevant signals."""
+    texts = [t["text"] for t in transcripts]
+    stress_keywords = [
+        "worried", "scared", "urgent", "help me", "stolen", "hacked",
+        "suspicious", "fraud", "scam", "someone called", "pretending",
+        "gave them", "transferred", "told me to", "threatened",
+        "account compromised", "verify", "password", "pin", "code",
+    ]
+    stress_count = sum(
+        1 for text in texts
+        if any(kw in text.lower() for kw in stress_keywords)
+    )
+    return {
+        "total_calls": len(transcripts),
+        "stress_signals": stress_count,
+        "stress_ratio": stress_count / len(transcripts) if transcripts else 0.0,
+    }
+
+
 # %% build_citizen_profiles
 def build_citizen_profiles(dir_path: str) -> dict[str, dict]:
     """Master function: load all supplementary data, merge into per-citizen profiles.
@@ -214,6 +237,9 @@ def build_citizen_profiles(dir_path: str) -> dict[str, dict]:
     sms_by_name = load_sms(dir_path, known_names)
     mails_by_name = load_mails(dir_path, known_names)
 
+    # Audio transcripts (keyed by "firstname lastname" lowercase)
+    audio_by_name = transcribe_audio_files(dir_path)
+
     # Build biotag → user mapping via IBAN
     users_by_biotag: dict[str, dict] = {}
     for iban, user in users_by_iban.items():
@@ -233,6 +259,11 @@ def build_citizen_profiles(dir_path: str) -> dict[str, dict]:
         user_sms = sms_by_name.get(first_name, [])
         user_mails = mails_by_name.get(first_name, [])
 
+        # Link audio by full name
+        last_name = user.get("last_name", "")
+        full_name_key = f"{first_name} {last_name}".lower().strip()
+        user_audio = audio_by_name.get(full_name_key, [])
+
         # Year is 2087 in the challenge
         age = 2087 - user.get("birth_year", 2050) if user.get("birth_year") else None
         parts = []
@@ -251,16 +282,21 @@ def build_citizen_profiles(dir_path: str) -> dict[str, dict]:
 
         sms_summary = _classify_comms(user_sms)
         mail_summary = _classify_comms(user_mails)
+        audio_summary = _classify_audio(user_audio)
         if sms_summary["phishing_ratio"] > 0.1:
             parts.append(f"phishing target ({sms_summary['phishing_attempts']} attempts)")
+        if audio_summary["stress_ratio"] > 0.1:
+            parts.append(f"stress in calls ({audio_summary['stress_signals']}/{audio_summary['total_calls']})")
 
         citizens[biotag] = {
             "user": user,
             "location": loc,
             "sms": sms_summary,
             "mails": mail_summary,
+            "audio": audio_summary,
             "raw_sms": user_sms,
             "raw_mails": user_mails,
+            "raw_audio": [t["text"] for t in user_audio],
             "description": user.get("description", ""),
             "summary": ", ".join(parts) if parts else "no citizen data",
         }

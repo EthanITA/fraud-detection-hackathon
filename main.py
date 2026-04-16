@@ -26,7 +26,7 @@ def main():
         dataset_path = (
             sys.argv[1]
             if len(sys.argv) > 1
-            else "challenges/2. Brave New World - train"
+            else "challenges/3. Deus Ex - train"
         )
         print(f"Using dataset: {dataset_path}")
 
@@ -58,7 +58,11 @@ def main():
         max_tokens=100,
     )
     summary_llm.invoke(
-        [HumanMessage(content=f"Fraud detection complete. {len(result['fraud_ids'])} of {len(result.get('transactions', []))} transactions flagged.")],
+        [
+            HumanMessage(
+                content=f"Fraud detection complete. {len(result['fraud_ids'])} of {len(result.get('transactions', []))} transactions flagged."
+            )
+        ],
         config={
             "callbacks": [get_langfuse_callback()],
             "metadata": {"langfuse_session_id": session_id},
