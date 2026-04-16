@@ -21,6 +21,7 @@ _TOOL_CONTEXT: dict[str, tuple[str, ...]] = {
     "check_mule_chain":           ("txn", "graph"),
     "check_circular_flow":        ("txn", "graph"),
     "check_impossible_travel":    ("txn", "citizen"),
+    "check_phishing_window":      ("txn", "citizen"),
 }
 
 

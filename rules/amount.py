@@ -81,7 +81,7 @@ def check_balance_drain(txn_json: str, profile_json: str) -> str:
     txn = json.loads(txn_json)
     profile = json.loads(profile_json)
     amount = txn.get("amount", 0)
-    balance = profile.get("balance", 0)
+    balance = profile.get("balance") or 0
 
     if balance <= 0:
         return json.dumps({"risk": RiskLevel.LOW, "reason": "No positive balance to assess"})

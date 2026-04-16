@@ -61,6 +61,8 @@ TOOL_WEIGHTS: dict[str, float] = {
     "check_circular_flow": 2.0,
     # geographic
     "check_impossible_travel": 2.0,
+    # phishing
+    "check_phishing_window": 2.0,
 }
 
 # %% always-flag combos
@@ -71,10 +73,9 @@ ALWAYS_FLAG_COMBOS: list[tuple[str, set[str]]] = [
     ("BURST+BALANCE_DRAIN", {"check_velocity", "check_balance_drain"}),
     ("NEW_PAYEE+AMOUNT_ANOMALY", {"check_new_payee", "check_amount_anomaly"}),
     ("MULE_CHAIN+STRUCTURING", {"check_mule_chain", "check_amount_anomaly"}),
-    (
-        "IMPOSSIBLE_TRAVEL+BALANCE_DRAIN",
-        {"check_impossible_travel", "check_balance_drain"},
-    ),
+    ("IMPOSSIBLE_TRAVEL+BALANCE_DRAIN", {"check_impossible_travel", "check_balance_drain"}),
+    ("IMPOSSIBLE_TRAVEL+NEW_PAYEE", {"check_impossible_travel", "check_new_payee"}),
+    ("PHISHING+NEW_PAYEE", {"check_phishing_window", "check_new_payee"}),
 ]
 
 # %% amount-aware triage thresholds
@@ -88,8 +89,8 @@ ALWAYS_FLAG_COMBOS: list[tuple[str, set[str]]] = [
 AMOUNT_TRIAGE: list[tuple[float, float, float]] = [
     (10_000, 0, 4),  # >€10k: almost nothing auto-legit, cautious fraud threshold
     (1_000, 1, 5),  # €1k–€10k
-    (100, 1, 6),  # €100–€1k (standard)
-    (0, 2, 8),  # <€100: need very strong signals
+    (100, 1, 5),  # €100–€1k
+    (0, 1, 5),  # <€100: phishing-driven fraud can be small amounts
 ]
 
 # %% thresholds
@@ -120,18 +121,18 @@ FIRST_LARGE_MEDIUM = 3  # multiple of historical max → MEDIUM
 FIRST_LARGE_MIN_TXNS = 5  # min txn history before HIGH can trigger
 
 # Behavioral
-NEW_PAYEE_HIGH_AMOUNT = 1_000  # € to unknown payee → HIGH
-NEW_PAYEE_MEDIUM_AMOUNT = 200  # € to unknown payee → MEDIUM
+NEW_PAYEE_HIGH_AMOUNT = 500  # € to unknown payee → HIGH
+NEW_PAYEE_MEDIUM_AMOUNT = 30  # € to unknown payee → MEDIUM
 DORMANT_HIGH_DAYS = 180  # days inactive → HIGH (if amount > avg)
 DORMANT_MEDIUM_DAYS = 90  # days inactive → MEDIUM
 FREQUENCY_SHIFT_HIGH = 10  # rate multiplier vs baseline → HIGH
 FREQUENCY_SHIFT_MEDIUM = 5  # rate multiplier vs baseline → MEDIUM
 
 # Graph
-FAN_IN_HIGH = 10  # in-degree (distinct senders) → HIGH
-FAN_IN_MEDIUM = 5  # in-degree → MEDIUM
-FAN_OUT_HIGH = 10  # out-degree (distinct receivers in 24h) → HIGH
-FAN_OUT_MEDIUM = 5  # out-degree → MEDIUM
+FAN_IN_HIGH = 50  # in-degree (distinct senders) → HIGH
+FAN_IN_MEDIUM = 30  # in-degree → MEDIUM
+FAN_OUT_HIGH = 50  # out-degree (distinct receivers in 24h) → HIGH
+FAN_OUT_MEDIUM = 30  # out-degree → MEDIUM
 MULE_FORWARD_HIGH = 0.7  # fraction of received amount forwarded → HIGH
 MULE_FORWARD_MEDIUM = 0.5  # fraction forwarded → MEDIUM
 MULE_WINDOW_HIGH = 1_800  # seconds (30 min) — forward window → HIGH

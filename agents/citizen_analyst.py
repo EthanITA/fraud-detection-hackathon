@@ -9,7 +9,7 @@ from langchain_openai import ChatOpenAI
 from pydantic import BaseModel
 
 from config import OPENROUTER_API_KEY
-from config.models import LLM_BASE_URL, MAX_TOKENS_SPECIALIST, SPECIALIST_MODEL, TEMPERATURE
+from config.models import AGGREGATOR_MODEL, LLM_BASE_URL, MAX_TOKENS_SPECIALIST, TEMPERATURE
 from config.tracing import get_langfuse_callback
 from utils.llm_cache import cache_get, cache_set
 
@@ -27,34 +27,34 @@ class CitizenAssessment(BaseModel):
 
 # %% prompt
 CITIZEN_ANALYSIS_PROMPT = """\
-You are a fraud risk analyst performing a PRE-SCREENING assessment of a citizen.
+You are a fraud risk analyst performing a PRE-SCREENING assessment of a citizen in the year 2087.
 
-You will receive a citizen's full profile: demographics, location history, health/wellness data, and a narrative persona description.
+You will receive a citizen's profile: demographics (name, age, job, salary, residence), GPS location history, SMS/email communication analysis, and a narrative description.
 
 Your job: assess this citizen's BASELINE risk profile BEFORE looking at any transactions.
 
 ANALYZE THESE DIMENSIONS:
 
-1. CONTRADICTIONS — Compare the persona description against the actual data:
-   - Persona says "rarely travels" but location data shows foreign cities → flag it
-   - Persona says "active lifestyle" but health data shows declining activity → flag it
-   - Persona says "low mobility" but max_distance > 5000km → flag it
+1. CONTRADICTIONS — Compare the description against the actual data:
+   - Description says "rarely travels" but location data shows foreign cities → flag it
+   - Description says "low mobility" but max_distance > 5000km → flag it
+   - Salary doesn't match job type or spending patterns → flag it
 
 2. VULNERABILITY — Assess how susceptible this citizen is to fraud/account takeover:
-   - Age 80+ with declining health = HIGH vulnerability
-   - Social isolation + declining activity = HIGH vulnerability
-   - Active professional with strong social network = LOW vulnerability
+   - High phishing exposure (many phishing attempts in SMS/email) = HIGH vulnerability
+   - Low income + low digital literacy (from description) = HIGH vulnerability
+   - Professional with strong security awareness = LOW vulnerability
 
 3. EXPECTED BEHAVIOR — What transactions would be NORMAL for this person:
-   - A retired widow in rural France: small local purchases, pharmacy, bakery
-   - A retail entrepreneur: business travel, supplier payments, varied merchants
+   - A ride-share driver: fuel, vehicle maintenance, low-value personal purchases
+   - A freelance designer: software subscriptions, coworking, varied e-commerce
+   - An office clerk: routine rent, bills, modest personal spending
 
 4. RISK FACTORS — List specific flags:
-   - impossible_travel_detected: location data contradicts persona mobility
-   - elderly_vulnerable: age 80+ with health issues
-   - declining_health: activity/sleep trends worsening
-   - social_isolation: narrowing social circle
-   - erratic_behavior: inconsistent patterns in recent data
+   - phishing_target: high ratio of phishing attempts in communications
+   - impossible_travel: location data shows implausible movements
+   - income_mismatch: spending potential vs salary inconsistency
+   - high_mobility_uncharacteristic: travel patterns don't match job/description
 
 CRITICAL: Output ONLY the JSON object below. No reasoning, no preamble, no markdown fences. Start your response with {{ and end with }}.
 {{"vulnerability_level": "high"|"medium"|"low", "contradictions": [...], "expected_behavior": "...", "risk_factors": [...], "summary": "..."}}
@@ -62,7 +62,7 @@ CRITICAL: Output ONLY the JSON object below. No reasoning, no preamble, no markd
 
 # %% LLM client
 _llm = ChatOpenAI(
-    model=SPECIALIST_MODEL,
+    model=AGGREGATOR_MODEL,
     base_url=LLM_BASE_URL,
     api_key=OPENROUTER_API_KEY or "ollama",
     temperature=TEMPERATURE,
@@ -78,11 +78,14 @@ def analyze_citizen(
     """Run a single LLM call to pre-assess one citizen's risk profile."""
     from utils import extract_json
 
+    # Exclude raw pings from location to save tokens
+    loc = {k: v for k, v in citizen.get("location", {}).items() if k != "pings"}
     user_data = json.dumps({
         "demographics": citizen.get("user", {}),
-        "location_summary": citizen.get("location", {}),
-        "health_status": citizen.get("status", {}),
-        "persona": citizen.get("persona", "No persona available."),
+        "location_summary": loc,
+        "sms_analysis": citizen.get("sms", {}),
+        "mail_analysis": citizen.get("mails", {}),
+        "description": citizen.get("description", "No description available."),
     }, default=str)
 
     # Check cache first
@@ -128,7 +131,7 @@ def run_citizen_analysis(state: dict) -> dict:
     print(f"Analyzing {len(citizens)} citizens...")
     for uid, citizen in citizens.items():
         # Skip citizens with no meaningful data
-        if not citizen.get("persona") and not citizen.get("location"):
+        if not citizen.get("description") and not citizen.get("location"):
             continue
 
         name = citizen.get("user", {}).get("first_name", uid)

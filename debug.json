@@ -1,549 +1,77 @@
 [
   {
-    "txn_id": "T001",
-    "amount": 150.0,
-    "triage": "auto_legit",
-    "rule_summary": "no signals",
-    "priority_rank": null,
-    "specialist_results": null,
-    "verdict": null,
-    "final": "legit"
-  },
-  {
-    "txn_id": "T002",
-    "amount": 200.0,
-    "triage": "auto_legit",
-    "rule_summary": "no signals",
-    "priority_rank": null,
-    "specialist_results": null,
-    "verdict": null,
-    "final": "legit"
-  },
-  {
-    "txn_id": "T003",
-    "amount": 500.0,
+    "txn_id": "b54bb23c-6703-4d7b-8149-411205534ef9",
+    "amount": 2816.15,
     "triage": "ambiguous",
-    "rule_summary": "check_velocity: Avg gap 30s between recent txns indicates burst activity. | check_temporal_pattern: Transaction at 2:00 UTC falls in off-hours window. | check_new_payee: New payee with moderate amount (\u20ac500.0).",
-    "priority_rank": 7,
-    "specialist_results": {
-      "velocity": {
-        "agent": "velocity",
-        "risk_level": "high",
-        "confidence": 0.8,
-        "patterns_detected": [
-          "BURST",
-          "UNUSUAL_HOURS",
-          "FREQUENCY_SHIFT"
-        ],
-        "reasoning": "The transaction history shows three transactions within 60 seconds. The current transaction and the two previous ones all occurred at 2:00-2:01 UTC, which is an unusual hour. The automated rules confirm high velocity and a medium temporal pattern. This strongly suggests a burst of activity, potentially an account being drained."
-      },
-      "amount": {
-        "agent": "amount",
-        "risk_level": "medium",
-        "confidence": 0.5,
-        "patterns_detected": [
-          "STATISTICAL_OUTLIER"
-        ],
-        "reasoning": "The transaction amount is at the upper end of the historical range, but within 2 standard deviations of the average. The account is new, and the amount is the minimum observed, which is slightly unusual. The velocity check indicates burst activity, adding to the concern, but the amount itself isn't drastically out of line."
-      },
-      "behavioral": {
-        "agent": "behavioral",
-        "risk_level": "high",
-        "confidence": 0.8,
-        "patterns_detected": [
-          "FREQUENCY_SHIFT",
-          "NEW_PAYEE"
-        ],
-        "reasoning": "The account is very new (first_seen and last_seen are almost identical) and exhibits a significant frequency shift \u2013 three transactions within 60 seconds. While the amount is within the historical range, the rapid succession of transactions to a new payee is highly suspicious. The automated rules confirm high velocity and a new payee."
-      },
-      "relationship": {
-        "agent": "relationship",
-        "risk_level": "high",
-        "confidence": 0.8,
-        "patterns_detected": [
-          "FAN_OUT",
-          "check_velocity"
-        ],
-        "reasoning": "Sender A003 has three recent transactions to new receivers (A004, A005, A006) within seconds of each other. This, combined with the high velocity signal, strongly suggests a fan-out pattern, potentially indicative of mule activity. The new payee signal also supports this assessment."
-      },
-      "geographic": {
-        "agent": "geographic",
-        "risk_level": "low",
-        "confidence": 0.3,
-        "patterns_detected": [],
-        "reasoning": "Insufficient data to determine risk. The transaction details and citizen profile are missing. A low confidence score is assigned due to the lack of information, assuming a default state of legitimacy until proven otherwise."
-      }
-    },
-    "verdict": {
-      "transaction_id": "T003",
-      "is_fraud": true,
-      "confidence": 0.85,
-      "reasoning": "Multiple specialists (Velocity, Behavioral, Relationship) assess HIGH risk with confidence > 0.8. The 'BURST' pattern is flagged by Velocity and confirmed by the rule results. The 'NEW_PAYEE' pattern is flagged by Behavioral and confirmed by the rule results. This combination strongly suggests fraudulent activity, likely a fan-out or account drain scenario."
-    },
-    "final": "fraud"
-  },
-  {
-    "txn_id": "T004",
-    "amount": 600.0,
-    "triage": "ambiguous",
-    "rule_summary": "check_velocity: Avg gap 30s between recent txns indicates burst activity. | check_temporal_pattern: Transaction at 2:00 UTC falls in off-hours window. | check_new_payee: New payee with moderate amount (\u20ac600.0).",
-    "priority_rank": 5,
-    "specialist_results": {
-      "velocity": {
-        "agent": "velocity",
-        "risk_level": "high",
-        "confidence": 0.8,
-        "patterns_detected": [
-          "BURST",
-          "UNUSUAL_HOURS",
-          "FREQUENCY_SHIFT"
-        ],
-        "reasoning": "The transaction history shows three transactions within 60 seconds. The current transaction and the first history transaction occur at the same timestamp, which is highly suspicious. The automated rules confirm high velocity and off-hours activity. This pattern strongly suggests an account takeover and rapid draining of funds."
-      },
-      "amount": {
-        "agent": "amount",
-        "risk_level": "medium",
-        "confidence": 0.5,
-        "patterns_detected": [
-          "STATISTICAL_OUTLIER"
-        ],
-        "reasoning": "The transaction amount is at the upper bound of the account's historical maximum, representing a statistical outlier. While not drastically outside the range, combined with the high velocity and new payee signals, it warrants further investigation. It's not a clear balance drain or structuring attempt."
-      },
-      "behavioral": {
-        "agent": "behavioral",
-        "risk_level": "medium",
-        "confidence": 0.7,
-        "patterns_detected": [
-          "FREQUENCY_SHIFT",
-          "NEW_PAYEE"
-        ],
-        "reasoning": "The account is very new (first seen just hours ago) and is exhibiting a significant increase in transaction frequency. While the amount is within the historical range, the rapid succession of transactions to multiple new payees is concerning. The automated rules also flagged high velocity and a new payee."
-      },
-      "relationship": {
-        "agent": "relationship",
-        "risk_level": "medium",
-        "confidence": 0.7,
-        "patterns_detected": [
-          "FAN_OUT",
-          "check_velocity"
-        ],
-        "reasoning": "Sender A003 has three recent outgoing transactions to previously unseen receivers (A004, A005, A006) within a short timeframe (30 seconds), indicated by the 'check_velocity' signal. This suggests a potential fan-out pattern, where A003 is distributing funds. While not a definitive mule chain, the burst activity and new payees raise suspicion."
-      },
-      "geographic": {
-        "agent": "geographic",
-        "risk_level": "low",
-        "confidence": 0.3,
-        "patterns_detected": [],
-        "reasoning": "Insufficient data to determine risk. The transaction details are minimal, and the citizen profile is missing. Without knowing anything about the sender, it's impossible to assess plausibility. Assuming a low risk due to lack of evidence, but this requires further investigation once citizen data is available."
-      }
-    },
-    "verdict": {
-      "transaction_id": "T004",
-      "is_fraud": true,
-      "confidence": 0.85,
-      "reasoning": "Velocity specialist flags HIGH with confidence 0.80, citing BURST and unusual hours. Behavioral and Relationship specialists also flag MEDIUM with confidence > 0.70, highlighting new payee and fan-out patterns. The combination of BURST + NEW_PAYEE + FAN_OUT strongly suggests fraudulent activity, even though the amount is not exceptionally high. The 'check_velocity' rule also confirms burst activity."
-    },
-    "final": "fraud"
-  },
-  {
-    "txn_id": "T005",
-    "amount": 550.0,
-    "triage": "ambiguous",
-    "rule_summary": "check_velocity: Avg gap 30s between recent txns indicates burst activity. | check_temporal_pattern: Transaction at 2:00 UTC falls in off-hours window. | check_new_payee: New payee with moderate amount (\u20ac550.0).",
-    "priority_rank": 6,
-    "specialist_results": {
-      "velocity": {
-        "agent": "velocity",
-        "risk_level": "high",
-        "confidence": 0.8,
-        "patterns_detected": [
-          "BURST",
-          "UNUSUAL_HOURS",
-          "FREQUENCY_SHIFT"
-        ],
-        "reasoning": "The transaction history shows three transactions within 60 seconds. The automated rules flagged high velocity and off-hours activity. This rapid series of transactions, especially at 2:00 UTC, strongly suggests an account compromise and potential draining attempt."
-      },
-      "amount": {
-        "agent": "amount",
-        "risk_level": "medium",
-        "confidence": 0.5,
-        "patterns_detected": [
-          "STATISTICAL_OUTLIER"
-        ],
-        "reasoning": "The transaction amount is within the historical range (min 500, max 600), but the automated rules indicate high velocity and a new payee. While not a clear outlier in amount, the burst activity and new payee raise concerns. The amount is a round number, but not significantly so. It's not a balance drain or threshold evasion."
-      },
-      "behavioral": {
-        "agent": "behavioral",
-        "risk_level": "high",
-        "confidence": 0.8,
-        "patterns_detected": [
-          "NEW_PAYEE",
-          "FREQUENCY_SHIFT"
-        ],
-        "reasoning": "The account is very new (first seen just hours ago) and is exhibiting a very high transaction frequency (3 transactions in quick succession). All transactions are to different payees. While the amounts are within the historical average, the rapid pace and multiple new payees are highly suspicious. The automated rules confirm high velocity and a new payee."
-      },
-      "relationship": {
-        "agent": "relationship",
-        "risk_level": "medium",
-        "confidence": 0.7,
-        "patterns_detected": [
-          "FAN_OUT",
-          "check_velocity"
-        ],
-        "reasoning": "Sender A003 has three recent outgoing transactions to previously unseen receivers (A004, A005, A006) within a short timeframe (30 seconds), as indicated by the 'check_velocity' signal. This suggests a potential fan-out pattern, where A003 is distributing funds. While not a definitive mule chain, the burst activity and new payees raise suspicion."
-      },
-      "geographic": {
-        "agent": "geographic",
-        "risk_level": "low",
-        "confidence": 0.3,
-        "patterns_detected": [],
-        "reasoning": "Insufficient data to determine risk. The transaction details are minimal, and the citizen profile is missing. Without knowing anything about the sender, it's impossible to assess plausibility. Assuming a low risk due to lack of evidence, but this requires further investigation once citizen data is available."
-      }
-    },
-    "verdict": {
-      "transaction_id": "T005",
-      "is_fraud": true,
-      "confidence": 0.85,
-      "reasoning": "Multiple specialists (Velocity, Behavioral) assess HIGH risk with high confidence (>= 0.8). The combination of 'BURST' and 'NEW_PAYEE' patterns is highly indicative of fraud. While the amount is not exceptionally large, the rapid series of transactions to new payees strongly suggests account compromise and potential fraudulent activity."
-    },
-    "final": "fraud"
-  },
-  {
-    "txn_id": "T006",
-    "amount": 9500.0,
-    "triage": "auto_fraud",
-    "rule_summary": "check_temporal_pattern: Transaction at 5:00 UTC falls in off-hours window. | check_balance_drain: Transaction drains 95% of account balance | check_new_payee: New payee with large amount (\u20ac9500.0).",
-    "priority_rank": null,
-    "specialist_results": null,
-    "verdict": null,
-    "final": "fraud"
-  },
-  {
-    "txn_id": "T007",
-    "amount": 4999.0,
-    "triage": "ambiguous",
-    "rule_summary": "check_amount_anomaly: Suspicious amount pattern: just below reporting limit | check_new_payee: New payee with large amount (\u20ac4999.0).",
-    "priority_rank": 1,
-    "specialist_results": {
-      "velocity": {
-        "agent": "velocity",
-        "risk_level": "high",
-        "confidence": 0.8,
-        "patterns_detected": [
-          "check_new_payee",
-          "check_amount_anomaly"
-        ],
-        "reasoning": "The transaction amount is suspiciously close to a reporting limit, and it's to a new payee. The history only contains this single transaction, making it impossible to assess frequency or typical behavior. This, combined with the automated rule results, strongly suggests a potential fraudulent attempt to extract funds."
-      },
-      "amount": {
-        "agent": "amount",
-        "risk_level": "high",
-        "confidence": 0.8,
-        "patterns_detected": [
-          "THRESHOLD_EVASION",
-          "FIRST_LARGE",
-          "BALANCE_DRAIN"
-        ],
-        "reasoning": "The transaction amount is just below a common reporting threshold (\u20ac5,000), it's the account's first large transaction, and it represents over 99% of the account balance being sent in a single transaction. The automated rules also flagged a new payee with a large amount."
-      },
-      "behavioral": {
-        "agent": "behavioral",
-        "risk_level": "high",
-        "confidence": 0.9,
-        "patterns_detected": [
-          "NEW_PAYEE",
-          "DORMANT_REACTIVATION"
-        ],
-        "reasoning": "The account is brand new (first_seen == timestamp of this transaction) and is sending a large amount to a new payee. This is a classic dormant reactivation + new payee fraud pattern. The amount is also just below a reporting limit, as flagged by the automated rules."
-      },
-      "relationship": {
-        "agent": "relationship",
-        "risk_level": "high",
-        "confidence": 0.8,
-        "patterns_detected": [
-          "check_amount_anomaly",
-          "check_new_payee",
-          "MULE_CHAIN"
-        ],
-        "reasoning": "The transaction amount is just below the reporting limit, and the receiver is a new payee with a large amount. The graph shows a chain-like structure (A019->A020->A021) and A009->A010, suggesting potential layering. While not a classic fan-in/out, the new payee and amount anomaly combined with the chain-like structure raise significant concerns."
-      },
-      "geographic": {
-        "agent": "geographic",
-        "risk_level": "low",
-        "confidence": 0.3,
-        "patterns_detected": [],
-        "reasoning": "Insufficient data to determine risk. The transaction details and citizen profile are missing. A low confidence score is assigned due to the lack of information, assuming a baseline level of risk until more data is available."
-      }
-    },
-    "verdict": {
-      "transaction_id": "T007",
-      "is_fraud": true,
-      "confidence": 0.9,
-      "reasoning": "Four out of five specialists assess the risk as HIGH with high confidence. The behavioral specialist flags a classic dormant reactivation + new payee pattern with very high confidence (0.90). The amount is just below a reporting threshold, and represents a very large percentage of the sender's balance, triggering multiple automated rules and specialist concerns (THRESHOLD_EVASION, BALANCE_DRAIN, FIRST_LARGE). This strongly indicates a fraudulent attempt to quickly extract funds."
-    },
-    "final": "fraud"
-  },
-  {
-    "txn_id": "T008",
-    "amount": 1000.0,
-    "triage": "ambiguous",
-    "rule_summary": "check_amount_anomaly: Suspicious amount pattern: round number (1000.0) | check_new_payee: New payee with moderate amount (\u20ac1000.0).",
-    "priority_rank": 8,
-    "specialist_results": {
-      "velocity": {
-        "agent": "velocity",
-        "risk_level": "medium",
-        "confidence": 0.7,
-        "patterns_detected": [
-          "BURST",
-          "check_amount_anomaly",
-          "check_new_payee"
-        ],
-        "reasoning": "The transaction history only contains one transaction, which is the current one under review. This is highly unusual and suggests a potential burst or account takeover. The amount is a round number, flagged by the amount anomaly check, and the payee is new. While a single transaction isn't definitive, the lack of history combined with the other signals raises concerns."
-      },
-      "amount": {
-        "agent": "amount",
-        "risk_level": "medium",
-        "confidence": 0.6,
-        "patterns_detected": [
-          "ROUND_NUMBER",
-          "FIRST_LARGE",
-          "BALANCE_DRAIN"
-        ],
-        "reasoning": "The transaction amount is a round number and represents a significant portion (20%) of the sender's balance. This is the account's first large transaction, increasing suspicion. While not a statistical outlier given the limited history, the combination of factors warrants a medium risk assessment."
-      },
-      "behavioral": {
-        "agent": "behavioral",
-        "risk_level": "high",
-        "confidence": 0.9,
-        "patterns_detected": [
-          "NEW_PAYEE",
-          "DORMANT_REACTIVATION"
-        ],
-        "reasoning": "The account is brand new (is_new: true) and this is its first transaction. The profile shows first_seen and last_seen are the same timestamp as the current transaction, indicating immediate activity upon account creation. The transaction is to a new payee (A011) and the amount matches the average and max amount sent, but given the account's newness, this is highly suspicious. This represents a dormant reactivation combined with a new payee."
-      },
-      "relationship": {
-        "agent": "relationship",
-        "risk_level": "medium",
-        "confidence": 0.7,
-        "patterns_detected": [
-          "FAN_IN"
-        ],
-        "reasoning": "A011 has an in-degree of 3, receiving transactions from A012, A013, and A014. This suggests a potential FAN_IN pattern, where multiple senders are directing funds to a single receiver. The amount (\u20ac1000.0) is flagged as potentially anomalous (round number), and the receiver is a new payee, increasing suspicion. While not a definitive mule chain, the converging flows warrant further investigation."
-      },
-      "geographic": {
-        "agent": "geographic",
-        "risk_level": "low",
-        "confidence": 0.3,
-        "patterns_detected": [],
-        "reasoning": "Insufficient data to determine risk. The transaction details and citizen profile are missing. A risk assessment cannot be performed without this information."
-      }
-    },
-    "verdict": {
-      "transaction_id": "T008",
-      "is_fraud": true,
-      "confidence": 0.85,
-      "reasoning": "Multiple specialists (Behavioral, Velocity, Relationship, Amount) indicate medium to high risk. The Behavioral specialist's HIGH confidence (0.90) assessment of NEW_PAYEE and DORMANT_REACTIVATION is particularly concerning. The Velocity assessment flags BURST and a new payee, and the Amount assessment flags ROUND_NUMBER and BALANCE_DRAIN. While the Geographic assessment is inconclusive, the convergence of signals from other specialists strongly suggests fraudulent activity. The amount is within the \u20ac1,000-\u20ac10,000 range, and the average confidence across specialists exceeds 0.5, triggering a flag."
-    },
-    "final": "fraud"
-  },
-  {
-    "txn_id": "T009",
-    "amount": 1500.0,
-    "triage": "ambiguous",
-    "rule_summary": "check_new_payee: New payee with large amount (\u20ac1500.0).",
-    "priority_rank": 4,
-    "specialist_results": {
-      "velocity": {
-        "agent": "velocity",
-        "risk_level": "medium",
-        "confidence": 0.7,
-        "patterns_detected": [
-          "BURST",
-          "check_new_payee"
-        ],
-        "reasoning": "The transaction history only contains one transaction, which is the current one under review. This is highly unusual and suggests a potential burst or account takeover scenario. The automated rule 'check_new_payee' also flags a high risk due to the large amount sent to a new payee. While more history is needed, the current data points towards a potentially fraudulent transaction."
-      },
-      "amount": {
-        "agent": "amount",
-        "risk_level": "medium",
-        "confidence": 0.6,
-        "patterns_detected": [
-          "FIRST_LARGE",
-          "STATISTICAL_OUTLIER"
-        ],
-        "reasoning": "The transaction amount is equal to the account's average and maximum transaction amount, but this is the account's first transaction. The amount represents a significant portion (18.75%) of the sender's balance, raising concerns. The automated rule 'check_new_payee' also flagged a high risk due to a new payee and large amount."
-      },
-      "behavioral": {
-        "agent": "behavioral",
-        "risk_level": "high",
-        "confidence": 0.9,
-        "patterns_detected": [
-          "NEW_PAYEE",
-          "DORMANT_REACTIVATION"
-        ],
-        "reasoning": "The account is brand new (is_new: true) and this is its first transaction. The amount is significant, and the automated rule check_new_payee flagged it as high risk. This represents a dramatic behavioral shift with no innocent explanation."
-      },
-      "relationship": {
-        "agent": "relationship",
-        "risk_level": "medium",
-        "confidence": 0.7,
-        "patterns_detected": [
-          "FAN_IN"
-        ],
-        "reasoning": "Receiver A011 has a high in-degree (3) and receives funds from multiple sources (A012, A013, A014). This suggests a potential FAN_IN pattern, where multiple accounts are sending funds to a single account. The 'check_new_payee' signal further supports this, as the transaction involves a new payee with a large amount. While not a definitive mule chain, the converging flows raise suspicion."
-      },
-      "geographic": {
-        "agent": "geographic",
-        "risk_level": "low",
-        "confidence": 0.3,
-        "patterns_detected": [],
-        "reasoning": "Insufficient data to determine risk. The transaction details are minimal and the citizen profile is missing. Without knowing anything about the sender, it's impossible to assess plausibility."
-      }
-    },
-    "verdict": {
-      "transaction_id": "T009",
-      "is_fraud": true,
-      "confidence": 0.85,
-      "reasoning": "The Behavioral specialist has high confidence (0.90) and flags NEW_PAYEE and DORMANT_REACTIVATION. This, combined with the BURST and check_new_payee flags from Velocity and Amount, strongly suggests fraud. The amount is significant relative to the sender's balance, and the account is new with its first transaction being a large one to a new payee. While the Geographic assessment is low, the other signals outweigh it."
-    },
-    "final": "fraud"
-  },
-  {
-    "txn_id": "T010",
-    "amount": 2000.0,
-    "triage": "ambiguous",
-    "rule_summary": "check_amount_anomaly: Suspicious amount pattern: round number (2000.0) | check_new_payee: New payee with large amount (\u20ac2000.0).",
-    "priority_rank": 3,
-    "specialist_results": {
-      "velocity": {
-        "agent": "velocity",
-        "risk_level": "medium",
-        "confidence": 0.7,
-        "patterns_detected": [
-          "check_new_payee",
-          "check_amount_anomaly"
-        ],
-        "reasoning": "The transaction involves a new payee and a round amount, flagged by automated rules. The history only contains one transaction, which is the current one, making it impossible to assess frequency shift or other timing patterns. The lack of prior history is suspicious."
-      },
-      "amount": {
-        "agent": "amount",
-        "risk_level": "high",
-        "confidence": 0.8,
-        "patterns_detected": [
-          "ROUND_NUMBER",
-          "FIRST_LARGE",
-          "BALANCE_DRAIN"
-        ],
-        "reasoning": "The transaction amount is a round number, it's the account's first large transaction, and it represents 20% of the account balance. The automated rules also flagged a new payee with a large amount. This combination strongly suggests fraudulent activity."
-      },
-      "behavioral": {
-        "agent": "behavioral",
-        "risk_level": "high",
-        "confidence": 0.9,
-        "patterns_detected": [
-          "NEW_PAYEE",
-          "DORMANT_REACTIVATION"
-        ],
-        "reasoning": "The account is brand new (is_new: true) and this is its first transaction. The transaction amount matches the account's average and max amount, but the account was just created and immediately sent a large amount to a new payee. This is a classic dormant reactivation + new payee fraud pattern."
-      },
-      "relationship": {
-        "agent": "relationship",
-        "risk_level": "high",
-        "confidence": 0.8,
-        "patterns_detected": [
-          "FAN_IN",
-          "check_new_payee",
-          "check_amount_anomaly"
-        ],
-        "reasoning": "A011 has a high in-degree (3) and receives transactions from multiple sources (A012, A013, A014). The amount (\u20ac2000.0) is flagged as anomalous (round number) and the receiver (A011) is a new payee. This suggests a potential 'collector' account (FAN_IN) being used for aggregation, potentially indicative of fraudulent activity. The new payee flag further increases suspicion."
-      },
-      "geographic": {
-        "agent": "geographic",
-        "risk_level": "low",
-        "confidence": 0.3,
-        "patterns_detected": [],
-        "reasoning": "Insufficient data to determine risk. The transaction details and citizen profile are missing. A low confidence score is assigned due to the lack of information, assuming a neutral stance until more data is available."
-      }
-    },
-    "verdict": {
-      "transaction_id": "T010",
-      "is_fraud": true,
-      "confidence": 0.9,
-      "reasoning": "Multiple specialists (Amount, Behavioral, Relationship) assess the risk as HIGH with confidence > 0.8. The transaction exhibits several red flags: a new payee, a round number amount, a large percentage of the account balance being transferred, and a newly activated account making an immediate large transaction. This aligns with known fraud patterns (dormant reactivation + new payee, FAN_IN). The amount is between \u20ac1,000 and \u20ac10,000, and the average specialist confidence exceeds 0.5."
-    },
-    "final": "fraud"
-  },
-  {
-    "txn_id": "T011",
-    "amount": 3000.0,
-    "triage": "ambiguous",
-    "rule_summary": "check_temporal_pattern: Transaction at 1:00 UTC falls in off-hours window. | check_amount_anomaly: Suspicious amount pattern: round number (3000.0) | check_new_payee: New payee with large amount (\u20ac3000.0).",
+    "rule_summary": "check_new_payee: New payee with large amount (\u20ac2816.15).",
     "priority_rank": 2,
-    "specialist_results": {
-      "velocity": {
-        "agent": "velocity",
-        "risk_level": "high",
-        "confidence": 0.8,
-        "patterns_detected": [
-          "UNUSUAL_HOURS",
-          "check_new_payee",
-          "check_amount_anomaly"
-        ],
-        "reasoning": "The transaction occurred at 1:00 UTC (UNUSUAL_HOURS), involves a new payee with a large amount (check_new_payee), and the amount is a round number (check_amount_anomaly). While the history is limited, the combination of these factors strongly suggests fraudulent activity. The limited history doesn't allow for a frequency shift analysis, but the other signals are strong enough to warrant a high risk assessment."
-      },
-      "amount": {
-        "agent": "amount",
-        "risk_level": "high",
-        "confidence": 0.7,
-        "patterns_detected": [
-          "ROUND_NUMBER",
-          "FIRST_LARGE",
-          "check_new_payee"
-        ],
-        "reasoning": "The transaction amount is a round number and represents the account's maximum transaction to date. It's also a new payee. While not a statistical outlier (amount is equal to max_amount), the combination of factors raises significant concern."
-      },
-      "behavioral": {
-        "agent": "behavioral",
-        "risk_level": "high",
-        "confidence": 0.9,
-        "patterns_detected": [
-          "NEW_PAYEE",
-          "DORMANT_REACTIVATION"
-        ],
-        "reasoning": "Account was created recently and was dormant for approximately 8 days before sending a large amount (\u20ac3000.0) to a new payee. This is a strong indicator of potential fraud."
-      },
-      "relationship": {
-        "agent": "relationship",
-        "risk_level": "high",
-        "confidence": 0.8,
-        "patterns_detected": [
-          "FAN_IN",
-          "MULE_CHAIN",
-          "check_new_payee",
-          "check_amount_anomaly"
-        ],
-        "reasoning": "A011 is a central node receiving transactions from multiple sources (A012, A013, A014). A003 sends to multiple nodes. The transaction involves a new payee (A015) with a large, round amount. The transaction also occurs during off-hours. This suggests a potential mule structure where funds are aggregated at A011 and then distributed, or a mule chain where funds are quickly moved through intermediaries. The combination of these factors indicates a high risk of fraudulent activity."
-      },
-      "geographic": {
-        "agent": "geographic",
-        "risk_level": "low",
-        "confidence": 0.3,
-        "patterns_detected": [],
-        "reasoning": "Insufficient data to determine risk. The transaction details and citizen profile are missing. A risk assessment cannot be performed without this information."
-      }
-    },
-    "verdict": {
-      "transaction_id": "T011",
-      "is_fraud": true,
-      "confidence": 0.9,
-      "reasoning": "Multiple specialists (Velocity, Amount, Behavioral, Relationship) assessed HIGH risk with high confidence scores. The combination of NEW_PAYEE, ROUND_NUMBER, LARGE amount, and potential MULE_CHAIN patterns is a strong indicator of fraud. The account was recently created and reactivated after dormancy, further supporting this assessment."
-    },
-    "final": "fraud"
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
   },
   {
-    "txn_id": "T012",
-    "amount": 25.0,
+    "txn_id": "45f793a8-8223-4e65-9b6b-fa1b0a62d4aa",
+    "amount": 926.07,
+    "triage": "ambiguous",
+    "rule_summary": "check_new_payee: New payee with large amount (\u20ac926.07).",
+    "priority_rank": 6,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "fff9978c-8395-490a-95a1-8347bc751a2b",
+    "amount": 1079.04,
+    "triage": "ambiguous",
+    "rule_summary": "check_new_payee: New payee with large amount (\u20ac1079.04).",
+    "priority_rank": 3,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "c7491b59-9186-42c8-a930-1411b13dfe13",
+    "amount": 336.09,
+    "triage": "auto_legit",
+    "rule_summary": "check_new_payee: New payee with moderate amount (\u20ac336.09).",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "44fdd50c-73f4-4f0d-8b03-0409ebd8890b",
+    "amount": 2883.07,
+    "triage": "ambiguous",
+    "rule_summary": "check_new_payee: New payee with large amount (\u20ac2883.07).",
+    "priority_rank": 1,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "7dc83725-605a-4fab-9e5a-017200a34b9a",
+    "amount": 982.6,
+    "triage": "ambiguous",
+    "rule_summary": "check_new_payee: New payee with large amount (\u20ac982.6).",
+    "priority_rank": 5,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "32e73719-7b07-4c61-9fac-6c715c92ab1f",
+    "amount": 99.8,
+    "triage": "auto_legit",
+    "rule_summary": "check_new_payee: New payee with moderate amount (\u20ac99.8).",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "1ede528a-c212-4d30-8e62-e901ca537f83",
+    "amount": 2757.67,
     "triage": "auto_legit",
     "rule_summary": "no signals",
     "priority_rank": null,
@@ -552,8 +80,8 @@
     "final": "legit"
   },
   {
-    "txn_id": "T013",
-    "amount": 30.0,
+    "txn_id": "875367bb-b33a-40d4-bfed-7e9e0c5f6a46",
+    "amount": 1052.75,
     "triage": "auto_legit",
     "rule_summary": "no signals",
     "priority_rank": null,
@@ -562,33 +90,713 @@
     "final": "legit"
   },
   {
-    "txn_id": "T014",
-    "amount": 5000.0,
+    "txn_id": "95679cc6-814c-4fbe-86a3-b697b54f5d10",
+    "amount": 399.65,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "a3ebbbea-d56c-4627-bf6e-3f9ead9a4125",
+    "amount": 1026.68,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "2f585191-4e73-4850-805c-b02167082198",
+    "amount": 965.13,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "1ac1500c-78d7-4f3a-8daa-ecdb877b2bad",
+    "amount": 2819.25,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "4af1fdf6-8b4e-4d2b-ab32-97e2cd197792",
+    "amount": 2717.11,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "a8df2827-5aa0-4831-8f92-b2093d62739d",
+    "amount": 370.14,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "0ed77000-3456-4052-8c6e-0a66f94561ca",
+    "amount": 978.9,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "ea8d19b0-8364-4f2e-93ef-43e511d9ca7b",
+    "amount": 2836.2,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "a9833409-4bb9-4764-b1c1-89521a636e36",
+    "amount": 952.23,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "0f400ab9-1f74-41ac-ba58-73d2aac629d4",
+    "amount": 1070.92,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "1ad62197-c368-4a1f-8286-22a811f5291e",
+    "amount": 2768.43,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "f187ddae-1a5d-4ff2-ad5a-565eae237d71",
+    "amount": 1019.29,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "5a3577a7-61e9-42b2-b8f1-a87d7e6fab4e",
+    "amount": 1067.95,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "e6e1cc47-780e-40cc-9f3e-01ac239e0a87",
+    "amount": 407.1,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "a0ba62a7-9a03-47c1-9575-7c26b2da5f1b",
+    "amount": 987.17,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "139def3a-22bd-4465-90fa-d37d49f13070",
+    "amount": 2795.1,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "97bd8902-d29a-4041-b7ec-d8f1456bef42",
+    "amount": 2768.14,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "be65ac20-9102-4206-adba-b53380910ecf",
+    "amount": 44.95,
     "triage": "auto_fraud",
-    "rule_summary": "check_amount_anomaly: Amount 5000.0 is a MAD outlier (z=1341.6, median=28, MAD=2) | check_balance_drain: Transaction drains 84% of account balance | check_first_large: Amount is 166.7x the historical max | check_new_payee: New payee with large amount (\u20ac5000.0).",
+    "rule_summary": "check_phishing_window: PHISHING WINDOW: e-commerce 1.0d after phishing, no description \u2014 likely compromised account.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
     "final": "fraud"
   },
   {
-    "txn_id": "T015",
-    "amount": 8000.0,
+    "txn_id": "c1ec5542-1bc7-49ba-a89c-4194f01d12c2",
+    "amount": 914.5,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "6d85d330-aebe-4fd7-b6ee-e8b09640ab8e",
+    "amount": 1050.76,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "eee4f7cb-10ba-4f01-8a43-37cc11c74371",
+    "amount": 1073.33,
+    "triage": "ambiguous",
+    "rule_summary": "check_amount_anomaly: Amount 1073.33 is a MAD outlier (z=6.1, median=974, MAD=11)",
+    "priority_rank": 4,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "1a02f1a5-2a7a-489f-8e43-cf6f4f8fe116",
+    "amount": 355.28,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "02c1c8e3-b088-4958-a047-0d32beb78292",
+    "amount": 2849.81,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "243504e1-f5a9-4ded-8262-d5b8a51cc1b9",
+    "amount": 2814.31,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "40d61e52-ee54-4aa0-a435-43bffce12aed",
+    "amount": 968.72,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "7af2c254-522a-46e5-b50a-030653b16f2a",
+    "amount": 1055.21,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "9d893a51-4843-47dc-b66e-1436341ff374",
+    "amount": 366.5,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "9caf7a6f-afa8-43a8-b0bb-8a81d16f8cc3",
+    "amount": 46.09,
+    "triage": "ambiguous",
+    "rule_summary": "check_temporal_pattern: Transaction at 0:00 UTC falls in off-hours window. | check_new_payee: New payee with moderate amount (\u20ac46.09).",
+    "priority_rank": 7,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "dd81e9f0-e9b6-4586-a9f4-79994d6b1f21",
+    "amount": 989.74,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "f8efb252-3303-4666-a1db-1633bcfab23e",
+    "amount": 2796.6,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "3ba7708b-367a-4637-9b52-d8fea85dc8e7",
+    "amount": 22.21,
+    "triage": "auto_legit",
+    "rule_summary": "check_temporal_pattern: Transaction at 3:00 UTC falls in off-hours window.",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "c1da1f34-1760-4841-966f-cbed3f255dfb",
+    "amount": 16.29,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "dcd4abb5-035a-42dc-b963-dd23a008eeaa",
+    "amount": 2727.5,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "7a010f53-8ad9-4b88-9bca-e93f6c705b62",
+    "amount": 1032.2,
+    "triage": "auto_legit",
+    "rule_summary": "check_temporal_pattern: Transaction at 6:00 UTC falls in off-hours window.",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "4e53a923-af56-41e4-a804-67721ded06b7",
+    "amount": 2842.18,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "6650b3a2-f3e6-450a-80b6-5a54a14cbca8",
+    "amount": 1065.58,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "6f075509-4fae-44d3-b958-a72e0d435435",
+    "amount": 1035.88,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "dc26681a-fbb6-49bc-9481-9ae2996c93fb",
+    "amount": 392.72,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "09e4d085-53f1-46c6-b28b-7d34dab52052",
+    "amount": 872.52,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "ed75ad30-d656-479b-9cca-06278aa87e62",
+    "amount": 2795.31,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "f2798f49-f35c-4ecc-943e-30ee3d833c35",
+    "amount": 1043.21,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "6212031b-aec1-43fe-8818-a448e17e91eb",
+    "amount": 2854.15,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "9d3e4492-2021-426c-bf3c-5193b2d7de87",
+    "amount": 951.4,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "6669e8f8-212b-4e7a-9615-0e59f923a35c",
+    "amount": 365.84,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "2d22a0cd-8297-4d67-bd84-9e1ceaba5b10",
+    "amount": 325.39,
+    "triage": "auto_legit",
+    "rule_summary": "check_new_payee: New payee with moderate amount (\u20ac325.39).",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "1539373e-e909-4fcd-ba67-9f97ea4688bf",
+    "amount": 1070.12,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "52597177-e7c7-4bfd-9a18-eaa96db4123a",
+    "amount": 2737.72,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "6f3885cf-c26e-454d-aba8-f1be0222f75d",
+    "amount": 403.71,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "97ede41a-a012-4c6e-aa31-ee9d6dc27c26",
+    "amount": 1023.88,
+    "triage": "auto_legit",
+    "rule_summary": "check_temporal_pattern: Transaction at 6:00 UTC falls in off-hours window.",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "0d3ace95-9e82-41c7-a26b-203b8b792d24",
+    "amount": 2862.0,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "00b11377-c3b6-484e-b70e-c7281fe51261",
+    "amount": 960.03,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "fce0c8bf-d8d8-4f3c-b29f-252867e15164",
+    "amount": 1065.91,
+    "triage": "auto_legit",
+    "rule_summary": "check_temporal_pattern: Transaction at 6:00 UTC falls in off-hours window.",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "d4de1c65-dc9e-4172-a158-ce2db0d214e2",
+    "amount": 2848.26,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "3b41422b-60f2-4d59-838b-de85b5f2f6c7",
+    "amount": 2766.65,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "8d9ec706-bd91-4458-af02-4bc1166c943d",
+    "amount": 389.91,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "9bcef53d-137b-4b82-8fca-3ea5f9978a37",
+    "amount": 971.31,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "a839c005-7c5c-4e2d-b8d2-f07e99d7aedf",
+    "amount": 1039.09,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "beaa4b03-0a2f-48a1-abb4-a5c7378ed046",
+    "amount": 106.15,
     "triage": "auto_fraud",
-    "rule_summary": "check_temporal_pattern: Transaction at 0:00 UTC falls in off-hours window. | check_amount_anomaly: Suspicious amount pattern: round number (8000.0) | check_new_payee: New payee with large amount (\u20ac8000.0). | check_mule_chain: Receiver forwarded 94% of amount within 30min",
+    "rule_summary": "check_new_payee: New payee with moderate amount (\u20ac106.15). | check_phishing_window: Phishing window: e-commerce 12.4d after phishing event.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
     "final": "fraud"
   },
   {
-    "txn_id": "T016",
-    "amount": 7500.0,
-    "triage": "auto_fraud",
-    "rule_summary": "check_temporal_pattern: Transaction at 1:00 UTC falls in off-hours window. | check_balance_drain: Transaction drains 94% of account balance | check_new_payee: New payee with large amount (\u20ac7500.0).",
+    "txn_id": "5309f3e1-a29e-4533-a44b-d8d7da5f4597",
+    "amount": 927.91,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
-    "final": "fraud"
+    "final": "legit"
+  },
+  {
+    "txn_id": "d8711093-2453-4a74-8779-756014cc234d",
+    "amount": 360.56,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "9bdb7dc1-1804-447d-8eb9-a4146f27cd6b",
+    "amount": 2737.96,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "ea9f3acb-d2af-4b42-8588-9a7eb7823137",
+    "amount": 1081.71,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "255834d5-c7c9-4311-804f-5abe227dea1f",
+    "amount": 2860.1,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "0fd6eeff-e363-4bc9-a099-8f70e73e9884",
+    "amount": 1047.73,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "1f219c1d-fd99-47d6-b097-44253f85accb",
+    "amount": 1045.04,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "60929f96-b7a3-476b-b1f8-9a60298bea98",
+    "amount": 2785.28,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "65eb47c9-3b12-40bc-b660-4a0f944fab22",
+    "amount": 1023.13,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "07e4b774-7ea2-4ca0-bb9d-d1e95a728b03",
+    "amount": 1056.14,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "97c83f82-853e-4466-b4aa-7457625fa242",
+    "amount": 2861.0,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "0c9b840e-5cda-440a-8d08-5f8cb74fe41c",
+    "amount": 374.99,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
+  },
+  {
+    "txn_id": "8289782a-685b-45cd-b0a1-2caed460b686",
+    "amount": 125.55,
+    "triage": "auto_legit",
+    "rule_summary": "no signals",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "legit"
   }
 ]

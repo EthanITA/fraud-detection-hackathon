@@ -20,9 +20,15 @@ from .nodes import (
 from .state import PipelineState
 
 
+# %% LLM toggle — set to False to skip all LLM inference (rules-only mode)
+ENABLE_LLM = False
+
+
 # %% _fan_out_to_specialists
 def _fan_out_to_specialists(state: PipelineState) -> list:
     """Route triage output: ambiguous txns fan-out to 5 specialists, rest skip to output."""
+    if not ENABLE_LLM:
+        return [Send("output", state)]
     if state.get("ambiguous_prioritized"):
         return [
             Send("velocity_specialist", state),
@@ -34,12 +40,18 @@ def _fan_out_to_specialists(state: PipelineState) -> list:
     return [Send("output", state)]
 
 
+# %% _skip_citizen_analysis
+def _skip_citizen_analysis(state: PipelineState) -> dict:
+    """No-op when LLM is disabled."""
+    return {}
+
+
 # %% build_pipeline
 def build_pipeline():
     g = StateGraph(PipelineState)
 
     g.add_node("ingest", ingest)
-    g.add_node("analyze_citizens", analyze_citizens)
+    g.add_node("analyze_citizens", analyze_citizens if ENABLE_LLM else _skip_citizen_analysis)
     g.add_node("run_rules", run_rules)
     g.add_node("triage", triage)
     g.add_node("velocity_specialist", velocity_specialist)

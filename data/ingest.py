@@ -5,25 +5,38 @@ import csv
 import json
 from pathlib import Path
 
-# %% field mapping
-# Adjust on hackathon day: map raw field names → guaranteed keys.
+# %% field mapping — official Reply Mirror challenge format
 FIELD_MAP: dict[str, str] = {
     "transaction_id": "id",
-    "from_account": "sender_id",
-    "to_account": "receiver_id",
+    "sender_id": "sender_id",
+    "recipient_id": "receiver_id",
     "amount": "amount",
     "timestamp": "timestamp",
-    "balance": "sender_balance",
+    "balance_after": "sender_balance",
+    # New fields kept as-is
+    "transaction_type": "transaction_type",
+    "location": "location",
+    "payment_method": "payment_method",
+    "sender_iban": "sender_iban",
+    "recipient_iban": "recipient_iban",
+    "description": "description",
 }
 
-GUARANTEED_KEYS = {
-    "id",
-    "sender_id",
-    "receiver_id",
-    "amount",
-    "timestamp",
-    "sender_balance",
-}
+FLOAT_KEYS = {"amount", "sender_balance"}
+STR_KEYS = {"id", "sender_id", "receiver_id", "transaction_type", "location",
+            "payment_method", "sender_iban", "recipient_iban", "description"}
+
+
+# %% _parse_timestamp
+def _parse_timestamp(val: str) -> float:
+    """Parse ISO timestamp string to epoch seconds."""
+    from datetime import datetime
+    if not val:
+        return 0.0
+    try:
+        return datetime.fromisoformat(val).timestamp()
+    except (ValueError, TypeError):
+        return float(val) if val else 0.0
 
 
 # %% _normalize
@@ -34,10 +47,16 @@ def _normalize(raw: dict) -> dict:
             val = txn[src]
             if src != dst:
                 txn[dst] = val
-            if dst in ("amount", "timestamp", "sender_balance"):
-                txn[dst] = float(val) if val is not None else None
-            elif dst in ("id", "sender_id", "receiver_id"):
-                txn[dst] = str(val)
+            if dst in FLOAT_KEYS:
+                try:
+                    txn[dst] = float(val) if val not in (None, "") else None
+                except (ValueError, TypeError):
+                    txn[dst] = None
+            elif dst == "timestamp":
+                txn[dst] = _parse_timestamp(val)
+                txn["timestamp_raw"] = val  # keep original for display
+            elif dst in STR_KEYS:
+                txn[dst] = str(val) if val is not None else ""
     if "sender_balance" not in txn:
         txn["sender_balance"] = None
     return txn

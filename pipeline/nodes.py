@@ -64,7 +64,12 @@ def run_rules(state: PipelineState) -> dict:
         sender_id = txn["sender_id"]
         citizen = state.get("citizens", {}).get(sender_id, {})
         # Use temporal (prior-only) profile for rules — prevents data leak
-        profile = temporal.get(txn["id"]) or state["profiles"].get(sender_id, {})
+        full_profile = temporal.get(txn["id"]) or state["profiles"].get(sender_id, {})
+        # Rules expect flat profile; pass overall for backward compat + full for category access
+        profile = full_profile.get("overall", full_profile)
+        profile["by_category"] = {
+            k: full_profile[k] for k in ("within_system", "external", "cash_out") if k in full_profile
+        }
         context = {
             "txn": json.dumps(txn),
             "history": json.dumps(
@@ -72,7 +77,7 @@ def run_rules(state: PipelineState) -> dict:
             ),
             "profile": json.dumps(profile),
             "graph": json.dumps(state["graph"]),
-            "citizen": json.dumps(citizen.get("location", {})),
+            "citizen": json.dumps(citizen),
         }
         all_results[txn["id"]] = [
             (tool.name, invoke_tool(tool, context)) for tool in RULE_TOOLS

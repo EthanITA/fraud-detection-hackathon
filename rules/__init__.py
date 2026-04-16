@@ -18,6 +18,7 @@ from .behavioral import (
 )
 from .geographic import check_impossible_travel
 from .graph import check_circular_flow, check_fan_in, check_fan_out, check_mule_chain
+from .phishing import check_phishing_window
 from .time import check_card_testing, check_temporal_pattern, check_velocity
 
 
@@ -44,13 +45,20 @@ def compute_composite_risk(
         weight = TOOL_WEIGHTS.get(tool_name, 1.0)
         score += _RISK_SCORES[RiskLevel(result["risk"])] * weight
 
-    # 2. combo detection
+    # 2. combo detection — HIGH+HIGH combos, and MEDIUM+MEDIUM phishing combos
     high_tools = {name for name, r in results if RiskLevel(r["risk"]) == RiskLevel.HIGH}
+    flagged_tools = {name for name, r in results if RiskLevel(r["risk"]) != RiskLevel.LOW}
     combo_triggered = None
     for combo_name, combo_set in ALWAYS_FLAG_COMBOS:
         if combo_set.issubset(high_tools):
             combo_triggered = combo_name
             break
+    # Phishing combos also trigger on MEDIUM — phishing + anything is suspicious
+    if combo_triggered is None:
+        for combo_name, combo_set in ALWAYS_FLAG_COMBOS:
+            if "check_phishing_window" in combo_set and combo_set.issubset(flagged_tools):
+                combo_triggered = combo_name
+                break
 
     # 3. amount-aware thresholds
     legit_ceiling, fraud_floor = 1.0, 6.0
@@ -107,4 +115,6 @@ RULE_TOOLS = [
     check_circular_flow,
     # geographic
     check_impossible_travel,
+    # phishing
+    check_phishing_window,
 ]
