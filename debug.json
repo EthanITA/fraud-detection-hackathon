@@ -2,173 +2,31 @@
   {
     "txn_id": "b54bb23c-6703-4d7b-8149-411205534ef9",
     "amount": 2816.15,
-    "triage": "ambiguous",
+    "triage": "auto_legit",
     "rule_summary": "check_new_payee: New payee with large amount (\u20ac2816.15).",
-    "priority_rank": 2,
-    "specialist_results": {
-      "velocity": {
-        "agent": "velocity",
-        "risk_level": "medium",
-        "confidence": 0.7,
-        "patterns_detected": [
-          "FREQUENCY_SHIFT"
-        ],
-        "reasoning": "The transaction under review (\u20ac2816.15) is a transfer to a known recipient ('GRSC-KRLH-807-DIE-1') described as a 'Salary payment Jan'. The history shows 12 previous transactions to the exact same recipient, all labeled as monthly salary payments, occurring roughly one month apart (e.g., Dec 5th, Nov 5th, Oct 5th, etc.). The current transaction timestamp (Jan 4th) is consistent with a monthly cycle. However, the amount (\u20ac2816.15) is significantly different from the previous month's salary (\u20ac2785.28) and the average historical amount (approx. \u20ac2750-\u20ac2800). While the automated rule flags a 'new payee' (which seems incorrect based on history), the primary timing signal is the deviation from the expected monthly frequency/amount pattern, suggesting a potential anomaly in a recurring payment, which warrants medium risk, especially given the high amount and the automated flag context."
-      },
-      "amount": {
-        "agent": "amount",
-        "risk_level": "low",
-        "confidence": 0.3,
-        "patterns_detected": [
-          "FIRST_LARGE"
-        ],
-        "reasoning": "The transaction amount (\u20ac2816.15) is the highest recorded for this sender, matching the max_amount in their history, which flags it as a 'FIRST_LARGE' transaction relative to the historical max, although it is very close to the average (\u20ac2766.02). The automated rule flagged a new payee, but since the profile shows only one known counterparty, this transaction is likely the second interaction with that single known counterparty, not a truly 'new' payee in the context of the account's limited history. The amount is not a statistical outlier (it is the max observed) and does not appear to be structured or draining the balance (only 18% of balance)."
-      },
-      "behavioral": {
-        "agent": "behavioral",
-        "risk_level": "low",
-        "confidence": 0.3,
-        "patterns_detected": [
-          "consistent_payee"
-        ],
-        "reasoning": "The transaction amount (\u20ac2816.15) is slightly above the historical average (\u20ac2766.02) but well within the historical standard deviation. Crucially, the recipient ('GRSC-KRLH-807-DIE-1') is the sender's ONLY known counterparty, and all 12 historical transactions have been to this same recipient, often labeled as 'Salary payment'. The automated signal 'check_new_payee: high' is misleading because the recipient is known, although the description 'Salary payment Jan' for the current transaction (Jan 4th) suggests a recurring monthly payment pattern, which is consistent with the history (Dec 5th, Nov 5th, Oct 5th, etc.). No significant behavioral shift (dormancy, frequency change, or new payee) is present."
-      },
-      "relationship": {
-        "agent": "relationship",
-        "risk_level": "medium",
-        "confidence": 0.7,
-        "patterns_detected": [
-          "FAN_OUT"
-        ],
-        "reasoning": "The recipient account (GRSC-KRLH-807-DIE-1) shows a clear FAN_OUT pattern, distributing funds to at least 3 distinct counterparties (ABIT68841, an empty node, CMPNT41147). While the transaction description suggests a 'Salary payment', the automated rule flags the new payee and large amount (\u20ac2816.15). The graph context shows this recipient is part of a larger network structure involving other entities (EMP96127, EMP92998) that also exhibit high out-degree behavior, suggesting this might be a collection/distribution hub rather than a standard payroll account. The combination of the new payee alert and the recipient's role as a distributor elevates the risk."
-      },
-      "geographic": {
-        "agent": "geographic",
-        "risk_level": "low",
-        "confidence": 0.1,
-        "patterns_detected": [],
-        "reasoning": "The transaction appears to be a standard salary payment ('Salary payment Jan') from an Italian IBAN (IT) to a German IBAN (DE). Since no citizen profile or rule results were provided, the transaction is assessed based on its description as a routine payroll transfer, which carries inherently low risk."
-      }
-    },
-    "verdict": {
-      "transaction_id": "b54bb23c-6703-4d7b-8149-411205534ef9",
-      "is_fraud": false,
-      "confidence": 0.75,
-      "reasoning": "The transaction is a recurring monthly salary payment to a known recipient. While the automated rule flagged it as a 'new payee', historical data confirms this is a long-standing relationship. The slight increase in amount is consistent with standard salary adjustments. Although the recipient exhibits a fan-out pattern, this is typical for payroll/distribution accounts. The transaction does not meet the criteria for fraud under the economic scaling or consensus rules."
-    },
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
     "final": "legit"
   },
   {
     "txn_id": "45f793a8-8223-4e65-9b6b-fa1b0a62d4aa",
     "amount": 926.07,
-    "triage": "ambiguous",
+    "triage": "auto_legit",
     "rule_summary": "check_new_payee: New payee with large amount (\u20ac926.07).",
-    "priority_rank": 6,
-    "specialist_results": {
-      "velocity": {
-        "agent": "velocity",
-        "risk_level": "medium",
-        "confidence": 0.7,
-        "patterns_detected": [
-          "FREQUENCY_SHIFT"
-        ],
-        "reasoning": "The transaction amount (\u20ac926.07) is consistent with the recipient (ABIT68841) which has received monthly payments from this sender for the past year, described as 'Rent payment'. This suggests a recurring, legitimate payment pattern. However, the automated rule flags a 'new payee' which contradicts the history showing this recipient has been paid monthly. Assuming the 'new payee' flag is an error based on the description/recipient ID consistency, the primary concern shifts to the context provided by the pre-assessment (high mobility, income mismatch, high phishing susceptibility). The transaction itself does not exhibit classic timing fraud patterns like BURST or CARD_TESTING. The consistency with prior monthly rent payments lowers the immediate timing risk, but the external risk factors elevate the overall assessment slightly above low."
-      },
-      "amount": {
-        "agent": "amount",
-        "risk_level": "medium",
-        "confidence": 0.5,
-        "patterns_detected": [
-          "STATISTICAL_OUTLIER"
-        ],
-        "reasoning": "The transaction amount of \u20ac926.07 is slightly above the sender's historical average transaction amount (\u20ac856.85) and is close to the standard deviation (\u20ac301.18). Specifically, 926.07 is approximately 0.76 standard deviations above the mean, which is not a severe statistical outlier (>3\u03c3). However, the automated rule flagged a 'high' risk for a new payee (\u20ac926.07), which elevates concern. Given the description 'Rent payment Jan - Residenze Milano Dietzenbach', this amount is plausible for a rent payment, especially if it's a new or unusual rental arrangement, mitigating the risk of outright fraud, but the new payee context keeps the risk at medium."
-      },
-      "behavioral": {
-        "agent": "behavioral",
-        "risk_level": "medium",
-        "confidence": 0.7,
-        "patterns_detected": [
-          "NEW_PAYEE"
-        ],
-        "reasoning": "The transaction involves a recipient ('ABIT68841') that is already known to the sender, as it appears multiple times in the history (likely a recurring rent payment). Therefore, the 'NEW_PAYEE' signal flagged by the automated rule is incorrect based on the history provided. However, the amount (\u20ac926.07) is slightly below the sender's historical average transaction amount (\u20ac921.51 within system, \u20ac856.85 overall average), suggesting it is not an unusually large deviation in amount. Crucially, the sender's profile indicates high mobility and a history of international travel, which aligns with making payments like 'Rent payment Jan - Residenze Milano Dietzenbach'. Since the payee is known and the amount is normal for this payee, the behavioral risk is low based on transaction data alone. The confidence is set at 0.7 because the automated rule flagged a 'NEW_PAYEE' which, if true, would elevate risk, but since history confirms the payee is known, the immediate behavioral shift is minimal, leaning towards low risk, but we use 0.7 to reflect the automated system's input and the context of the high-risk profile summary provided."
-      },
-      "geographic": {
-        "agent": "geographic",
-        "risk_level": "low",
-        "confidence": 0.3,
-        "patterns_detected": [
-          "CONSISTENT_WITH_MOBILITY"
-        ],
-        "reasoning": "The transaction is a rent payment of 926.07 EUR from a German IBAN (DE) to an Italian IBAN (IT). The citizen, Karl-Hermann Girschner, is 32, a freelance designer living in Dietzenbach (Germany). His profile indicates high mobility and he has previously visited international locations. The description 'Rent payment Jan - Residenze Milano Dietzenbach' strongly suggests he is paying rent for an apartment in Milan, Italy, which aligns with his high mobility and the recipient's Italian IBAN. Although the description confusingly mentions 'Dietzenbach', the Italian IBAN and the nature of the payment (rent) make this plausible for a highly mobile individual, even if his income is modest. The transaction amount is not excessively high relative to his stated income. No critical red flags are triggered."
-      }
-    },
-    "verdict": {
-      "transaction_id": "45f793a8-8223-4e65-9b6b-fa1b0a62d4aa",
-      "is_fraud": false,
-      "confidence": 0.85,
-      "reasoning": "The transaction is a recurring rent payment to a known recipient, despite the automated 'new payee' flag. The amount is consistent with historical patterns and the sender's financial profile. The geographic discrepancy in the description is likely a clerical error by the user, and the transaction does not meet the criteria for fraud under the established decision rules."
-    },
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
     "final": "legit"
   },
   {
     "txn_id": "fff9978c-8395-490a-95a1-8347bc751a2b",
     "amount": 1079.04,
-    "triage": "ambiguous",
+    "triage": "auto_legit",
     "rule_summary": "check_new_payee: New payee with large amount (\u20ac1079.04).",
-    "priority_rank": 3,
-    "specialist_results": {
-      "velocity": {
-        "agent": "velocity",
-        "risk_level": "medium",
-        "confidence": 0.7,
-        "patterns_detected": [
-          "FREQUENCY_SHIFT"
-        ],
-        "reasoning": "The transaction amount (\u20ac1079.04) is consistent with the historical monthly salary payments (ranging from \u20ac1043.21 to \u20ac1070.92). However, the transaction timestamp (2087-01-05T12:32:25) is significantly different from the previous transaction's timestamp (2087-12-04T09:01:47). Given the context of the automated rule flagging a new payee with a large amount, and the fact that the recipient ID 'BRCH-TRCY-802-HAM-1' appears to be the same for all historical transactions (suggesting the payee is NOT new, contradicting the rule), the primary concern is the timing shift if this is supposed to be a recurring monthly payment. If the dates are interpreted chronologically (Jan 2087 -> Dec 2087 -> Nov 2087...), the timing is highly irregular, suggesting a potential frequency shift or account takeover attempting to mimic a salary payment pattern but with inconsistent timing relative to the historical sequence provided."
-      },
-      "amount": {
-        "agent": "amount",
-        "risk_level": "low",
-        "confidence": 0.3,
-        "patterns_detected": [
-          "FIRST_LARGE"
-        ],
-        "reasoning": "The transaction amount (\u20ac1079.04) is slightly higher than the account's historical average (\u20ac1059.52) and is the maximum amount sent historically, but it is well within 1 standard deviation (StdDev: \u20ac11.79). The automated rule flags a new payee, but the profile shows this recipient is the only known counterparty, suggesting this is a recurring payment (like a salary, as described). The amount is not a statistical outlier, nor does it approach balance drain or threshold evasion. It is slightly unusual but likely legitimate given the context."
-      },
-      "behavioral": {
-        "agent": "behavioral",
-        "risk_level": "low",
-        "confidence": 0.3,
-        "patterns_detected": [
-          "consistent_payee"
-        ],
-        "reasoning": "The transaction amount (\u20ac1079.04) is slightly higher than the historical average (\u20ac1059.52), but it is within the historical standard deviation. Crucially, the recipient ('BRCH-TRCY-802-HAM-1') is the sender's ONLY known counterparty, and all 12 historical transactions have been to this same recipient. The description suggests this is a recurring salary payment. Although the automated rule flagged 'NEW_PAYEE' (which is incorrect based on history), the behavioral pattern is highly consistent, indicating low fraud risk."
-      },
-      "relationship": {
-        "agent": "relationship",
-        "risk_level": "medium",
-        "confidence": 0.7,
-        "patterns_detected": [
-          "FAN_OUT"
-        ],
-        "reasoning": "The sender (EMP96127) is sending money to the recipient (BRCH-TRCY-802-HAM-1). The recipient node has an out-degree of 3, sending to ABIT36422, MKTSW90199, and ACCRN68493. While the transaction description suggests a salary payment, the recipient node (BRCH-TRCY-802-HAM-1) is connected to several other nodes that appear to be part of a larger network structure (e.g., it receives funds from EMP96127 and sends funds to three other accounts). Given the automated signal 'check_new_payee: high' for a \u20ac1079.04 transaction, and the recipient acting as a distributor (FAN_OUT potential), the relationship is suspicious, though the sender's history (12 prior transactions) suggests some regularity. The overall graph structure shows multiple distinct flows converging/diverging, suggesting potential aggregation/distribution activity."
-      },
-      "geographic": {
-        "agent": "geographic",
-        "risk_level": "low",
-        "confidence": 0.3,
-        "patterns_detected": [
-          "MISSING_CONTEXT"
-        ],
-        "reasoning": "The transaction appears to be a standard salary payment ('Salary payment Jan') from an Italian IBAN (IT prefix) to a UK IBAN (GB prefix). Since the citizen profile is entirely missing, we cannot assess geographic or lifestyle consistency. Assuming the sender is an employee, this is likely a routine payroll transfer. Risk is low due to the nature of the transaction, but confidence is low due to missing data."
-      }
-    },
-    "verdict": {
-      "transaction_id": "fff9978c-8395-490a-95a1-8347bc751a2b",
-      "is_fraud": false,
-      "confidence": 0.75,
-      "reasoning": "The transaction is consistent with historical patterns of salary payments to a known, recurring recipient. While the automated rule flagged a 'new payee', the specialist analysis confirms this recipient has been the sole counterparty for 12 previous transactions. The amount is within normal statistical variance for this account. The 'fan-out' relationship and timing shifts are noted, but they do not outweigh the strong evidence of a recurring, legitimate payroll-style transfer."
-    },
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
     "final": "legit"
   },
   {
@@ -184,123 +42,21 @@
   {
     "txn_id": "44fdd50c-73f4-4f0d-8b03-0409ebd8890b",
     "amount": 2883.07,
-    "triage": "ambiguous",
+    "triage": "auto_legit",
     "rule_summary": "check_new_payee: New payee with large amount (\u20ac2883.07).",
-    "priority_rank": 1,
-    "specialist_results": {
-      "velocity": {
-        "agent": "velocity",
-        "risk_level": "medium",
-        "confidence": 0.7,
-        "patterns_detected": [
-          "FREQUENCY_SHIFT"
-        ],
-        "reasoning": "The transaction is a transfer to the same recipient as the last 12 transactions, and the description suggests it is a recurring salary payment. However, the amount (\u20ac2883.07) is slightly higher than the previous 12 amounts (which cluster around \u20ac2800-\u20ac2860), and the automated rule flags a new payee (which contradicts the history showing the same recipient IBAN/ID). Given the consistent recipient and description, this looks like a legitimate salary payment, but the slight amount increase combined with the automated 'new payee' flag (which might be triggered if the recipient ID format changed slightly or if the system is comparing against a very old baseline) warrants caution. The timing (18:39:20) is not unusual hours. No burst or card testing detected. The primary concern is the deviation from the established salary pattern combined with the automated alert."
-      },
-      "amount": {
-        "agent": "amount",
-        "risk_level": "low",
-        "confidence": 0.3,
-        "patterns_detected": [
-          "BALANCE_DRAIN"
-        ],
-        "reasoning": "The transaction amount (\u20ac2883.07) is the highest the sender has ever made, but it is only 12.3% of their current balance (\u20ac23406.79 after transaction). Crucially, this amount is almost exactly equal to the sender's historical average transaction amount (\u20ac2842.31) and is within 1 standard deviation (Avg + 1\u03c3 = \u20ac2868.99). The automated rule flagged a new payee, but given the historical consistency, this is likely a legitimate, albeit new, business relationship or a scheduled payment that happens to be the highest recorded value. The 'BALANCE_DRAIN' tag is applied loosely as it is the max amount sent, but the low confidence reflects the statistical normalcy."
-      },
-      "behavioral": {
-        "agent": "behavioral",
-        "risk_level": "low",
-        "confidence": 0.3,
-        "patterns_detected": [
-          "none"
-        ],
-        "reasoning": "The transaction amount (\u20ac2883.07) is slightly above the sender's historical average (\u20ac2842.31), but it is sent to the only known counterparty, which the profile indicates is a known payee. The automated signal flagged it as a 'new payee with large amount', but the profile history explicitly lists this recipient ID as the sender's only counterparty across 12 transactions. Therefore, the NEW_PAYEE flag is incorrect based on the profile data. No significant behavioral shift (dormancy or frequency change) is present."
-      },
-      "relationship": {
-        "agent": "relationship",
-        "risk_level": "medium",
-        "confidence": 0.7,
-        "patterns_detected": [
-          "FAN_OUT"
-        ],
-        "reasoning": "The sender (EMP92998) has a consistent history of 12 transactions with the recipient (RGNR-LNAA-7FF-AUD-0), suggesting an established relationship, possibly payroll given the description 'Salary payment Jan'. However, the recipient node (RGNR-LNAA-7FF-AUD-0) shows an out-degree of 3, distributing funds to three other accounts (RES83889, ACCST55537, RETRB44116) in addition to the current transaction path. While the sender relationship looks normal, the recipient acts as a distributor (FAN_OUT) to multiple other accounts, which is a common characteristic of money mules, especially when combined with the automated signal indicating a new payee (though the sender/recipient pair itself is not new, the context suggests the recipient might be new to the overall network flow or the amount is high for a known relationship). The overall structure suggests the recipient is aggregating or distributing funds, raising suspicion."
-      },
-      "geographic": {
-        "agent": "geographic",
-        "risk_level": "low",
-        "confidence": 0.3,
-        "patterns_detected": [
-          "SALARY_TRANSACTION"
-        ],
-        "reasoning": "The transaction is explicitly labeled as a 'Salary payment Jan' and involves a transfer between what appears to be an Italian IBAN (sender) and a French IBAN (recipient). Since no citizen profile or rule results were provided, the transaction is assessed based solely on its description. A salary payment is a routine, expected financial activity. The lack of geographic data for the transaction location prevents any travel or location-based risk assessment. Confidence is low/medium because context is missing, but the description suggests legitimacy."
-      }
-    },
-    "verdict": {
-      "transaction_id": "44fdd50c-73f4-4f0d-8b03-0409ebd8890b",
-      "is_fraud": false,
-      "confidence": 0.75,
-      "reasoning": "The transaction is consistent with a recurring salary payment pattern. While the automated rule flagged a 'new payee', the behavioral and velocity assessments confirm this recipient is a long-standing counterparty with 12 prior transactions. The recipient's 'fan-out' behavior is noted, but in the context of a salary payment, this is consistent with a business entity distributing payroll. The amount is within one standard deviation of historical norms and represents a small fraction of the sender's balance."
-    },
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
     "final": "legit"
   },
   {
     "txn_id": "7dc83725-605a-4fab-9e5a-017200a34b9a",
     "amount": 982.6,
-    "triage": "ambiguous",
+    "triage": "auto_legit",
     "rule_summary": "check_new_payee: New payee with large amount (\u20ac982.6).",
-    "priority_rank": 5,
-    "specialist_results": {
-      "velocity": {
-        "agent": "velocity",
-        "risk_level": "medium",
-        "confidence": 0.6,
-        "patterns_detected": [
-          "FREQUENCY_SHIFT"
-        ],
-        "reasoning": "The transaction is a recurring monthly rent payment (\u20ac982.60) to the same recipient (RES83889) as previous months (e.g., \u20ac1023.13 in Dec, \u20ac1081.71 in Nov). This suggests legitimate recurring activity. However, the automated rule flagged 'check_new_payee: high' because the recipient ID (RES83889) is new *in the context of the last 20 transactions*, even though the description indicates it is a recurring rent payment. Since the amount is slightly lower than the previous two months, it could be a slight adjustment or a different payment component, but the consistency of the recipient/description suggests legitimacy. The transaction occurred at 18:20:09 (6:20 PM) local time, which is not unusual hours. No burst, card testing, or round trip detected. The primary risk signal comes from the automated system flagging a 'new payee' for a transaction that appears routine based on description and historical context. Given the context of the citizen being a phishing target, this is suspicious, but the pattern itself is not strongly indicative of fraud."
-      },
-      "amount": {
-        "agent": "amount",
-        "risk_level": "medium",
-        "confidence": 0.5,
-        "patterns_detected": [
-          "STATISTICAL_OUTLIER"
-        ],
-        "reasoning": "The transaction amount (\u20ac982.60) is slightly above the sender's historical average transaction amount (\u20ac825.54) and is 1.2 standard deviations above the mean, which is not a strong statistical outlier (>3\u03c3). However, the amount is unusual for this specific payee ('RES83889' - likely rent/housing) as the sender's previous transactions to this payee were significantly lower (max previous was \u20ac1081.71, but the average to known counterparties is lower). The automated rule flags a new payee, but RES83889 is listed as a known counterparty in the profile. Given the description 'Rent payment Jan - Casa Tua Audincourt', this amount is plausible for a monthly rent payment, but it is at the higher end of the sender's typical spending range. The combination of a slightly high amount for a known payee, coupled with the external signal about a new payee (which contradicts the profile data but suggests an unusual payment context), pushes the risk to medium (0.5 confidence)."
-      },
-      "behavioral": {
-        "agent": "behavioral",
-        "risk_level": "high",
-        "confidence": 0.9,
-        "patterns_detected": [
-          "NEW_PAYEE"
-        ],
-        "reasoning": "The transaction involves a brand new recipient ('RES83889' is not in known_counterparties, and the history shows this is the first transaction to this specific recipient ID, despite the description suggesting it's a recurring rent payment). The amount (\u20ac982.60) is significantly higher than the sender's average transaction amount (\u20ac825.54) and is close to the historical maximum. This aligns perfectly with the 'NEW_PAYEE' fraud indicator, especially when combined with an amount exceeding the average. The automated signal confirms this is a new payee with a large amount. Although the description suggests a legitimate purpose (rent), the combination of a new payee and a high amount warrants high suspicion, especially given the citizen profile indicates high phishing vulnerability."
-      },
-      "relationship": {
-        "agent": "relationship",
-        "risk_level": "medium",
-        "confidence": 0.7,
-        "patterns_detected": [
-          "FAN_OUT"
-        ],
-        "reasoning": "The sender (RGNR-LNAA-7FF-AUD-0) has an out-degree of 3 in the 2-hop graph, sending to the recipient (RES83889) and two other nodes (ACCST55537, RETRB44116). While the transaction description suggests a legitimate rent payment, the automated rule flags a 'new payee with large amount' (\u20ac982.6). The sender also has significant incoming flow from EMP92998 (12 transactions, high total amount), suggesting they might be acting as a collection point or intermediary for a small group, which aligns with a minor FAN_OUT structure. Given the new payee alert and the existing flow structure, the risk is elevated, but the description provides a plausible cover story (rent)."
-      },
-      "geographic": {
-        "agent": "geographic",
-        "risk_level": "low",
-        "confidence": 0.3,
-        "patterns_detected": [
-          "CONSISTENT_WITH_LIFESTYLE"
-        ],
-        "reasoning": "The transaction is a rent payment for 'Casa Tua Audincourt' to an Italian IBAN (IT). The sender lives in Audincourt, France (FR). While the recipient IBAN is Italian, the description explicitly states 'Rent payment Jan - Casa Tua Audincourt'. This strongly suggests the recipient is a landlord or property management company operating in Audincourt, possibly using an Italian banking service or having an Italian corporate structure. Given the citizen is 40, an office clerk, and highly mobile, paying rent locally (even if the recipient bank is foreign) is entirely consistent with expected behavior. The amount (\u20ac982.60) is reasonable for rent for this profile. No immediate red flags regarding travel or lifestyle mismatch are present."
-      }
-    },
-    "verdict": {
-      "transaction_id": "7dc83725-605a-4fab-9e5a-017200a34b9a",
-      "is_fraud": false,
-      "confidence": 0.65,
-      "reasoning": "While the transaction triggered a 'new payee' alert and the user is a known phishing target, the transaction details (rent payment, consistent amount, logical description) strongly suggest a legitimate recurring payment. The geographic discrepancy (Italian IBAN for a French property) is common for international property management companies. The specialist consensus does not meet the threshold for fraud, and the amount is well within the user's financial capacity."
-    },
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
     "final": "legit"
   },
   {
@@ -507,7 +263,7 @@
     "txn_id": "be65ac20-9102-4206-adba-b53380910ecf",
     "amount": 44.95,
     "triage": "auto_fraud",
-    "rule_summary": "check_phishing_window: PHISHING WINDOW: e-commerce 1.0d after phishing, no description \u2014 likely compromised account.",
+    "rule_summary": "check_phishing_window: PHISHING WINDOW: e-commerce 1.0d after phishing \u2014 likely compromised account.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
@@ -536,62 +292,11 @@
   {
     "txn_id": "eee4f7cb-10ba-4f01-8a43-37cc11c74371",
     "amount": 1073.33,
-    "triage": "ambiguous",
+    "triage": "auto_legit",
     "rule_summary": "check_amount_anomaly: Amount 1073.33 is a MAD outlier (z=6.1, median=974, MAD=11)",
-    "priority_rank": 4,
-    "specialist_results": {
-      "velocity": {
-        "agent": "velocity",
-        "risk_level": "medium",
-        "confidence": 0.6,
-        "patterns_detected": [
-          "UNUSUAL_HOURS"
-        ],
-        "reasoning": "The transaction amount (1073.33) is consistent with the recipient's history (previous rent payments are consistently around 950-1081 EUR). The automated rule flags the amount as an anomaly relative to the overall transaction set, but contextually, it fits the recurring rent payment pattern to RES83889. However, the transaction occurred at timestamp 3702984647.0, which corresponds to 2087-05-05T16:50:47. This time (16:50 UTC) is not inherently unusual for a European user, but if we assume the user is based in Audincourt (France, UTC+2 in May), this is 18:50 local time, which is normal business/evening hours. Reviewing the history, there is one transaction (ID: 9caf7a6f-afa8-43a8-b0bb-8a81d16f8cc3) that occurred at 2087-06-06T02:45:45 (timestamp 3705698745.0). This 02:45 AM transaction is flagged as potentially UNUSUAL_HOURS activity, suggesting the account holder might be active outside typical sleeping hours, which is a minor risk factor. Given the transaction under review is routine in amount and recipient, the overall risk is medium, driven primarily by the citizen's high phishing vulnerability and the historical presence of one late-night transaction."
-      },
-      "amount": {
-        "agent": "amount",
-        "risk_level": "high",
-        "confidence": 0.7,
-        "patterns_detected": [
-          "STATISTICAL_OUTLIER"
-        ],
-        "reasoning": "The transaction amount of 1073.33 is flagged as a strong statistical outlier by the automated rules (MAD outlier, z=6.1). While the description suggests a legitimate rent payment, the amount significantly exceeds the sender's historical average transaction amount (\u20ac825.54) and is far outside the typical deviation. Given the user's high vulnerability to phishing, this statistically anomalous transaction warrants high scrutiny, even if the description seems plausible."
-      },
-      "behavioral": {
-        "agent": "behavioral",
-        "risk_level": "medium",
-        "confidence": 0.6,
-        "patterns_detected": [
-          "NEW_PAYEE"
-        ],
-        "reasoning": "The transaction amount ($1073.33) is flagged as a significant outlier compared to the sender's historical average ($825.54 avg, $381 std dev), aligning with the automated anomaly check. The recipient ID 'RES83889' is known (it's a recurring rent payment), but the description 'Rent payment May - Casa Tua Audincourt' is slightly different from the previous month's description ('Rent payment Dec - Casa Tua Audincourt' or 'Rent payment Nov - Casa Tua Audincourt'). However, upon reviewing the history, the recipient RES83889 has been paid consistently for rent every month for the last year, including a payment in April ($987.17) and March ($952.23). The current amount ($1073.33) is higher than the historical rent payments, but not drastically so, and it is not a NEW_PAYEE in the strict sense, as RES83889 is a known counterparty. The key behavioral shift here is the AMOUNT ANOMALY combined with the fact that the amount is slightly higher than the established rent pattern, suggesting potential coercion or a change in living situation, but not a completely new, unknown recipient. Given the high amount anomaly and the slight deviation from the established rent pattern, the risk is medium."
-      },
-      "relationship": {
-        "agent": "relationship",
-        "risk_level": "medium",
-        "confidence": 0.7,
-        "patterns_detected": [
-          "FAN_OUT"
-        ],
-        "reasoning": "The sender (RGNR-LNAA-7FF-AUD-0) has an out-degree of 3 in the 2-hop graph, and looking at the edge data, this specific sender has 12 transactions directed to the recipient (RES83889) with an average amount of ~1008, which is close to the current transaction amount of 1073.33. Furthermore, the sender has sent money to two other distinct nodes (ACCST55537 and RETRB44116) in the 2-hop neighborhood, suggesting a potential FAN_OUT pattern where the sender is distributing funds to multiple counterparties, which is suspicious for a typical 'Rent payment'. The automated rule flags the amount as a significant outlier (MAD=6.1), increasing suspicion. The description 'Rent payment' suggests a legitimate purpose, but the graph structure and amount anomaly point towards potential layering/muling activity."
-      },
-      "geographic": {
-        "agent": "geographic",
-        "risk_level": "low",
-        "confidence": 0.3,
-        "patterns_detected": [
-          "CONSISTENT_LIFESTYLE"
-        ],
-        "reasoning": "The transaction is a rent payment of 1073.33 EUR to an Italian IBAN (IT19K6545578802800372895511504), described as 'Rent payment May - Casa Tua Audincourt'. The sender is based in France (FR IBAN) and lives in Audincourt. While the recipient IBAN is Italian, the description explicitly links the payment to 'Casa Tua Audincourt' (suggesting a rental property or service provider associated with the home city). Given the sender is a 40-year-old office clerk living in Audincourt, paying rent is highly consistent with their profile. The only slight deviation is the Italian IBAN, but the description mitigates this, suggesting a local arrangement with an international banking backend. The high phishing risk is noted, but this specific transaction appears legitimate based on the description."
-      }
-    },
-    "verdict": {
-      "transaction_id": "eee4f7cb-10ba-4f01-8a43-37cc11c74371",
-      "is_fraud": false,
-      "confidence": 0.65,
-      "reasoning": "While the transaction is flagged as a statistical outlier in amount, it is a recurring payment to a known recipient (RES83889) with a consistent description ('Rent payment'). The slight increase in amount is within a reasonable range for rent adjustments. Despite the user's high phishing vulnerability and the 'fan-out' graph structure, the transaction aligns with established historical behavior for this specific counterparty, and the geographic discrepancy is explained by the description."
-    },
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
     "final": "legit"
   },
   {
@@ -628,7 +333,7 @@
     "txn_id": "40d61e52-ee54-4aa0-a435-43bffce12aed",
     "amount": 968.72,
     "triage": "auto_legit",
-    "rule_summary": "no signals",
+    "rule_summary": "check_phishing_window: Routine transfer but only 1.4d after phishing \u2014 possible redirect.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
@@ -648,7 +353,7 @@
     "txn_id": "9d893a51-4843-47dc-b66e-1436341ff374",
     "amount": 366.5,
     "triage": "auto_legit",
-    "rule_summary": "no signals",
+    "rule_summary": "check_phishing_window: Routine transfer but only 0.4d after phishing \u2014 possible redirect.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
@@ -657,69 +362,18 @@
   {
     "txn_id": "9caf7a6f-afa8-43a8-b0bb-8a81d16f8cc3",
     "amount": 46.09,
-    "triage": "ambiguous",
-    "rule_summary": "check_temporal_pattern: Transaction at 0:00 UTC falls in off-hours window. | check_new_payee: New payee with moderate amount (\u20ac46.09).",
-    "priority_rank": 7,
-    "specialist_results": {
-      "velocity": {
-        "agent": "velocity",
-        "risk_level": "medium",
-        "confidence": 0.7,
-        "patterns_detected": [
-          "UNUSUAL_HOURS"
-        ],
-        "reasoning": "The transaction occurred at 02:45 UTC, which falls squarely within the automated rule's definition of unusual hours (00:00\u201305:00) for a user whose recent activity is centered in Audincourt, France (which is likely UTC+1 or UTC+2 depending on DST, making 02:45 UTC a very late/early hour locally). This is supported by the automated rule 'check_temporal_pattern'. However, the transaction is a recurring 'direct debit' for a 'Mobile phone monthly plan' to a new payee, which suggests a legitimate setup or change in service provider, mitigating the risk of immediate account draining (BURST). The amount is moderate (\u20ac46.09). Given the combination of off-hours activity and a new payee, the risk is elevated, but the recurring nature of the payment type suggests a legitimate administrative change rather than pure fraud, leading to a medium risk assessment with 0.7 confidence."
-      },
-      "amount": {
-        "agent": "amount",
-        "risk_level": "low",
-        "confidence": 0.3,
-        "patterns_detected": [
-          "FIRST_LARGE"
-        ],
-        "reasoning": "The transaction amount (\u20ac46.09) is extremely low relative to the sender's average transaction amount (\u20ac825.54) and their current balance (\u20ac29,700.60). It is also the minimum amount ever sent by this user, matching the minimum recorded transaction. The description 'Mobile phone monthly plan' strongly suggests a legitimate, recurring utility payment. Although automated rules flagged off-hours timing and a new payee, the amount and description override these minor flags, suggesting this is the first time this specific recurring bill has been processed or recorded. It is not statistically an outlier in the context of the account's minimum transaction, nor does it suggest fraud like structuring or balance drain."
-      },
-      "behavioral": {
-        "agent": "behavioral",
-        "risk_level": "medium",
-        "confidence": 0.5,
-        "patterns_detected": [
-          "NEW_PAYEE"
-        ],
-        "reasoning": "The transaction is to a brand new recipient ('ACCST55537'), which is a behavioral change as the sender only has 4 unique counterparties historically, and this one is new. The amount (\u20ac46.09) is very low, matching the sender's historical minimum amount, which mitigates the risk associated with NEW_PAYEE. The automated signal indicates the transaction occurred during off-hours (02:45 UTC), which is a minor temporal anomaly. Given the low amount and the fact that the recipient is new, the risk is elevated but not critical, aligning with the medium confidence score."
-      },
-      "relationship": {
-        "agent": "relationship",
-        "risk_level": "medium",
-        "confidence": 0.7,
-        "patterns_detected": [
-          "FAN_OUT"
-        ],
-        "reasoning": "The sender (RGNR-LNAA-7FF-AUD-0) has 3 outgoing edges in the 2-hop graph, one of which is to the recipient (ACCST55537). While the transaction amount (\u20ac46.09) is small, the automated signal for off-hours activity (0:00 UTC) combined with the 'New payee' signal suggests potential risk. The sender is involved in a structure where they are sending funds to multiple distinct entities (3 outgoing edges in the 2-hop graph: RES83889, ACCST55537, RETRB44116), which hints at a potential FAN_OUT structure, possibly indicating the sender is acting as a low-level distributor or mule, despite the citizen profile suggesting a normal office clerk. The low amount mitigates immediate high risk, but the graph structure and temporal signal push the assessment to medium."
-      },
-      "geographic": {
-        "agent": "geographic",
-        "risk_level": "low",
-        "confidence": 0.3,
-        "patterns_detected": [
-          "None"
-        ],
-        "reasoning": "The transaction is a small, recurring direct debit (\u20ac46.09) for a mobile phone plan, originating from a French IBAN (FR) to an Italian IBAN (IT). The citizen is French (home in Audincourt) and has high mobility. While the recipient is Italian, recurring utility/service payments often involve cross-border entities, especially for mobile plans. Given the low amount, the routine nature of the payment, and the citizen's high mobility profile, this is considered a slight deviation but likely legitimate. The automated rules did not flag this specific transaction, and the citizen's profile supports general financial activity."
-      }
-    },
-    "verdict": {
-      "transaction_id": "9caf7a6f-afa8-43a8-b0bb-8a81d16f8cc3",
-      "is_fraud": false,
-      "confidence": 0.85,
-      "reasoning": "The transaction is a low-value (\u20ac46.09) recurring direct debit for a mobile phone plan. While it triggered flags for off-hours timing and a new payee, these are consistent with setting up a new service contract. The amount is well below the threshold for high-risk fraud, and the transaction does not match any of the mandatory 'always-flag' patterns. The specialist consensus is low-to-medium risk, and the nature of the payment is highly characteristic of legitimate utility billing."
-    },
-    "final": "legit"
+    "triage": "auto_fraud",
+    "rule_summary": "check_temporal_pattern: Transaction at 0:00 UTC falls in off-hours window. | check_new_payee: New payee with moderate amount (\u20ac46.09). | check_phishing_window: PHISHING WINDOW: direct debit 0.1d after phishing \u2014 likely compromised account.",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
+    "final": "fraud"
   },
   {
     "txn_id": "dd81e9f0-e9b6-4586-a9f4-79994d6b1f21",
     "amount": 989.74,
     "triage": "auto_legit",
-    "rule_summary": "no signals",
+    "rule_summary": "check_phishing_window: Routine transfer but only 0.5d after phishing \u2014 possible redirect.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
@@ -738,22 +392,22 @@
   {
     "txn_id": "3ba7708b-367a-4637-9b52-d8fea85dc8e7",
     "amount": 22.21,
-    "triage": "auto_legit",
-    "rule_summary": "check_temporal_pattern: Transaction at 3:00 UTC falls in off-hours window.",
+    "triage": "auto_fraud",
+    "rule_summary": "check_temporal_pattern: Transaction at 3:00 UTC falls in off-hours window. | check_phishing_window: PHISHING WINDOW: direct debit 5.8d after phishing \u2014 likely compromised account.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
-    "final": "legit"
+    "final": "fraud"
   },
   {
     "txn_id": "c1da1f34-1760-4841-966f-cbed3f255dfb",
     "amount": 16.29,
     "triage": "auto_legit",
-    "rule_summary": "no signals",
+    "rule_summary": "check_phishing_window: Phishing window: in-person payment 11.2d after phishing event.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
-    "final": "legit"
+    "final": "fraud"
   },
   {
     "txn_id": "dcd4abb5-035a-42dc-b963-dd23a008eeaa",
@@ -1049,7 +703,7 @@
     "txn_id": "ea9f3acb-d2af-4b42-8588-9a7eb7823137",
     "amount": 1081.71,
     "triage": "auto_legit",
-    "rule_summary": "no signals",
+    "rule_summary": "check_phishing_window: Routine transfer but only 2.0d after phishing \u2014 possible redirect.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
@@ -1099,7 +753,7 @@
     "txn_id": "65eb47c9-3b12-40bc-b660-4a0f944fab22",
     "amount": 1023.13,
     "triage": "auto_legit",
-    "rule_summary": "no signals",
+    "rule_summary": "check_phishing_window: Routine transfer but only 1.8d after phishing \u2014 possible redirect.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
@@ -1129,7 +783,7 @@
     "txn_id": "0c9b840e-5cda-440a-8d08-5f8cb74fe41c",
     "amount": 374.99,
     "triage": "auto_legit",
-    "rule_summary": "no signals",
+    "rule_summary": "check_phishing_window: Routine transfer but only 0.1d after phishing \u2014 possible redirect.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
@@ -1138,11 +792,11 @@
   {
     "txn_id": "8289782a-685b-45cd-b0a1-2caed460b686",
     "amount": 125.55,
-    "triage": "auto_legit",
-    "rule_summary": "no signals",
+    "triage": "auto_fraud",
+    "rule_summary": "check_phishing_window: PHISHING WINDOW: direct debit 4.6d after phishing \u2014 likely compromised account.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
-    "final": "legit"
+    "final": "fraud"
   }
 ]

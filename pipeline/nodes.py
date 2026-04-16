@@ -166,6 +166,17 @@ def aggregate(state: PipelineState) -> dict:
     return run_aggregator(state)
 
 
+# %% _is_routine
+def _is_routine(txn: dict) -> bool:
+    """Check if a transaction is routine (salary/rent)."""
+    desc = (txn.get("description", "") or "").lower()
+    return (
+        txn.get("sender_id", "").startswith("EMP")
+        or "salary" in desc
+        or "rent" in desc
+    )
+
+
 # %% collect_output
 def collect_output(state: PipelineState) -> dict:
     fraud_ids = list(state.get("auto_fraud", []))
@@ -173,6 +184,23 @@ def collect_output(state: PipelineState) -> dict:
     for txn_id, verdict in state.get("verdicts", {}).items():
         if verdict.get("is_fraud"):
             fraud_ids.append(txn_id)
+
+    # Recall boost: flag non-routine transactions from phishing targets
+    # that have rule signals (even if below auto-fraud threshold)
+    rule_results = state.get("rule_results", {})
+    for txn in state.get("transactions", []):
+        if txn["id"] in fraud_ids:
+            continue
+        if _is_routine(txn):
+            continue
+        results = rule_results.get(txn["id"], [])
+        # Flag if any phishing signal fired (HIGH or MEDIUM)
+        has_phishing = any(
+            name == "check_phishing_window" and r["risk"] != "low"
+            for name, r in results
+        )
+        if has_phishing:
+            fraud_ids.append(txn["id"])
 
     # Budget fallback: ambiguous txns that never reached specialists
     specialist_txn_ids = set(state.get("specialist_results", {}).keys())

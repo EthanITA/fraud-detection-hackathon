@@ -111,16 +111,27 @@ def check_phishing_window(txn_json: str, citizen_json: str) -> str:
         return json.dumps({"risk": RiskLevel.LOW, "reason": f"{len(phishing_dates)} phishing events but none within 14d before this txn."})
 
     closest_days = min(recent_phishing)
-    is_risky_type = txn_type in ("e-commerce", "withdrawal", "in-person payment")
-    has_no_description = not txn.get("description", "").strip()
+    desc = (txn.get("description", "") or "").lower()
+    is_salary = "salary" in desc
+    is_rent = "rent" in desc
 
-    if is_risky_type and closest_days <= 7 and has_no_description:
+    # Salary/rent are routine — only flag if VERY close to phishing
+    if is_salary or is_rent:
+        if closest_days <= 2:
+            return json.dumps({
+                "risk": RiskLevel.MEDIUM,
+                "reason": f"Routine {txn_type} but only {closest_days:.1f}d after phishing — possible redirect.",
+            })
+        return json.dumps({"risk": RiskLevel.LOW, "reason": f"Routine payment, phishing {closest_days:.1f}d before."})
+
+    # Non-routine transaction in phishing window
+    if closest_days <= 7:
         return json.dumps({
             "risk": RiskLevel.HIGH,
-            "reason": f"PHISHING WINDOW: {txn_type} {closest_days:.1f}d after phishing, no description — likely compromised account.",
+            "reason": f"PHISHING WINDOW: {txn_type} {closest_days:.1f}d after phishing — likely compromised account.",
         })
 
-    if is_risky_type and closest_days <= 14:
+    if closest_days <= 14:
         return json.dumps({
             "risk": RiskLevel.MEDIUM,
             "reason": f"Phishing window: {txn_type} {closest_days:.1f}d after phishing event.",
@@ -128,5 +139,5 @@ def check_phishing_window(txn_json: str, citizen_json: str) -> str:
 
     return json.dumps({
         "risk": RiskLevel.LOW,
-        "reason": f"Phishing event {closest_days:.1f}d before txn but transaction type ({txn_type}) is low-risk.",
+        "reason": f"Phishing {closest_days:.1f}d before txn — outside window.",
     })

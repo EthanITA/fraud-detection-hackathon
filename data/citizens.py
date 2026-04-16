@@ -112,11 +112,11 @@ def load_locations(dir_path: str) -> dict[str, dict]:
 
 
 # %% load_sms
-def load_sms(dir_path: str) -> dict[str, list[str]]:
+def load_sms(dir_path: str, known_names: list[str] | None = None) -> dict[str, list[str]]:
     """Load sms.json → dict keyed by first name → list of SMS texts.
 
-    SMS don't have explicit user IDs. We extract the recipient name
-    from the message body to group them.
+    Matches by known citizen first names appearing anywhere in the SMS.
+    Falls back to regex extraction if no known names provided.
     """
     p = Path(dir_path) / "sms.json"
     if not p.exists():
@@ -127,23 +127,24 @@ def load_sms(dir_path: str) -> dict[str, list[str]]:
     by_name: dict[str, list[str]] = {}
     for msg in messages:
         text = msg.get("sms", "")
-        # Try to extract name from "Message: <Name>:" or "Hi <Name>," patterns
-        match = re.search(r"Message:\s*(\w[\w-]*)[,:;]", text)
-        if not match:
-            match = re.search(r"(?:Hi|Hello|Dear|Bonjour)\s+(\w[\w-]*)[,!]", text)
-        if match:
-            name = match.group(1)
-            by_name.setdefault(name, []).append(text)
-        else:
+        matched = False
+        # Match by known names first (most reliable)
+        if known_names:
+            for name in known_names:
+                if name in text:
+                    by_name.setdefault(name, []).append(text)
+                    matched = True
+                    break
+        if not matched:
             by_name.setdefault("_unknown", []).append(text)
     return by_name
 
 
 # %% load_mails
-def load_mails(dir_path: str) -> dict[str, list[str]]:
+def load_mails(dir_path: str, known_names: list[str] | None = None) -> dict[str, list[str]]:
     """Load mails.json → dict keyed by first name → list of mail texts.
 
-    Mails contain To: "FirstName LastName" headers we can parse.
+    Matches by known citizen first names in To: header or body.
     """
     p = Path(dir_path) / "mails.json"
     if not p.exists():
@@ -154,14 +155,14 @@ def load_mails(dir_path: str) -> dict[str, list[str]]:
     by_name: dict[str, list[str]] = {}
     for msg in messages:
         text = msg.get("mail", "")
-        # Extract from To: "FirstName LastName" <email>
-        match = re.search(r'To:\s*"(\w[\w-]*)\s+', text)
-        if not match:
-            match = re.search(r"To:\s*(\w[\w-]*)\s+", text)
-        if match:
-            name = match.group(1)
-            by_name.setdefault(name, []).append(text)
-        else:
+        matched = False
+        if known_names:
+            for name in known_names:
+                if name in text:
+                    by_name.setdefault(name, []).append(text)
+                    matched = True
+                    break
+        if not matched:
             by_name.setdefault("_unknown", []).append(text)
     return by_name
 
@@ -207,8 +208,11 @@ def build_citizen_profiles(dir_path: str) -> dict[str, dict]:
     users_by_iban = load_users(dir_path)
     iban_to_biotag = build_iban_to_biotag(dir_path)
     locations = load_locations(dir_path)
-    sms_by_name = load_sms(dir_path)
-    mails_by_name = load_mails(dir_path)
+
+    # Collect known first names for SMS/mail matching
+    known_names = [u["first_name"] for u in users_by_iban.values() if u.get("first_name")]
+    sms_by_name = load_sms(dir_path, known_names)
+    mails_by_name = load_mails(dir_path, known_names)
 
     # Build biotag → user mapping via IBAN
     users_by_biotag: dict[str, dict] = {}

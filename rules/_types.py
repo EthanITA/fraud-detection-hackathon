@@ -87,10 +87,10 @@ ALWAYS_FLAG_COMBOS: list[tuple[str, set[str]]] = [
 #   in between → ambiguous → Layer 2
 
 AMOUNT_TRIAGE: list[tuple[float, float, float]] = [
-    (10_000, 0, 4),  # >€10k: almost nothing auto-legit, cautious fraud threshold
-    (1_000, 1, 5),  # €1k–€10k
-    (100, 1, 5),  # €100–€1k
-    (0, 1, 5),  # <€100: phishing-driven fraud can be small amounts
+    (10_000, 2, 4),  # >€10k: cautious
+    (1_000, 3, 5),  # €1k–€10k: a single MEDIUM signal is not enough
+    (100, 3, 5),  # €100–€1k
+    (0, 3, 5),  # <€100
 ]
 
 # %% thresholds
