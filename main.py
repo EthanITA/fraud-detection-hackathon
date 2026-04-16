@@ -7,7 +7,7 @@ from config import generate_session_id, langfuse_client
 from pipeline import build_pipeline
 
 # %% config — flip this to switch between sample and real data
-USE_SAMPLE_DATA = True
+USE_SAMPLE_DATA = False
 
 
 # %% main
@@ -23,7 +23,7 @@ def main():
     else:
         # Accepts a directory (with transactions + supplementary files)
         # or a single transactions file path
-        dataset_path = sys.argv[1]
+        dataset_path = sys.argv[1] if len(sys.argv) > 1 else "challenges/1. The Truman Show - train"
         print(f"Using dataset: {dataset_path}")
 
     session_id = generate_session_id()

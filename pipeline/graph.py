@@ -21,7 +21,7 @@ from .state import PipelineState
 
 
 # %% LLM toggle — set to False to skip all LLM inference (rules-only mode)
-ENABLE_LLM = False
+ENABLE_LLM = True
 
 
 # %% _fan_out_to_specialists
