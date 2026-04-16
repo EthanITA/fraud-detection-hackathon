@@ -26,7 +26,7 @@ def main():
         dataset_path = (
             sys.argv[1]
             if len(sys.argv) > 1
-            else "challenges/1. The Truman Show - train"
+            else "challenges/2. Brave New World - train"
         )
         print(f"Using dataset: {dataset_path}")
 

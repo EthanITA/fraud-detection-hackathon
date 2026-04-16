@@ -185,8 +185,7 @@ def collect_output(state: PipelineState) -> dict:
         if verdict.get("is_fraud"):
             fraud_ids.append(txn_id)
 
-    # Recall boost: flag non-routine transactions from phishing targets
-    # that have rule signals (even if below auto-fraud threshold)
+    # Recall boost: flag non-routine transactions with strong phishing + another signal
     rule_results = state.get("rule_results", {})
     for txn in state.get("transactions", []):
         if txn["id"] in fraud_ids:
@@ -194,12 +193,11 @@ def collect_output(state: PipelineState) -> dict:
         if _is_routine(txn):
             continue
         results = rule_results.get(txn["id"], [])
-        # Flag if any phishing signal fired (HIGH or MEDIUM)
-        has_phishing = any(
-            name == "check_phishing_window" and r["risk"] != "low"
+        phishing_high = any(
+            name == "check_phishing_window" and r["risk"] == "high"
             for name, r in results
         )
-        if has_phishing:
+        if phishing_high:
             fraud_ids.append(txn["id"])
 
     # Budget fallback: ambiguous txns that never reached specialists

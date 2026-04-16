@@ -125,13 +125,13 @@ def check_phishing_window(txn_json: str, citizen_json: str) -> str:
         return json.dumps({"risk": RiskLevel.LOW, "reason": f"Routine payment, phishing {closest_days:.1f}d before."})
 
     # Non-routine transaction in phishing window
-    if closest_days <= 7:
+    if closest_days <= 3:
         return json.dumps({
             "risk": RiskLevel.HIGH,
             "reason": f"PHISHING WINDOW: {txn_type} {closest_days:.1f}d after phishing — likely compromised account.",
         })
 
-    if closest_days <= 14:
+    if closest_days <= 10:
         return json.dumps({
             "risk": RiskLevel.MEDIUM,
             "reason": f"Phishing window: {txn_type} {closest_days:.1f}d after phishing event.",

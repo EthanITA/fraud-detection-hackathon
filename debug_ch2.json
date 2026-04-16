@@ -372,12 +372,12 @@
   {
     "txn_id": "f395bca3-02b2-4e5e-8975-48959434ee1a",
     "amount": 11.59,
-    "triage": "auto_legit",
-    "rule_summary": "check_temporal_pattern: Transaction at 1:00 UTC falls in off-hours window. | check_phishing_window: Phishing window: e-commerce 3.8d after phishing event.",
+    "triage": "auto_fraud",
+    "rule_summary": "check_temporal_pattern: Transaction at 1:00 UTC falls in off-hours window. | check_phishing_window: PHISHING WINDOW: e-commerce 3.8d after phishing \u2014 likely compromised account.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
-    "final": "legit"
+    "final": "fraud"
   },
   {
     "txn_id": "234315a1-8553-4599-a70e-78930c05a618",
@@ -522,12 +522,12 @@
   {
     "txn_id": "a3e5125e-aebb-4d1f-9755-5505ecae392e",
     "amount": 97.89,
-    "triage": "auto_legit",
-    "rule_summary": "check_temporal_pattern: Transaction at 1:00 UTC falls in off-hours window. | check_new_payee: New payee with moderate amount (\u20ac97.89).",
+    "triage": "auto_fraud",
+    "rule_summary": "check_temporal_pattern: Transaction at 1:00 UTC falls in off-hours window. | check_new_payee: New payee with moderate amount (\u20ac97.89). | check_phishing_window: Phishing window: direct debit 12.1d after phishing event.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
-    "final": "legit"
+    "final": "fraud"
   },
   {
     "txn_id": "f51fb071-9987-474f-8d54-44c2ec6cb16d",
@@ -593,7 +593,7 @@
     "txn_id": "ebbbfbc9-62ab-4047-b56c-bbeffbf7ce43",
     "amount": 46.95,
     "triage": "auto_legit",
-    "rule_summary": "no signals",
+    "rule_summary": "check_phishing_window: Phishing window: in-person payment 10.1d after phishing event.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
@@ -614,7 +614,7 @@
     "amount": 465.22,
     "triage": "ambiguous",
     "rule_summary": "check_amount_anomaly: Amount 465.22 is a MAD outlier (z=4.4, median=80, MAD=59) | check_new_payee: New payee with moderate amount (\u20ac465.22).",
-    "priority_rank": 11,
+    "priority_rank": 5,
     "specialist_results": {
       "velocity": {
         "agent": "velocity",
@@ -651,7 +651,7 @@
         "patterns_detected": [
           "FAN_OUT"
         ],
-        "reasoning": "The sender (NNLL-BRTU-7D3-RAV-0) has an out-degree of 15 in the 2-hop graph, indicating it is distributing funds to many counterparties, which is characteristic of a potential mule payout operation (FAN_OUT). This structural pattern, combined with the automated signal indicating a high amount anomaly (465.22 is a significant outlier relative to the median of 80), strongly suggests suspicious activity. The recipient (TRDDN59197) is a new payee, further increasing suspicion when paired with an anomalous amount and a FAN_OUT structure from the sender."
+        "reasoning": "The transaction amount is a significant outlier, confirmed by automated checks. The sender (NNLL-BRTU-7D3-RAV-0) has a very high out-degree (15 outgoing edges in the 2-hop graph) and is sending to a brand new recipient (TRDDN59197). Furthermore, the sender is connected to several other high-out-degree nodes (FCHN-VTSI-7FA-BRE-0 (29), CSPR-GRHL-800-ILM-1 (26), VLNT-SLVS-7DC-PIO-0 (19), RTZO-JMIX-7D1-GAU-0 (13), JNSO-PLNA-7D0-FEL-1 (21)), suggesting this sender is part of a larger distribution network, consistent with a FAN_OUT or mule payout scenario, despite the description being 'Donation'."
       },
       "geographic": {
         "agent": "geographic",
@@ -667,8 +667,8 @@
     "verdict": {
       "transaction_id": "4566e181-b897-4c40-86a4-fe015ec9b69f",
       "is_fraud": true,
-      "confidence": 0.9,
-      "reasoning": "Four out of five specialists (Velocity, Amount, Behavioral, Relationship) have assessed this transaction as HIGH risk with high confidence. The transaction meets the criteria for fraud under the Specialist Consensus rule (2+ specialists say HIGH). Furthermore, the sender's profile as a high-risk phishing target, combined with the 'FAN_OUT' structural pattern and the statistical anomaly of the transaction amount, strongly indicates that this is a successful social engineering or account takeover event."
+      "confidence": 0.95,
+      "reasoning": "The transaction meets the criteria for fraud based on specialist consensus (4 out of 5 specialists rated the risk as HIGH). Despite the amount being under \u20ac1,000, the combination of a high-risk vulnerable profile (84yo, phishing target), a new payee, and strong evidence of a distribution network (FAN_OUT) makes this highly suspicious. The 'Donation' description is a classic social engineering tactic targeting elderly individuals, and the statistical anomaly (z=4.4) confirms this deviates significantly from the user's established behavior."
     },
     "final": "fraud"
   },
@@ -735,12 +735,12 @@
   {
     "txn_id": "400cc761-1847-4cb2-9399-b1b3cdef3ad4",
     "amount": 101.81,
-    "triage": "auto_legit",
-    "rule_summary": "check_phishing_window: Phishing window: transfer 3.9d after phishing event.",
+    "triage": "auto_fraud",
+    "rule_summary": "check_phishing_window: PHISHING WINDOW: transfer 3.9d after phishing \u2014 likely compromised account.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
-    "final": "legit"
+    "final": "fraud"
   },
   {
     "txn_id": "e8f40bcd-9672-45f6-80bd-4baa4931184c",
@@ -825,12 +825,12 @@
   {
     "txn_id": "acd4d1a5-aaad-4747-9b5a-37714bb489d5",
     "amount": 26.07,
-    "triage": "auto_legit",
-    "rule_summary": "check_phishing_window: Phishing window: e-commerce 4.4d after phishing event.",
+    "triage": "auto_fraud",
+    "rule_summary": "check_phishing_window: PHISHING WINDOW: e-commerce 4.4d after phishing \u2014 likely compromised account.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
-    "final": "legit"
+    "final": "fraud"
   },
   {
     "txn_id": "0a502a4c-2df6-452d-ba85-311298e771df",
@@ -885,63 +885,11 @@
   {
     "txn_id": "fc5c78ed-edd8-4c19-98f3-b7fd908c6e05",
     "amount": 1073.94,
-    "triage": "ambiguous",
+    "triage": "auto_fraud",
     "rule_summary": "check_amount_anomaly: Amount 1073.94 is a MAD outlier (z=5.5, median=157, MAD=113) | check_phishing_window: Routine transfer but only 1.5d after phishing \u2014 possible redirect.",
-    "priority_rank": 5,
-    "specialist_results": {
-      "velocity": {
-        "agent": "velocity",
-        "risk_level": "high",
-        "confidence": 0.8,
-        "patterns_detected": [
-          "FREQUENCY_SHIFT"
-        ],
-        "reasoning": "The current transaction amount (\u20ac1073.94) is a significant outlier compared to the sender's historical transaction amounts (MAD z=5.5). Furthermore, the recipient 'RENT75951' received a very similar payment (\u20ac1071.56) just 32 days prior (Dec rent payment). This suggests a recurring, high-value payment, which aligns with the description 'Rent payment Mar'. However, the automated rule flags a medium risk due to the transfer occurring only 1.5 days after a known phishing attempt, suggesting the account might be compromised or the user is acting under duress/deception. Given the high amount anomaly and the proximity to a phishing event, the risk remains high, despite the transaction appearing routine (rent)."
-      },
-      "amount": {
-        "agent": "amount",
-        "risk_level": "high",
-        "confidence": 0.7,
-        "patterns_detected": [
-          "STATISTICAL_OUTLIER"
-        ],
-        "reasoning": "The transaction amount of 1073.94 is flagged as a significant statistical outlier based on the sender's profile (it is the maximum historical transaction amount, and the automated check confirms it is a strong MAD outlier). While the description suggests a legitimate rent payment to a known counterparty ('RENT75951'), the context provided by the pre-assessment indicates the user is a high-risk phishing target, and this transaction occurred only 1.5 days after a phishing event. The combination of a statistically anomalous amount and high external risk context elevates the risk, even though the amount is not high enough to trigger threshold evasion or drain the account."
-      },
-      "behavioral": {
-        "agent": "behavioral",
-        "risk_level": "high",
-        "confidence": 0.85,
-        "patterns_detected": [
-          "NEW_PAYEE",
-          "DORMANT_REACTIVATION"
-        ],
-        "reasoning": "The transaction amount ($1073.94) is a significant outlier compared to the sender's average ($283.52) and is flagged by the amount anomaly check. Crucially, the recipient 'RENT75951' is present in the sender's known counterparties list, meaning this is NOT a NEW_PAYEE. However, examining the history shows the sender paid 'RENT75951' last month ($1071.56 on 3721285246.0) and the month before ($1042.61 on 3718945989.0). This suggests a recurring rent payment, which usually mitigates fraud risk. BUT, the automated signal indicates this transfer occurred only 1.5 days after a phishing incident, suggesting a potential account takeover scenario where the fraudster is mimicking routine behavior (rent payment) but executing it immediately after gaining access. Furthermore, the profile indicates the account was dormant for 30 days prior to the last transaction (Dec 28th) and this transaction (Mar 5th) is the first activity in over 60 days since the last recorded activity in the history (Dec 28th), suggesting a DORMANT_REACTIVATION pattern coinciding with a high-value, routine payment, which is highly suspicious for ATO."
-      },
-      "relationship": {
-        "agent": "relationship",
-        "risk_level": "high",
-        "confidence": 0.9,
-        "patterns_detected": [
-          "FAN_OUT"
-        ],
-        "reasoning": "The sender (CSPR-GRHL-800-ILM-1) is sending money to RENT75951, but the graph shows that CSPR-GRHL-800-ILM-1 is connected to 26 other outgoing edges (high FAN_OUT potential, though only one edge is shown in the immediate 2-hop context). More critically, the automated signal indicates the transaction amount is a significant outlier (z=5.5). Combined with the citizen profile indicating high phishing vulnerability and the transaction occurring shortly after a phishing window, this suggests a likely unauthorized transfer or mule activity originating from a compromised account. The recipient ID 'RENT75951' suggests a legitimate rent payment, but the anomalous amount and timing override this context, pointing towards a classic mule payout scenario or immediate fund diversion post-phishing."
-      },
-      "geographic": {
-        "agent": "geographic",
-        "risk_level": "low",
-        "confidence": 0.3,
-        "patterns_detected": [
-          "EXPECTED_BEHAVIOR"
-        ],
-        "reasoning": "The transaction is a rent payment of 1073.94 EUR to an Italian IBAN (IT...) for 'Home Living Ilmenau'. The sender's home city is Ilmenau (Germany). While the recipient IBAN is Italian, the description explicitly states this is the rent payment for the home in Ilmenau. This suggests the landlord or property management company uses an Italian bank account, which is plausible for international property ownership or management structures. The amount is consistent with a monthly rent payment for an office clerk in Germany, and the sender is currently located in Ilmenau (based on recent pings). The high mobility and past international travel history (including San Juan Cotzocon, Panchgram, Teresopolis) suggest the citizen is capable of managing international financial relationships, mitigating the risk associated with the foreign recipient IBAN. The transaction aligns with expected recurring household expenses."
-      }
-    },
-    "verdict": {
-      "transaction_id": "fc5c78ed-edd8-4c19-98f3-b7fd908c6e05",
-      "is_fraud": true,
-      "confidence": 0.85,
-      "reasoning": "Despite the transaction appearing to be a recurring rent payment, the consensus among 4 out of 5 specialists is HIGH risk. The transaction follows a significant phishing event (1.5 days prior) and exhibits a DORMANT_REACTIVATION pattern. The statistical anomaly (z=5.5) and the high FAN_OUT potential suggest that even if the recipient is a known entity, the account has likely been compromised and is being used for unauthorized transfers or mule activity."
-    },
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
     "final": "fraud"
   },
   {
@@ -1028,7 +976,7 @@
     "txn_id": "9061f16a-00c9-4960-a517-53dfe88a0311",
     "amount": 38.46,
     "triage": "auto_legit",
-    "rule_summary": "no signals",
+    "rule_summary": "check_phishing_window: Phishing window: in-person payment 12.5d after phishing event.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
@@ -1259,7 +1207,7 @@
     "amount": 199.83,
     "triage": "ambiguous",
     "rule_summary": "check_temporal_pattern: Transaction at 5:00 UTC falls in off-hours window. | check_amount_anomaly: Amount 199.83 is a MAD outlier (z=5.9, median=38, MAD=18)",
-    "priority_rank": 15,
+    "priority_rank": 8,
     "specialist_results": {
       "velocity": {
         "agent": "velocity",
@@ -1297,7 +1245,7 @@
         "patterns_detected": [
           "FAN_OUT"
         ],
-        "reasoning": "The transaction amount ($199.83) is a high statistical outlier for this sender (MAD z=5.9). Furthermore, the sender (RTZO-JMIX-7D1-GAU-0) has a high out-degree (13 outgoing edges in the 2-hop graph) distributing funds to many unique recipients, which strongly suggests a FAN_OUT pattern typical of a mule payout operation. This structural pattern, combined with the high amount anomaly and off-hours timing, points to high fraud risk, regardless of the conflicting citizen profile data."
+        "reasoning": "The transaction amount ($199.83) is a high statistical outlier (MAD=5.9) and occurred during off-hours (5:00 UTC), both strong indicators of potential fraud. Furthermore, the sender (RTZO-JMIX-7D1-GAU-0) has a high out-degree (13 outgoing edges in the 2-hop graph) distributing funds to numerous counterparties, suggesting a potential FAN_OUT or mule payout scenario. This structural pattern, combined with the high amount anomaly and temporal signal, strongly suggests illicit activity, aligning with the high-risk profile derived from the citizen data (impossible travel/high mobility contradicting stated lifestyle)."
       },
       "geographic": {
         "agent": "geographic",
@@ -1313,7 +1261,7 @@
       "transaction_id": "3f9fbebf-13a0-46d8-91f9-32aed035626f",
       "is_fraud": true,
       "confidence": 0.95,
-      "reasoning": "The transaction meets the criteria for fraud based on a strong consensus from 4 out of 5 specialists (Velocity, Amount, Behavioral, and Relationship) who all rated the risk as HIGH with confidence levels of 0.70 to 0.90. The transaction exhibits multiple red flags: it occurred during deep off-hours (unusual for an 86-year-old retiree), represents a significant statistical outlier in amount, and the account shows a 'FAN_OUT' pattern indicative of mule activity. Despite the geographic location being local, the high vulnerability profile (phishing target) and the clear discrepancy between the user's lifestyle and their travel history strongly suggest account takeover."
+      "reasoning": "Four out of five specialists (Velocity, Amount, Behavioral, Relationship) have assessed this transaction as HIGH risk with high confidence (0.70-0.90). The transaction exhibits a clear pattern of off-hours activity, statistical amount anomaly, and structural indicators of a mule-like 'fan-out' behavior. Despite the geographic location being local, the citizen's profile as a high-vulnerability phishing target, combined with the consensus of multiple specialists, confirms this as a fraudulent account takeover event."
     },
     "final": "fraud"
   },
@@ -1520,12 +1468,12 @@
   {
     "txn_id": "d27887c5-0a3b-49a4-8017-813850549f0b",
     "amount": 126.71,
-    "triage": "auto_legit",
-    "rule_summary": "check_new_payee: New payee with moderate amount (\u20ac126.71).",
+    "triage": "auto_fraud",
+    "rule_summary": "check_new_payee: New payee with moderate amount (\u20ac126.71). | check_phishing_window: Phishing window: e-commerce 10.7d after phishing event.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
-    "final": "legit"
+    "final": "fraud"
   },
   {
     "txn_id": "ff371e3e-e501-4cf4-8089-998b70e6d9b6",
@@ -1570,12 +1518,12 @@
   {
     "txn_id": "cff9f02f-5be0-42d4-ade6-580d6d355e1e",
     "amount": 84.88,
-    "triage": "auto_legit",
-    "rule_summary": "check_new_payee: New payee with moderate amount (\u20ac84.88).",
+    "triage": "auto_fraud",
+    "rule_summary": "check_new_payee: New payee with moderate amount (\u20ac84.88). | check_phishing_window: Phishing window: transfer 11.8d after phishing event.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
-    "final": "legit"
+    "final": "fraud"
   },
   {
     "txn_id": "5e547c1a-aab6-4f20-8997-5e5aeca516a8",
@@ -1621,7 +1569,7 @@
     "txn_id": "f370ce49-3045-45c4-9dd1-5f9b51f1d095",
     "amount": 35.38,
     "triage": "auto_fraud",
-    "rule_summary": "check_temporal_pattern: Transaction at 0:00 UTC falls in off-hours window. | check_new_payee: New payee with moderate amount (\u20ac35.38). | check_phishing_window: Phishing window: e-commerce 3.1d after phishing event.",
+    "rule_summary": "check_temporal_pattern: Transaction at 0:00 UTC falls in off-hours window. | check_new_payee: New payee with moderate amount (\u20ac35.38). | check_phishing_window: PHISHING WINDOW: e-commerce 3.1d after phishing \u2014 likely compromised account.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
@@ -1720,22 +1668,22 @@
   {
     "txn_id": "f5ce53d6-c4fc-4fd6-9677-a7c642811b73",
     "amount": 19.91,
-    "triage": "auto_legit",
-    "rule_summary": "check_temporal_pattern: Transaction at 6:00 UTC falls in off-hours window. | check_phishing_window: Phishing window: e-commerce 4.2d after phishing event.",
+    "triage": "auto_fraud",
+    "rule_summary": "check_temporal_pattern: Transaction at 6:00 UTC falls in off-hours window. | check_phishing_window: PHISHING WINDOW: e-commerce 4.2d after phishing \u2014 likely compromised account.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
-    "final": "legit"
+    "final": "fraud"
   },
   {
     "txn_id": "f61c8349-387a-4995-90ce-752e57a379c3",
     "amount": 55.25,
-    "triage": "auto_legit",
-    "rule_summary": "check_phishing_window: Phishing window: in-person payment 6.3d after phishing event.",
+    "triage": "auto_fraud",
+    "rule_summary": "check_phishing_window: PHISHING WINDOW: in-person payment 6.3d after phishing \u2014 likely compromised account.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
-    "final": "legit"
+    "final": "fraud"
   },
   {
     "txn_id": "7de05f76-cd83-468e-8a8c-53c29417e52e",
@@ -1822,7 +1770,7 @@
     "amount": 1267.59,
     "triage": "ambiguous",
     "rule_summary": "check_temporal_pattern: Transaction at 6:00 UTC falls in off-hours window. | check_amount_anomaly: Amount 1267.59 is a MAD outlier (z=15.3, median=72, MAD=53)",
-    "priority_rank": 8,
+    "priority_rank": 3,
     "specialist_results": {
       "velocity": {
         "agent": "velocity",
@@ -1856,11 +1804,11 @@
       "relationship": {
         "agent": "relationship",
         "risk_level": "high",
-        "confidence": 0.9,
+        "confidence": 0.85,
         "patterns_detected": [
           "FAN_OUT"
         ],
-        "reasoning": "The transaction exhibits strong indicators of mule activity. The sender (VLNT-SLVS-7DC-PIO-0) is sending money to HOME36805, which is one of 19 recipients this sender has transacted with recently (high FAN_OUT from the sender perspective, although the graph only shows the 2-hop neighborhood). Crucially, the transaction amount (1267.59) is a significant outlier (MAD=53, z=15.3), which is highly suspicious for a payment described as 'Rent payment May - Rent&Go'. Furthermore, the transaction occurred at 6:00 UTC (off-hours for the sender's home location in Italy), aligning with the temporal anomaly signal. Given the combination of extreme amount anomaly, off-hours activity, and the sender's high-risk profile (75yo, high phishing vulnerability), this strongly suggests fraudulent disbursement, likely part of a payout phase (FAN_OUT) from a compromised account or a mule operation."
+        "reasoning": "The transaction amount (1267.59) is a significant outlier based on MAD analysis (z=15.3), suggesting unusual behavior for this sender. Furthermore, the sender (VLNT-SLVS-7DC-PIO-0) is involved in a clear FAN_OUT pattern, sending money to 19 different recipients over the observed period, which is characteristic of a money mule payout operation. The transaction occurred during off-hours (6:00 UTC), adding to the suspicion. Although the description mentions 'Rent payment', the combination of high amount anomaly, off-hours timing, and the sender's high out-degree (19) strongly suggests mule activity, overriding the benign description."
       },
       "geographic": {
         "agent": "geographic",
@@ -1876,70 +1824,18 @@
       "transaction_id": "f2cb6c11-a6e6-436d-9267-e3d4094ebca3",
       "is_fraud": true,
       "confidence": 0.85,
-      "reasoning": "The transaction meets the criteria for fraud based on the specialist consensus (4 out of 5 specialists rated the risk as HIGH). Despite the description appearing to be a routine rent payment, the transaction is a significant statistical outlier (z=15.3) for this user, whose median transaction is only 72. The combination of high-risk demographic profile (75yo, high phishing susceptibility), the high FAN_OUT activity, and the temporal anomalies reported by multiple specialists outweighs the geographic consistency. The transaction amount and timing are inconsistent with the user's established behavioral baseline."
+      "reasoning": "The transaction meets the criteria for fraud based on specialist consensus (4 out of 5 specialists rated the risk as HIGH). Despite the description appearing to be a routine rent payment, the transaction is a significant statistical outlier (z=15.3), the sender has a high-risk profile as a frequent phishing target, and the relationship specialist identified a 'FAN_OUT' pattern indicative of money mule activity. The combination of high amount anomaly and behavioral shifts overrides the potentially benign description."
     },
     "final": "fraud"
   },
   {
     "txn_id": "2ce7d879-2514-42ab-bf53-3b3a79185f78",
     "amount": 1064.64,
-    "triage": "ambiguous",
+    "triage": "auto_fraud",
     "rule_summary": "check_amount_anomaly: Amount 1064.64 is a MAD outlier (z=4.5, median=154, MAD=138) | check_phishing_window: Routine transfer but only 1.3d after phishing \u2014 possible redirect.",
-    "priority_rank": 6,
-    "specialist_results": {
-      "velocity": {
-        "agent": "velocity",
-        "risk_level": "medium",
-        "confidence": 0.7,
-        "patterns_detected": [
-          "FREQUENCY_SHIFT"
-        ],
-        "reasoning": "The transaction amount (\u20ac1064.64) is flagged as a significant outlier compared to the sender's median transaction size (\u20ac154), suggesting a FREQUENCY_SHIFT in value. Furthermore, the previous transaction to the same recipient (RENT75951) was \u20ac1071.56 just 33 days prior, indicating a recurring, high-value payment (likely rent). This recurring nature mitigates the risk associated with the amount anomaly. The automated rule flags a medium risk due to the transfer occurring only 1.3 days after a known phishing event, suggesting a possible redirect or immediate exploitation. Given the context of a recurring rent payment, the timing risk is present but the pattern itself is not a textbook burst or card test. Therefore, the overall risk is medium, leaning towards legitimate but suspicious due to the proximity to the phishing event."
-      },
-      "amount": {
-        "agent": "amount",
-        "risk_level": "high",
-        "confidence": 0.7,
-        "patterns_detected": [
-          "STATISTICAL_OUTLIER"
-        ],
-        "reasoning": "The transaction amount of 1064.64 is flagged as a significant statistical outlier based on the sender's historical transaction data (MAD outlier, z=4.5). This is supported by the automated rule 'check_amount_anomaly: high'. Although the description suggests a legitimate rent payment, the magnitude relative to the user's average transaction size warrants high suspicion, especially when combined with the context that the user is a known phishing target and this transfer occurred shortly after a phishing window."
-      },
-      "behavioral": {
-        "agent": "behavioral",
-        "risk_level": "high",
-        "confidence": 0.85,
-        "patterns_detected": [
-          "NEW_PAYEE",
-          "AMOUNT_ANOMALY"
-        ],
-        "reasoning": "The transaction amount ($1064.64) is a significant outlier compared to the sender's average transaction amount ($283.52) and is flagged by the automated system. Furthermore, the recipient 'RENT75951' appears in the history, but the previous payment to this recipient was $1071.56 (Dec) and $1042.61 (Nov). While the recipient is known, the current amount is still an outlier. Crucially, the profile indicates the user is a high phishing risk and has exhibited uncharacteristic travel patterns, suggesting a potential account takeover scenario where the fraudster is mimicking a known payment type (rent) but pushing the amount to an anomalous level. The medium risk signal regarding the phishing window (1.3 days after a phishing event) strongly supports the account takeover hypothesis."
-      },
-      "relationship": {
-        "agent": "relationship",
-        "risk_level": "high",
-        "confidence": 0.9,
-        "patterns_detected": [
-          "FAN_OUT"
-        ],
-        "reasoning": "The transaction amount ($1064.64) is a significant outlier, flagged by automated rules. The recipient, RENT75951, has received 2 transactions in total, one from the sender (CSPR-GRHL-800-ILM-1) and one from VLNT-SLVS-7DC-PIO-0. The sender (CSPR-GRHL-800-ILM-1) is a high-volume sender, having 26 outgoing edges in the 2-hop graph, suggesting a potential FAN_OUT pattern (mule payout) originating from this account, even if this specific recipient only received one payment. Furthermore, the sender's profile indicates high phishing vulnerability and recent travel inconsistent with their stated lifestyle, suggesting potential account compromise or mule activity. The combination of the high anomaly score and the sender's suspicious activity profile strongly suggests fraud."
-      },
-      "geographic": {
-        "agent": "geographic",
-        "risk_level": "low",
-        "confidence": 0.3,
-        "patterns_detected": [
-          "CONSISTENT_WITH_KNOWN_TRAVEL"
-        ],
-        "reasoning": "The transaction is a rent payment of 1064.64 EUR to an Italian IBAN (IT89...), described as 'Rent payment May - Home Living Ilmenau'. The sender's home city is Ilmenau, Germany (DE IBAN). While the recipient IBAN is Italian, the description explicitly states 'Home Living Ilmenau'. This suggests the payment is for housing in Ilmenau, possibly managed by an Italian entity or a landlord using an Italian account. The amount is reasonable for rent for an office clerk in Germany. Crucially, the citizen profile indicates high mobility and has visited international locations before (Panchgram, San Juan Cotzocon, Teresopolis). The transaction location field is empty, but the context strongly suggests a local housing expense. This is a slight deviation (using an Italian bank for a German rent payment) but is plausible given the context and the citizen's established international activity. No immediate fraud pattern is strongly triggered."
-      }
-    },
-    "verdict": {
-      "transaction_id": "2ce7d879-2514-42ab-bf53-3b3a79185f78",
-      "is_fraud": true,
-      "confidence": 0.85,
-      "reasoning": "Three out of five specialists (Amount, Behavioral, Relationship) assessed the risk as HIGH. The transaction meets the economic scaling criteria for the \u20ac1,000\u2013\u20ac10,000 range, as the average confidence of the specialists is well above 0.5. The combination of the sender being a high-risk phishing target, the transaction occurring shortly after a phishing event, and the suspicious 'FAN_OUT' pattern identified by the relationship specialist strongly indicates an account takeover scenario, despite the transaction being labeled as rent."
-    },
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
     "final": "fraud"
   },
   {
@@ -1965,12 +1861,12 @@
   {
     "txn_id": "61400576-f5bc-463d-86b1-9c7262b2691c",
     "amount": 111.54,
-    "triage": "auto_legit",
-    "rule_summary": "check_new_payee: New payee with moderate amount (\u20ac111.54).",
+    "triage": "auto_fraud",
+    "rule_summary": "check_new_payee: New payee with moderate amount (\u20ac111.54). | check_phishing_window: Phishing window: direct debit 10.4d after phishing event.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
-    "final": "legit"
+    "final": "fraud"
   },
   {
     "txn_id": "5a6b003d-fde5-4d5a-bb83-377c0531d377",
@@ -2043,9 +1939,10 @@
         "risk_level": "high",
         "confidence": 0.9,
         "patterns_detected": [
-          "FAN_OUT"
+          "FAN_OUT",
+          "MULE_CHAIN"
         ],
-        "reasoning": "The recipient 'JNSO-PLNA-7D0-FEL-1' has a very high out-degree (21) in the 2-hop neighborhood, indicating it is distributing funds to many counterparties. This structure strongly suggests a FAN_OUT pattern, typical of a money mule payout operation. This is compounded by the high anomaly score on the transaction amount (3475.76 is a significant outlier) and the off-hours timing, leading to a high-risk assessment."
+        "reasoning": "The transaction amount is a significant outlier (high signal). Furthermore, the recipient 'JNSO-PLNA-7D0-FEL-1' has a very high out-degree (21 outgoing edges) and is receiving funds from the sender 'EMP25643' as part of a highly structured, repetitive flow (12 transactions over time) originating from several other high-out-degree nodes ('FCHN-VTSI-7FA-BRE-0' (29 out), 'VLNT-SLVS-7DC-PIO-0' (19 out), 'CSPR-GRHL-800-ILM-1' (26 out), 'WTZL-TNAI-80B-PFA-0' (29 out), 'RTZO-JMIX-7D1-GAU-0' (13 out), 'NNLL-BRTU-7D3-RAV-0' (15 out)). This structure strongly suggests a FAN_OUT/MULE_CHAIN pattern where 'JNSO-PLNA-7D0-FEL-1' acts as a central payout node for multiple upstream collection nodes, which is characteristic of money laundering or mule activity. The off-hours timing further supports this assessment."
       },
       "geographic": {
         "agent": "geographic",
@@ -2059,11 +1956,11 @@
     },
     "verdict": {
       "transaction_id": "a751f6ff-b4ad-46f0-80ff-f032db24f821",
-      "is_fraud": false,
-      "confidence": 0.65,
-      "reasoning": "While the relationship specialist flagged a potential fan-out pattern and the amount is a statistical outlier, the transaction exhibits strong indicators of a legitimate recurring salary payment. The recipient is consistent, the description matches historical patterns, and the amount is within a very tight historical range (standard deviation of ~32). The 'high' risk from the relationship specialist is noted, but the behavioral evidence of a long-standing, consistent payment relationship outweighs the structural risk in this specific context."
+      "is_fraud": true,
+      "confidence": 0.85,
+      "reasoning": "While the transaction appears to be a routine salary payment on the surface, the Relationship specialist identified a high-confidence MULE_CHAIN pattern involving the recipient acting as a central payout node for multiple high-out-degree accounts. This structural evidence of money laundering outweighs the behavioral consistency of the sender, as the recipient's network profile is highly indicative of illicit fund layering."
     },
-    "final": "legit"
+    "final": "fraud"
   },
   {
     "txn_id": "7008868a-ba7d-4a2c-bb67-2a5062925384",
@@ -2088,12 +1985,12 @@
   {
     "txn_id": "fafb4c85-d535-4131-8629-5ba9f0a0295d",
     "amount": 62.83,
-    "triage": "auto_legit",
-    "rule_summary": "check_temporal_pattern: Transaction at 6:00 UTC falls in off-hours window. | check_phishing_window: Phishing window: in-person payment 4.1d after phishing event.",
+    "triage": "auto_fraud",
+    "rule_summary": "check_temporal_pattern: Transaction at 6:00 UTC falls in off-hours window. | check_phishing_window: PHISHING WINDOW: in-person payment 4.1d after phishing \u2014 likely compromised account.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
-    "final": "legit"
+    "final": "fraud"
   },
   {
     "txn_id": "729eafd0-448a-46d1-a6f0-3d1c18a48ade",
@@ -2148,22 +2045,22 @@
   {
     "txn_id": "ef01b848-2015-459c-a3a8-c00779aca430",
     "amount": 249.58,
-    "triage": "auto_legit",
-    "rule_summary": "check_phishing_window: Phishing window: withdrawal 5.7d after phishing event.",
+    "triage": "auto_fraud",
+    "rule_summary": "check_phishing_window: PHISHING WINDOW: withdrawal 5.7d after phishing \u2014 likely compromised account.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
-    "final": "legit"
+    "final": "fraud"
   },
   {
     "txn_id": "f4aabe10-d989-4c76-a5ee-f86386ce9bf0",
     "amount": 46.7,
-    "triage": "auto_legit",
-    "rule_summary": "check_phishing_window: Phishing window: in-person payment 6.3d after phishing event.",
+    "triage": "auto_fraud",
+    "rule_summary": "check_phishing_window: PHISHING WINDOW: in-person payment 6.3d after phishing \u2014 likely compromised account.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
-    "final": "legit"
+    "final": "fraud"
   },
   {
     "txn_id": "b8667c67-da6b-4f05-9258-4acb60e3c22c",
@@ -2178,18 +2075,18 @@
   {
     "txn_id": "cf5f5048-d1f8-4e74-9f80-c54a380e6b9e",
     "amount": 76.79,
-    "triage": "auto_legit",
-    "rule_summary": "check_new_payee: New payee with moderate amount (\u20ac76.79).",
+    "triage": "auto_fraud",
+    "rule_summary": "check_new_payee: New payee with moderate amount (\u20ac76.79). | check_phishing_window: Phishing window: e-commerce 11.5d after phishing event.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
-    "final": "legit"
+    "final": "fraud"
   },
   {
     "txn_id": "cb6b1e7a-54cc-4d4f-86c2-5f1da6c24746",
     "amount": 31.1,
     "triage": "auto_legit",
-    "rule_summary": "no signals",
+    "rule_summary": "check_phishing_window: Phishing window: in-person payment 12.3d after phishing event.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
@@ -2259,7 +2156,7 @@
     "txn_id": "f854efe8-84e5-42ff-add7-cce201089ae2",
     "amount": 53.41,
     "triage": "auto_legit",
-    "rule_summary": "no signals",
+    "rule_summary": "check_phishing_window: Phishing window: in-person payment 12.6d after phishing event.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
@@ -2309,7 +2206,7 @@
     "txn_id": "3f8e082f-e4fe-41dc-bf20-4cbd44f9ef1b",
     "amount": 22.72,
     "triage": "auto_legit",
-    "rule_summary": "no signals",
+    "rule_summary": "check_phishing_window: Phishing window: in-person payment 11.4d after phishing event.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
@@ -2319,7 +2216,7 @@
     "txn_id": "8fe3a53e-8264-4f53-9771-72f050589e55",
     "amount": 107.56,
     "triage": "auto_legit",
-    "rule_summary": "no signals",
+    "rule_summary": "check_phishing_window: Phishing window: direct debit 10.8d after phishing event.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
@@ -2329,7 +2226,7 @@
     "txn_id": "b20e66bc-d9d2-4184-8dc1-98725d505774",
     "amount": 99.99,
     "triage": "auto_legit",
-    "rule_summary": "no signals",
+    "rule_summary": "check_phishing_window: Phishing window: withdrawal 12.8d after phishing event.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
@@ -2388,64 +2285,11 @@
   {
     "txn_id": "82276209-5088-4f66-8399-0e4a9be927a7",
     "amount": 2131.91,
-    "triage": "ambiguous",
+    "triage": "auto_fraud",
     "rule_summary": "check_amount_anomaly: Amount 2131.91 is a MAD outlier (z=12.3, median=161, MAD=108) | check_phishing_window: Routine transfer but only 0.0d after phishing \u2014 possible redirect.",
-    "priority_rank": 2,
-    "specialist_results": {
-      "velocity": {
-        "agent": "velocity",
-        "risk_level": "medium",
-        "confidence": 0.7,
-        "patterns_detected": [
-          "FREQUENCY_SHIFT"
-        ],
-        "reasoning": "The transaction amount (\u20ac2131.91) is a significant outlier compared to the sender's historical median transaction amount (\u20ac161), flagged by the automated check. Furthermore, the history shows that the previous rent payment to the same recipient (DOM58085) was \u20ac2015.79 (Nov) and \u20ac2081.65 (Oct), making this \u20ac2131.91 payment consistent with the *type* of expense (rent) but showing a recent upward shift in frequency or amount compared to the immediate past. The automated rule flagging a 'medium' risk due to proximity to a phishing window suggests potential compromise, but the transaction itself appears to be a routine rent payment, albeit slightly higher than usual. The primary timing signal is the deviation from the established rent payment amount, suggesting a FREQUENCY_SHIFT/amount anomaly rather than a classic fraud pattern like card testing or draining."
-      },
-      "amount": {
-        "agent": "amount",
-        "risk_level": "high",
-        "confidence": 0.7,
-        "patterns_detected": [
-          "STATISTICAL_OUTLIER"
-        ],
-        "reasoning": "The transaction amount of 2131.91 is flagged as a significant statistical outlier based on the sender's historical transaction data (MAD analysis shows it is far above the median). While the amount is not high enough to trigger BALANCE_DRAIN or THRESHOLD_EVASION concerns, the strong statistical anomaly combined with the automated rule flagging a medium risk due to proximity to a phishing window suggests elevated risk. The description 'Rent payment Jun' is plausible for a large expense, but the magnitude relative to the average transaction size warrants high scrutiny, aligning with the 0.7 confidence calibration for a clear statistical outlier without strong business justification provided in the context."
-      },
-      "behavioral": {
-        "agent": "behavioral",
-        "risk_level": "high",
-        "confidence": 0.85,
-        "patterns_detected": [
-          "NEW_PAYEE",
-          "DORMANT_REACTIVATION"
-        ],
-        "reasoning": "The transaction amount ($2131.91) is a significant outlier compared to the sender's average ($627.97) and historical maximum ($2711.60), flagged by the amount anomaly check. Crucially, the recipient 'DOM58085' appears in the history (three previous rent payments in Sep, Oct, Dec), meaning this is NOT a NEW_PAYEE. However, the previous payment to this recipient was 2087-12-03, and the current transaction is 2088-01-03. The history shows a gap in activity for this specific payee (31 days since last payment, which is consistent with monthly rent). The primary behavioral shift is driven by the extreme amount anomaly ($2131.91 vs. average $627.97) combined with the medium risk signal indicating the transfer occurred immediately following a phishing window (0.0 days after). Although the payee is known, the amount is highly suspicious, especially when coupled with the recent phishing exposure, suggesting a potential account takeover or coercion scenario overriding normal payment behavior."
-      },
-      "relationship": {
-        "agent": "relationship",
-        "risk_level": "high",
-        "confidence": 0.9,
-        "patterns_detected": [
-          "FAN_OUT"
-        ],
-        "reasoning": "The sender (FCHN-VTSI-7FA-BRE-0) is sending funds to 29 distinct recipients in the 2-hop graph, which strongly suggests a FAN_OUT pattern, characteristic of a mule payout operation. This structural pattern, combined with the automated signal indicating a high amount anomaly (2131.91 is a significant outlier) and the context that the sender is a known phishing target with high mobility, elevates the risk significantly. The transaction itself appears to be a small part of a larger, structured disbursement activity."
-      },
-      "geographic": {
-        "agent": "geographic",
-        "risk_level": "low",
-        "confidence": 0.3,
-        "patterns_detected": [
-          "CONSISTENT_EXPENSE_TYPE",
-          "CONSISTENT_MOBILITY"
-        ],
-        "reasoning": "The transaction is a rent payment of \u20ac2131.91 from a German IBAN (DE) to an Italian IBAN (IT). The citizen is a 45-year-old Senior Consultant based in Bremen, Germany, who has high mobility and a history of international travel (including a recent trip to Miandrivazo, Madagascar, and a prior trip to Florence, Italy). Rent payments are routine expenses. While the recipient is Italian, the sender is German, and the transaction is likely related to property or services in Italy, which is plausible given the citizen's known travel history (visited Florence). The amount is reasonable for a monthly rent payment for a high-earning consultant. No immediate red flags regarding location or lifestyle mismatch are present."
-      }
-    },
-    "verdict": {
-      "transaction_id": "82276209-5088-4f66-8399-0e4a9be927a7",
-      "is_fraud": true,
-      "confidence": 0.85,
-      "reasoning": "The transaction triggers multiple high-risk signals. While the payment is labeled as 'Rent', the Behavioral and Relationship specialists identified a 'FAN_OUT' pattern and a significant statistical amount anomaly. Crucially, the transaction occurred immediately (0.0 days) after a phishing window, and the sender is a known high-vulnerability target. With two specialists (Behavioral and Relationship) providing high-risk assessments with confidence > 0.8, the transaction meets the criteria for a fraud decision."
-    },
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
     "final": "fraud"
   },
   {
@@ -2601,12 +2445,12 @@
   {
     "txn_id": "1dfcc639-ecaa-4720-90bd-50216143b4f2",
     "amount": 250.26,
-    "triage": "auto_legit",
-    "rule_summary": "check_phishing_window: Phishing window: withdrawal 5.0d after phishing event.",
+    "triage": "auto_fraud",
+    "rule_summary": "check_phishing_window: PHISHING WINDOW: withdrawal 5.0d after phishing \u2014 likely compromised account.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
-    "final": "legit"
+    "final": "fraud"
   },
   {
     "txn_id": "13bda25d-8148-4cc0-9f63-5a12372e352f",
@@ -2632,7 +2476,7 @@
     "txn_id": "cd9eaa17-207e-4ce1-b390-353296479aeb",
     "amount": 381.84,
     "triage": "auto_fraud",
-    "rule_summary": "check_new_payee: New payee with moderate amount (\u20ac381.84). | check_phishing_window: Phishing window: e-commerce 5.9d after phishing event.",
+    "rule_summary": "check_new_payee: New payee with moderate amount (\u20ac381.84). | check_phishing_window: PHISHING WINDOW: e-commerce 5.9d after phishing \u2014 likely compromised account.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
@@ -2671,12 +2515,12 @@
   {
     "txn_id": "beea59dd-0357-455b-a912-5cb46bf3f78c",
     "amount": 15.98,
-    "triage": "auto_legit",
-    "rule_summary": "check_phishing_window: Phishing window: in-person payment 4.0d after phishing event.",
+    "triage": "auto_fraud",
+    "rule_summary": "check_phishing_window: PHISHING WINDOW: in-person payment 4.0d after phishing \u2014 likely compromised account.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
-    "final": "legit"
+    "final": "fraud"
   },
   {
     "txn_id": "683a0b83-6b67-455c-8183-d4ee5a338d68",
@@ -2711,12 +2555,12 @@
   {
     "txn_id": "8c46ec73-3a5f-4e86-95aa-cb9d3815761d",
     "amount": 59.36,
-    "triage": "auto_legit",
-    "rule_summary": "check_phishing_window: Phishing window: in-person payment 7.0d after phishing event.",
+    "triage": "auto_fraud",
+    "rule_summary": "check_phishing_window: PHISHING WINDOW: in-person payment 7.0d after phishing \u2014 likely compromised account.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
-    "final": "legit"
+    "final": "fraud"
   },
   {
     "txn_id": "53ccb2ee-e8ab-4653-afbe-eeeb9f7ebbac",
@@ -2732,7 +2576,7 @@
     "txn_id": "36b2e1dd-028e-4b97-b361-8b11f40350da",
     "amount": 50.33,
     "triage": "auto_legit",
-    "rule_summary": "no signals",
+    "rule_summary": "check_phishing_window: Phishing window: withdrawal 13.7d after phishing event.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
@@ -2772,7 +2616,7 @@
     "txn_id": "5cbb8fdb-5885-4d19-9f6d-1ae3c79540e4",
     "amount": 31.2,
     "triage": "auto_legit",
-    "rule_summary": "no signals",
+    "rule_summary": "check_phishing_window: Phishing window: in-person payment 10.0d after phishing event.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
@@ -2781,12 +2625,12 @@
   {
     "txn_id": "e6524e33-3096-4acd-8f23-01a9afe943b1",
     "amount": 71.64,
-    "triage": "auto_legit",
-    "rule_summary": "check_new_payee: New payee with moderate amount (\u20ac71.64).",
+    "triage": "auto_fraud",
+    "rule_summary": "check_new_payee: New payee with moderate amount (\u20ac71.64). | check_phishing_window: Phishing window: transfer 11.3d after phishing event.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
-    "final": "legit"
+    "final": "fraud"
   },
   {
     "txn_id": "a4499688-9d35-4bcf-b34c-ff3c0d499eaa",
@@ -2822,7 +2666,7 @@
     "txn_id": "a4c3f24a-a047-4d79-8111-a4bf74f6b2c2",
     "amount": 315.36,
     "triage": "auto_fraud",
-    "rule_summary": "check_new_payee: New payee with moderate amount (\u20ac315.36). | check_phishing_window: Phishing window: e-commerce 5.9d after phishing event.",
+    "rule_summary": "check_new_payee: New payee with moderate amount (\u20ac315.36). | check_phishing_window: PHISHING WINDOW: e-commerce 5.9d after phishing \u2014 likely compromised account.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
@@ -2861,12 +2705,12 @@
   {
     "txn_id": "b457db4a-96a7-45be-bd20-35a94e51f678",
     "amount": 44.75,
-    "triage": "auto_legit",
-    "rule_summary": "check_phishing_window: Phishing window: in-person payment 4.0d after phishing event.",
+    "triage": "auto_fraud",
+    "rule_summary": "check_phishing_window: PHISHING WINDOW: in-person payment 4.0d after phishing \u2014 likely compromised account.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
-    "final": "legit"
+    "final": "fraud"
   },
   {
     "txn_id": "57bfe1ff-b878-4902-86c8-b503de5d84e3",
@@ -3013,7 +2857,7 @@
     "amount": 461.87,
     "triage": "ambiguous",
     "rule_summary": "check_amount_anomaly: Amount 461.87 is a MAD outlier (z=6.4, median=60, MAD=43) | check_new_payee: New payee with moderate amount (\u20ac461.87).",
-    "priority_rank": 12,
+    "priority_rank": 6,
     "specialist_results": {
       "velocity": {
         "agent": "velocity",
@@ -3050,7 +2894,7 @@
         "patterns_detected": [
           "FAN_OUT"
         ],
-        "reasoning": "The sender (NNLL-BRTU-7D3-RAV-0) has 15 outgoing edges in the 2-hop graph, indicating a potential distribution pattern (FAN_OUT). This is strongly correlated with the automated signal 'check_amount_anomaly: high' (\u20ac461.87 is a significant outlier for this sender's typical activity, given the context of the sender's profile). The recipient (ENTLN84976) is a new payee, which, combined with the high anomalous amount and the sender's high-risk profile (phishing target, unusual travel), suggests this transaction is likely part of a mule operation or a direct result of compromise, warranting a high-risk assessment."
+        "reasoning": "The sender (NNLL-BRTU-7D3-RAV-0) has an out_degree of 15 in the 2-hop graph, indicating it is distributing funds to many counterparties, which is a structural characteristic of a FAN_OUT/payout mule operation. This structural pattern, combined with the automated signal indicating the transaction amount is a significant outlier (MAD z=6.4), strongly suggests potential fraud, likely related to the sender being used as a collection or distribution point, despite the description claiming it is a 'Loan payment'."
       },
       "geographic": {
         "agent": "geographic",
@@ -3067,7 +2911,7 @@
       "transaction_id": "539787af-84fb-4932-8141-ed03e40fa2e4",
       "is_fraud": true,
       "confidence": 0.9,
-      "reasoning": "The transaction meets the criteria for fraud based on the specialist consensus, with 4 out of 5 specialists assessing the risk as HIGH. The combination of a significant statistical amount anomaly (z=6.4), the sender's high-risk profile (84yo, high phishing target, recent impossible travel patterns), and the identified FAN_OUT relationship pattern strongly indicates account compromise or social engineering. Despite the 'loan payment' description, the behavioral and velocity signals confirm this deviates significantly from the user's established norms."
+      "reasoning": "The transaction meets the criteria for fraud based on specialist consensus (4 out of 5 specialists rated the risk as HIGH). The combination of a significant statistical amount anomaly (z=6.4), the sender's structural role in a potential fan-out/mule operation, and the high-risk profile of the account holder (84yo, high phishing exposure, and inconsistent travel patterns) provides strong evidence of account compromise or social engineering. Despite the 'Loan payment' description, the behavioral and relationship signals indicate this is likely an unauthorized transfer."
     },
     "final": "fraud"
   },
@@ -3084,12 +2928,12 @@
   {
     "txn_id": "135cd43b-4d8c-415e-8ff9-9e5477b3e4d3",
     "amount": 162.66,
-    "triage": "auto_legit",
-    "rule_summary": "check_temporal_pattern: Transaction at 1:00 UTC falls in off-hours window. | check_new_payee: New payee with moderate amount (\u20ac162.66).",
+    "triage": "auto_fraud",
+    "rule_summary": "check_temporal_pattern: Transaction at 1:00 UTC falls in off-hours window. | check_new_payee: New payee with moderate amount (\u20ac162.66). | check_phishing_window: Phishing window: direct debit 10.9d after phishing event.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
-    "final": "legit"
+    "final": "fraud"
   },
   {
     "txn_id": "be9fed0f-3419-491b-9bf9-ab9174c955cd",
@@ -3165,7 +3009,7 @@
     "txn_id": "59ac687f-2e51-4674-bb69-212a3996bd35",
     "amount": 23.5,
     "triage": "auto_legit",
-    "rule_summary": "no signals",
+    "rule_summary": "check_phishing_window: Phishing window: in-person payment 13.7d after phishing event.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
@@ -3194,28 +3038,28 @@
   {
     "txn_id": "a4449c45-6480-421e-8386-567147688903",
     "amount": 344.89,
-    "triage": "auto_legit",
-    "rule_summary": "check_new_payee: New payee with moderate amount (\u20ac344.89).",
+    "triage": "auto_fraud",
+    "rule_summary": "check_new_payee: New payee with moderate amount (\u20ac344.89). | check_phishing_window: Phishing window: e-commerce 10.6d after phishing event.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
-    "final": "legit"
+    "final": "fraud"
   },
   {
     "txn_id": "3f5777c8-86ac-4351-9f26-744d5ae1a757",
     "amount": 257.53,
-    "triage": "auto_legit",
-    "rule_summary": "check_new_payee: New payee with moderate amount (\u20ac257.53).",
+    "triage": "auto_fraud",
+    "rule_summary": "check_new_payee: New payee with moderate amount (\u20ac257.53). | check_phishing_window: Phishing window: transfer 10.7d after phishing event.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
-    "final": "legit"
+    "final": "fraud"
   },
   {
     "txn_id": "23ccc99a-7fef-47ef-b638-5cdfb880dc8c",
     "amount": 34.77,
     "triage": "auto_legit",
-    "rule_summary": "no signals",
+    "rule_summary": "check_phishing_window: Phishing window: in-person payment 13.4d after phishing event.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
@@ -3276,7 +3120,7 @@
     "amount": 299.77,
     "triage": "ambiguous",
     "rule_summary": "check_temporal_pattern: Transaction at 4:00 UTC falls in off-hours window. | check_amount_anomaly: Amount 299.77 is a MAD outlier (z=3.7, median=58, MAD=44)",
-    "priority_rank": 14,
+    "priority_rank": 7,
     "specialist_results": {
       "velocity": {
         "agent": "velocity",
@@ -3314,7 +3158,7 @@
         "patterns_detected": [
           "FAN_OUT"
         ],
-        "reasoning": "The transaction amount ($299.77) is a high statistical outlier based on MAD analysis. Furthermore, the sender (RTZO-JMIX-7D1-GAU-0) has a high out-degree (13) in the 2-hop graph, indicating it is distributing funds to many counterparties, which strongly suggests a FAN_OUT pattern typical of a mule payout operation. This structural pattern, combined with the high amount anomaly and off-hours timing (from automated checks), points strongly towards fraudulent activity, likely related to the sender's high phishing vulnerability noted in the citizen profile."
+        "reasoning": "The transaction exhibits strong indicators of fraud. The sender (RTZO-JMIX-7D1-GAU-0) is sending money to 34 different recipients (including 13 empty/unspecified targets) in a short period, which strongly suggests a FAN_OUT pattern indicative of a money mule payout operation. This is compounded by the high anomaly score on the transaction amount ($299.77) and the off-hours timing (4:00 UTC). Furthermore, the associated citizen profile shows high-risk factors like being a phishing target and exhibiting 'impossible travel' (high mobility contradicting stated retiree status), suggesting the account itself may be compromised or misused, making the outgoing flow highly suspicious."
       },
       "geographic": {
         "agent": "geographic",
@@ -3329,8 +3173,8 @@
     "verdict": {
       "transaction_id": "1580eccc-514c-439e-bd76-25e3fc0db2df",
       "is_fraud": true,
-      "confidence": 0.92,
-      "reasoning": "The transaction meets the criteria for fraud based on specialist consensus (4 out of 5 specialists rated the risk as HIGH). The combination of an off-hours ATM withdrawal, a significant statistical amount anomaly, and the account's high-risk profile (phishing target with evidence of a fan-out mule pattern) strongly indicates account takeover and unauthorized cash-out. Despite the geographic consistency, the behavioral and structural evidence outweighs the location data."
+      "confidence": 0.95,
+      "reasoning": "The transaction meets the criteria for fraud based on a strong consensus from 4 out of 5 specialists (Velocity, Amount, Behavioral, and Relationship) who all rated the risk as HIGH. Specifically, the Relationship specialist identified a 'FAN_OUT' pattern (34 recipients), which is a critical indicator of a money mule operation. Furthermore, the transaction triggers the 'ALWAYS-FLAG' logic due to the combination of high-risk behavioral indicators (off-hours, amount anomaly) and the account's documented history of being a phishing target with impossible travel patterns, suggesting a full account takeover."
     },
     "final": "fraud"
   },
@@ -3347,12 +3191,12 @@
   {
     "txn_id": "33ce191b-7dbc-40c6-a040-1e05eadf5be3",
     "amount": 299.8,
-    "triage": "auto_legit",
-    "rule_summary": "check_phishing_window: Phishing window: withdrawal 3.9d after phishing event.",
+    "triage": "auto_fraud",
+    "rule_summary": "check_phishing_window: PHISHING WINDOW: withdrawal 3.9d after phishing \u2014 likely compromised account.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
-    "final": "legit"
+    "final": "fraud"
   },
   {
     "txn_id": "f9d8774d-ad2f-42a5-a4cf-96ed977b8525",
@@ -3468,7 +3312,7 @@
     "txn_id": "1c9cf139-1c49-4063-ab36-2e77a32f3135",
     "amount": 78.43,
     "triage": "auto_legit",
-    "rule_summary": "check_temporal_pattern: Transaction at 6:00 UTC falls in off-hours window.",
+    "rule_summary": "check_temporal_pattern: Transaction at 6:00 UTC falls in off-hours window. | check_phishing_window: Phishing window: in-person payment 12.4d after phishing event.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
@@ -3507,12 +3351,12 @@
   {
     "txn_id": "5774d669-5e42-4698-aa3f-4429520d35a0",
     "amount": 70.23,
-    "triage": "auto_legit",
-    "rule_summary": "check_phishing_window: Phishing window: in-person payment 3.9d after phishing event.",
+    "triage": "auto_fraud",
+    "rule_summary": "check_phishing_window: PHISHING WINDOW: in-person payment 3.9d after phishing \u2014 likely compromised account.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
-    "final": "legit"
+    "final": "fraud"
   },
   {
     "txn_id": "2fba3b63-d531-47f7-8dfe-ae6fb975d2fd",
@@ -3527,12 +3371,12 @@
   {
     "txn_id": "b5b7a808-dadb-4da9-b91a-2ad1e49c1cb3",
     "amount": 27.49,
-    "triage": "auto_legit",
-    "rule_summary": "check_phishing_window: Phishing window: in-person payment 3.8d after phishing event.",
+    "triage": "auto_fraud",
+    "rule_summary": "check_phishing_window: PHISHING WINDOW: in-person payment 3.8d after phishing \u2014 likely compromised account.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
-    "final": "legit"
+    "final": "fraud"
   },
   {
     "txn_id": "1e509505-8106-41b8-b537-5b6979d05f2a",
@@ -3707,12 +3551,12 @@
   {
     "txn_id": "da723c4c-753f-47ec-8ffc-409aac0f28a6",
     "amount": 163.04,
-    "triage": "auto_legit",
-    "rule_summary": "check_new_payee: New payee with moderate amount (\u20ac163.04).",
+    "triage": "auto_fraud",
+    "rule_summary": "check_new_payee: New payee with moderate amount (\u20ac163.04). | check_phishing_window: Phishing window: transfer 12.9d after phishing event.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
-    "final": "legit"
+    "final": "fraud"
   },
   {
     "txn_id": "ea37a9bd-c540-459d-b2d4-c79051f8d373",
@@ -3787,12 +3631,12 @@
   {
     "txn_id": "c61ef749-83b4-4a89-90e4-98a95ff0a8b6",
     "amount": 533.41,
-    "triage": "auto_legit",
-    "rule_summary": "check_phishing_window: Phishing window: transfer 5.6d after phishing event.",
+    "triage": "auto_fraud",
+    "rule_summary": "check_phishing_window: PHISHING WINDOW: transfer 5.6d after phishing \u2014 likely compromised account.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
-    "final": "legit"
+    "final": "fraud"
   },
   {
     "txn_id": "ef4fd36e-5b1d-44de-a934-a708dbce264a",
@@ -3848,7 +3692,7 @@
     "txn_id": "c39089d4-4cd0-4b87-9e2f-2c4aa411f99f",
     "amount": 44.64,
     "triage": "auto_legit",
-    "rule_summary": "no signals",
+    "rule_summary": "check_phishing_window: Phishing window: in-person payment 11.7d after phishing event.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
@@ -3957,12 +3801,12 @@
   {
     "txn_id": "434142c6-f0de-4918-bb8f-3b850d33f293",
     "amount": 1.85,
-    "triage": "auto_legit",
-    "rule_summary": "check_temporal_pattern: Transaction at 6:00 UTC falls in off-hours window. | check_phishing_window: Phishing window: e-commerce 3.9d after phishing event.",
+    "triage": "auto_fraud",
+    "rule_summary": "check_temporal_pattern: Transaction at 6:00 UTC falls in off-hours window. | check_phishing_window: PHISHING WINDOW: e-commerce 3.9d after phishing \u2014 likely compromised account.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
-    "final": "legit"
+    "final": "fraud"
   },
   {
     "txn_id": "d63f4601-780c-4e27-bf72-56907137b5f0",
@@ -3977,64 +3821,11 @@
   {
     "txn_id": "e36fba08-7232-4b40-b055-2f89f8bf7fd4",
     "amount": 934.73,
-    "triage": "ambiguous",
-    "rule_summary": "check_temporal_pattern: Transaction at 6:00 UTC falls in off-hours window. | check_amount_anomaly: Amount 934.73 is a MAD outlier (z=10.4, median=82, MAD=55) | check_phishing_window: Phishing window: e-commerce 4.0d after phishing event.",
-    "priority_rank": 7,
-    "specialist_results": {
-      "velocity": {
-        "agent": "velocity",
-        "risk_level": "high",
-        "confidence": 0.8,
-        "patterns_detected": [
-          "UNUSUAL_HOURS",
-          "FREQUENCY_SHIFT"
-        ],
-        "reasoning": "The transaction occurred at 08:39:52 UTC, which the automated check flagged as falling within the 00:00\u201305:00 off-hours window relative to the user's typical activity pattern (though 08:39 is generally not 'sleep time', the rule flagged it, suggesting a deviation from *their* norm). More critically, the amount (\u20ac934.73) is a massive outlier based on MAD analysis (z=10.4), indicating a significant deviation from typical spending. Combined with the high pre-assessment risk factors (phishing susceptibility, unusual travel patterns suggesting potential compromise or mule activity), this large, anomalous transaction time/amount combination strongly suggests fraud, likely following a successful phishing attack mentioned in the pre-assessment."
-      },
-      "amount": {
-        "agent": "amount",
-        "risk_level": "high",
-        "confidence": 0.7,
-        "patterns_detected": [
-          "STATISTICAL_OUTLIER"
-        ],
-        "reasoning": "The transaction amount of 934.73 is flagged as a high anomaly by automated checks (MAD outlier, z=10.4). This amount is significantly higher than the sender's historical average transaction amount (Avg: 283.52, StdDev: 365.84). While the amount is below the max historical transaction (1073.94), its deviation from the mean is extreme, suggesting a STATISTICAL_OUTLIER. Combined with the high external risk factors (phishing target, off-hours transaction), this warrants a high risk assessment, aligning with the 0.7 confidence calibration for a clear statistical outlier."
-      },
-      "behavioral": {
-        "agent": "behavioral",
-        "risk_level": "high",
-        "confidence": 0.85,
-        "patterns_detected": [
-          "NEW_PAYEE",
-          "DORMANT_REACTIVATION"
-        ],
-        "reasoning": "The transaction amount (934.73) is a significant outlier compared to the sender's average transaction amount (283.52) and is flagged as high anomaly by automated checks. Crucially, the recipient 'PAYCL92396' is NOT present in the sender's historical list of known counterparties, indicating this is a NEW_PAYEE. Furthermore, the profile indicates the account was dormant for 35 days (last seen 3723405815.0, current transaction at 3713323192.0, difference is ~10 days, but looking at the history span, the last transaction before this one was 3723405815.0, and the current one is 3713323192.0. Wait, the timestamps are decreasing, meaning the transaction under review (3713323192.0) happened *before* the last recorded history transaction (3723405815.0). Let's re-evaluate dormancy based on the transaction *before* the current one. The transaction immediately preceding this one in time is the one with timestamp 3713795368.0 (9 days prior). This is not a dormancy reactivation based on the provided history order. However, the combination of a HIGHLY anomalous amount and a NEW_PAYEE is sufficient for high risk. The automated signal for off-hours timing (6:00 UTC) adds further suspicion, especially given the citizen's high phishing vulnerability."
-      },
-      "relationship": {
-        "agent": "relationship",
-        "risk_level": "high",
-        "confidence": 0.9,
-        "patterns_detected": [
-          "FAN_OUT"
-        ],
-        "reasoning": "The transaction amount ($934.73) is a significant outlier based on the sender's historical transaction median ($82), which strongly suggests potential fraud or mule activity. Furthermore, the sender (CSPR-GRHL-800-ILM-1) has a high out-degree (26 outgoing edges in the 2-hop graph) and is sending to a recipient (PAYCL92396) that appears to be a new entity (is_new: true). The sender's profile indicates high phishing vulnerability and inconsistent travel patterns, suggesting potential account compromise or mule usage. The combination of a massive amount anomaly and the sender's high-risk profile, coupled with the graph structure showing the sender distributing funds (FAN_OUT potential), warrants a high-risk assessment."
-      },
-      "geographic": {
-        "agent": "geographic",
-        "risk_level": "medium",
-        "confidence": 0.5,
-        "patterns_detected": [
-          "LIFESTYLE_MISMATCH"
-        ],
-        "reasoning": "The transaction is an e-commerce purchase of $934.73 from 'ClickCove Market' (recipient IBAN IT suggests Italy, though merchant name is generic). The sender, Gerhild Caspar, is a 39-year-old office clerk living in Ilmenau, Germany. While she is described as having high mobility and has traveled internationally before (San Juan Cotzocon, Panchgram, Teresopolis), a high-value e-commerce purchase ($934.73) is somewhat unusual for a clerk earning \u20ac33,600/yr, especially if it's a sudden, large purchase. However, since she is high mobility and has international history, it is not impossible travel. The primary flag is the lifestyle mismatch combined with her high phishing risk score, suggesting potential compromise, but without a clear geographic impossibility or extreme age/health factor, the risk is medium."
-      }
-    },
-    "verdict": {
-      "transaction_id": "e36fba08-7232-4b40-b055-2f89f8bf7fd4",
-      "is_fraud": true,
-      "confidence": 0.95,
-      "reasoning": "The transaction meets the criteria for fraud based on a strong consensus from 4 out of 5 specialists (Velocity, Amount, Behavioral, Relationship) all rating the risk as HIGH. The transaction is a significant statistical outlier (z=10.4) and involves a new payee, which, when combined with the sender's high-risk profile (75% phishing susceptibility and recent phishing event), strongly indicates account takeover. The transaction also triggers multiple automated risk flags including amount anomaly and temporal off-hours patterns."
-    },
+    "triage": "auto_fraud",
+    "rule_summary": "check_temporal_pattern: Transaction at 6:00 UTC falls in off-hours window. | check_amount_anomaly: Amount 934.73 is a MAD outlier (z=10.4, median=82, MAD=55) | check_phishing_window: PHISHING WINDOW: e-commerce 4.0d after phishing \u2014 likely compromised account.",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
     "final": "fraud"
   },
   {
@@ -4080,63 +3871,11 @@
   {
     "txn_id": "f17ea00f-cc51-45c3-9190-e91c23b8da41",
     "amount": 1134.28,
-    "triage": "ambiguous",
+    "triage": "auto_fraud",
     "rule_summary": "check_amount_anomaly: Amount 1134.28 is a MAD outlier (z=15.7, median=72, MAD=46) | check_phishing_window: Routine transfer but only 0.9d after phishing \u2014 possible redirect.",
-    "priority_rank": 4,
-    "specialist_results": {
-      "velocity": {
-        "agent": "velocity",
-        "risk_level": "high",
-        "confidence": 0.8,
-        "patterns_detected": [
-          "FREQUENCY_SHIFT"
-        ],
-        "reasoning": "The transaction amount (\u20ac1134.28) is flagged as a significant outlier compared to the sender's historical median transaction amount (\u20ac72), indicating a FREQUENCY_SHIFT in spending magnitude. Furthermore, the pre-assessment highlights the user is a high-risk phishing target, and this transaction occurs shortly (0.9 days) after a detected phishing event, suggesting a possible account takeover or redirection following social engineering. While the amount is consistent with a rent payment description, the combination of high amount anomaly and recent phishing exposure elevates the risk significantly."
-      },
-      "amount": {
-        "agent": "amount",
-        "risk_level": "high",
-        "confidence": 0.7,
-        "patterns_detected": [
-          "STATISTICAL_OUTLIER"
-        ],
-        "reasoning": "The transaction amount of 1134.28 is a significant statistical outlier compared to the sender's historical average transaction amount (avg: 313.71, std: 447.53). The automated check confirms this is a strong outlier (MAD z=15.7). While the description suggests a legitimate rent payment, the context of the user being a high-risk phishing target and the recent phishing activity (0.9 days ago) elevates the risk, suggesting this large, anomalous transfer could be fraudulent redirection."
-      },
-      "behavioral": {
-        "agent": "behavioral",
-        "risk_level": "high",
-        "confidence": 0.85,
-        "patterns_detected": [
-          "NEW_PAYEE",
-          "AMOUNT_ANOMALY"
-        ],
-        "reasoning": "The transaction amount ($1134.28) is a significant outlier compared to the sender's historical average ($313.71) and is flagged by the amount anomaly check. Furthermore, the recipient 'HOME36805' is a known counterparty (likely rent), but the description 'Rent payment Sep' suggests this is the September payment. The previous payment to the same recipient was for December ($1246.21) and November ($1148.43). The current transaction date (Sep 3rd) is inconsistent with the previous rent payments being in Oct, Nov, Dec. If this is a new rent payment cycle or a different type of payment to a known entity, the high amount combined with the automated phishing window signal (0.9 days after a phishing event) elevates the risk significantly. Given the high vulnerability profile (75yo, high phishing exposure), the large, anomalous amount directed to a known entity shortly after a phishing event strongly suggests potential coercion or account takeover."
-      },
-      "relationship": {
-        "agent": "relationship",
-        "risk_level": "high",
-        "confidence": 0.9,
-        "patterns_detected": [
-          "FAN_OUT"
-        ],
-        "reasoning": "The transaction amount ($1134.28) is a significant outlier based on the sender's historical median transaction size ($92.39 for VLNT-SLVS-7DC-PIO-0), flagged by the automated check. Furthermore, the sender (VLNT-SLVS-7DC-PIO-0) has a high out-degree (19 outgoing edges in the 2-hop graph) and sends money to many distinct recipients (including HOME36805 in this transaction), suggesting a potential FAN_OUT pattern, characteristic of a mule payout operation. This structural pattern, combined with the high amount anomaly and the sender's known high vulnerability to phishing (as detailed in the citizen profile), strongly suggests fraudulent activity, likely related to a recent social engineering attack."
-      },
-      "geographic": {
-        "agent": "geographic",
-        "risk_level": "low",
-        "confidence": 0.3,
-        "patterns_detected": [
-          "NONE"
-        ],
-        "reasoning": "The transaction is a rent payment of \u20ac1134.28 to a recipient identified as 'Rent&Go' using an Italian IBAN (IT prefix). The sender's home city is Piossasco, Italy. This is a routine, expected local expense for a resident, consistent with the citizen's profile (retired, living in Piossasco). Although the citizen is highly vulnerable to phishing, this specific transaction appears legitimate and consistent with necessary living expenses."
-      }
-    },
-    "verdict": {
-      "transaction_id": "f17ea00f-cc51-45c3-9190-e91c23b8da41",
-      "is_fraud": true,
-      "confidence": 0.85,
-      "reasoning": "Four out of five specialists (Velocity, Amount, Behavioral, Relationship) have assessed this transaction as HIGH risk. The consensus is driven by a significant statistical anomaly in transaction amount, a suspicious timing relative to a recent phishing event (0.9 days), and a structural 'fan-out' pattern in the sender's network. Despite the description appearing to be a rent payment, the inconsistency in payment cycles and the sender's high-vulnerability profile (75yo, frequent phishing target) strongly suggest that this is a fraudulent redirection of funds following a successful social engineering attack."
-    },
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
     "final": "fraud"
   },
   {
@@ -4194,7 +3933,7 @@
     "amount": 1949.13,
     "triage": "ambiguous",
     "rule_summary": "check_amount_anomaly: Amount 1949.13 is a MAD outlier (z=6.7, median=253, MAD=170) | check_balance_drain: Transaction drains 81% of account balance",
-    "priority_rank": 3,
+    "priority_rank": 2,
     "specialist_results": {
       "velocity": {
         "agent": "velocity",
@@ -4232,7 +3971,7 @@
         "patterns_detected": [
           "FAN_OUT"
         ],
-        "reasoning": "The transaction amount (1949.13) is a significant outlier compared to the sender's median transaction size (253), and it drains 81% of the sender's balance, which is highly suspicious. The sender (FCHN-VTSI-7FA-BRE-0) is a high-degree sender (out_degree=29) in the 2-hop graph, indicating a potential FAN_OUT pattern (distributing funds to many recipients). While the description suggests a legitimate 'Rent payment Sep - Living Spaces', the combination of the high outlier amount, balance drain, and the sender's role as a distributor strongly suggests potential mule activity or account compromise, despite the seemingly legitimate description. The recipient (DOM58085) has an in_degree of 1 and out_degree of 0 in this local view, making it a potential sink/collector, but the sender's high out-degree is the more prominent structural signal here."
+        "reasoning": "The transaction amount ($1949.13) is a significant outlier based on the sender's historical median transaction size ($128.39 to empty nodes, $1970 average to recipient). The sender (FCHN-VTSI-7FA-BRE-0) has a high out-degree (29) and is sending to an account (DOM58085) that has received 12 prior transactions from this sender, suggesting a recurring relationship, possibly rent payment as described. However, the recipient DOM58085 has an in-degree of 1 and an out-degree of 0 in the 2-hop graph, acting as a sink for this specific sender. The sender FCHN-VTSI-7FA-BRE-0 is also connected to several other high-out-degree nodes (NNLL-BRTU-7D3-RAV-0, WTZL-TNAI-80B-PFA-0, CSPR-GRHL-800-ILM-1, JNSO-PLNA-7D0-FEL-1), which collectively exhibit FAN_OUT behavior, suggesting the sender might be part of a larger network structure, although this specific transaction is a direct payment to a sink node. Given the high amount anomaly and the drain on the sender's balance (81%), the risk is elevated, but the clear description ('Rent payment Sep') and established relationship history with the recipient temper the risk slightly below 'high' unless the graph structure around the *recipient* showed aggregation (FAN_IN), which it does not."
       },
       "geographic": {
         "agent": "geographic",
@@ -4248,7 +3987,7 @@
       "transaction_id": "8b678de6-4de8-4a2d-b523-aa64dce4eb5f",
       "is_fraud": true,
       "confidence": 0.85,
-      "reasoning": "The transaction meets the criteria for fraud based on specialist consensus (3 specialists rated risk as HIGH) and the economic scaling rule for the \u20ac1,000\u2013\u20ac10,000 range. The combination of a significant statistical outlier in amount (nearly 8x the median), an 81% balance drain, and the sender's documented high vulnerability to phishing (account takeover risk) provides strong evidence of unauthorized activity. While the description suggests rent, the drastic increase in payment size to a previously small-value recipient and the sender's high-degree fan-out pattern support a conclusion of account compromise."
+      "reasoning": "The transaction triggers multiple high-confidence alerts from specialists (Velocity, Amount, Behavioral) regarding a massive statistical outlier in amount (nearly 10x the previous payment to this recipient) and an 81% balance drain. Despite the 'Rent' description, the sender's high phishing vulnerability profile and the significant deviation from established payment patterns to this specific recipient strongly suggest an account takeover rather than a legitimate rent increase."
     },
     "final": "fraud"
   },
@@ -4267,7 +4006,7 @@
     "amount": 988.47,
     "triage": "ambiguous",
     "rule_summary": "check_temporal_pattern: Transaction at 6:00 UTC falls in off-hours window. | check_amount_anomaly: Amount 988.47 is a MAD outlier (z=9.7, median=86, MAD=62)",
-    "priority_rank": 10,
+    "priority_rank": 4,
     "specialist_results": {
       "velocity": {
         "agent": "velocity",
@@ -4306,7 +4045,7 @@
         "patterns_detected": [
           "FAN_OUT"
         ],
-        "reasoning": "The transaction amount (988.47) is a significant outlier based on automated checks (High anomaly score). Furthermore, the sender (CSPR-GRHL-800-ILM-1) is a high-volume sender, exhibiting a clear FAN_OUT pattern, sending to 26 distinct recipients in the 2-hop graph, which is characteristic of a mule payout operation. The recipient (RENT75951) receives funds from this sender and another high-volume sender (VLNT-SLVS-7DC-PIO-0), suggesting aggregation or collection, although RENT75951 itself has an out_degree of 0. The combination of a highly anomalous amount and the sender's role as a major distributor strongly indicates fraudulent activity, likely related to the sender's high phishing vulnerability noted in the citizen profile."
+        "reasoning": "The transaction amount (988.47) is a significant outlier based on automated checks (High anomaly score). Furthermore, the sender (CSPR-GRHL-800-ILM-1) is a high-volume sender, exhibiting a clear FAN_OUT pattern, sending to 26 distinct recipients in the 2-hop graph, which is characteristic of a money mule distributing funds. This structural pattern, combined with the high amount anomaly and off-hours timing, strongly suggests fraudulent activity, likely related to the sender's high phishing vulnerability noted in the citizen profile."
       },
       "geographic": {
         "agent": "geographic",
@@ -4321,8 +4060,8 @@
     "verdict": {
       "transaction_id": "e0ad9503-b0cb-456e-a0c5-68507cdb38fb",
       "is_fraud": true,
-      "confidence": 0.9,
-      "reasoning": "The transaction meets the criteria for fraud based on a strong consensus from 4 out of 5 specialists (Velocity, Amount, Behavioral, and Relationship) who all rated the risk as HIGH. Specifically, the Relationship specialist identified a 'FAN_OUT' pattern indicative of a mule operation, and the Behavioral specialist noted a significant amount anomaly and new payee/off-hours activity. Given the sender's high phishing vulnerability and the statistical outlier status of the transaction amount, the evidence strongly suggests account takeover or unauthorized use."
+      "confidence": 0.95,
+      "reasoning": "The transaction meets the criteria for fraud based on a strong consensus from 4 out of 5 specialists (Velocity, Amount, Behavioral, and Relationship) who all rated the risk as HIGH with confidence levels ranging from 0.70 to 0.90. The transaction is a statistical outlier (z=9.7) and exhibits a 'FAN_OUT' pattern indicative of money mule activity. Given the sender's high vulnerability to phishing and the contradictory travel history, the combination of these signals confirms a high probability of account takeover or unauthorized use."
     },
     "final": "fraud"
   },
@@ -4379,22 +4118,22 @@
   {
     "txn_id": "022ffd22-0f9c-4acd-8dfb-84b2e92c7d1f",
     "amount": 300.46,
-    "triage": "auto_legit",
-    "rule_summary": "check_phishing_window: Phishing window: withdrawal 4.1d after phishing event.",
+    "triage": "auto_fraud",
+    "rule_summary": "check_phishing_window: PHISHING WINDOW: withdrawal 4.1d after phishing \u2014 likely compromised account.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
-    "final": "legit"
+    "final": "fraud"
   },
   {
     "txn_id": "fdea8ff0-38c3-4f66-ab03-31d79e2a8485",
     "amount": 105.24,
-    "triage": "auto_legit",
-    "rule_summary": "check_phishing_window: Phishing window: in-person payment 5.6d after phishing event.",
+    "triage": "auto_fraud",
+    "rule_summary": "check_phishing_window: PHISHING WINDOW: in-person payment 5.6d after phishing \u2014 likely compromised account.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
-    "final": "legit"
+    "final": "fraud"
   },
   {
     "txn_id": "273632f5-c67f-43ad-8cb3-35198054f607",
@@ -4449,12 +4188,12 @@
   {
     "txn_id": "e7c079c5-f256-4914-8e03-a3d558af4dff",
     "amount": 16.24,
-    "triage": "auto_legit",
-    "rule_summary": "check_temporal_pattern: Transaction at 6:00 UTC falls in off-hours window. | check_phishing_window: Phishing window: in-person payment 5.1d after phishing event.",
+    "triage": "auto_fraud",
+    "rule_summary": "check_temporal_pattern: Transaction at 6:00 UTC falls in off-hours window. | check_phishing_window: PHISHING WINDOW: in-person payment 5.1d after phishing \u2014 likely compromised account.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
-    "final": "legit"
+    "final": "fraud"
   },
   {
     "txn_id": "385e0f91-e889-41b0-956f-27938c9d45aa",
@@ -4480,7 +4219,7 @@
     "txn_id": "067b789d-d958-4bbf-898b-84865bc24773",
     "amount": 49.61,
     "triage": "auto_legit",
-    "rule_summary": "no signals",
+    "rule_summary": "check_phishing_window: Phishing window: withdrawal 11.3d after phishing event.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
@@ -4490,7 +4229,7 @@
     "txn_id": "d37e84df-70fc-4353-a355-98aa3ad76f86",
     "amount": 55.86,
     "triage": "auto_legit",
-    "rule_summary": "no signals",
+    "rule_summary": "check_phishing_window: Phishing window: in-person payment 10.6d after phishing event.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
@@ -4510,7 +4249,7 @@
     "txn_id": "4d7e9ec8-1b36-4278-89d5-798f484f83fc",
     "amount": 43.08,
     "triage": "auto_legit",
-    "rule_summary": "no signals",
+    "rule_summary": "check_phishing_window: Phishing window: in-person payment 12.4d after phishing event.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
@@ -4519,18 +4258,18 @@
   {
     "txn_id": "31fb5303-7f63-42d3-9b3f-3092efe63636",
     "amount": 297.24,
-    "triage": "auto_legit",
-    "rule_summary": "check_temporal_pattern: Transaction at 4:00 UTC falls in off-hours window. | check_new_payee: New payee with moderate amount (\u20ac297.24).",
+    "triage": "auto_fraud",
+    "rule_summary": "check_temporal_pattern: Transaction at 4:00 UTC falls in off-hours window. | check_new_payee: New payee with moderate amount (\u20ac297.24). | check_phishing_window: Phishing window: direct debit 12.9d after phishing event.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
-    "final": "legit"
+    "final": "fraud"
   },
   {
     "txn_id": "b79b21b6-8ae7-4606-9caa-99955ec350bf",
     "amount": 49.54,
     "triage": "auto_legit",
-    "rule_summary": "no signals",
+    "rule_summary": "check_phishing_window: Phishing window: withdrawal 12.2d after phishing event.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
@@ -4539,82 +4278,28 @@
   {
     "txn_id": "ad9057dc-0b07-4a83-bce7-58812265b066",
     "amount": 125.19,
-    "triage": "auto_legit",
-    "rule_summary": "check_temporal_pattern: Transaction at 6:00 UTC falls in off-hours window. | check_new_payee: New payee with moderate amount (\u20ac125.19).",
+    "triage": "auto_fraud",
+    "rule_summary": "check_temporal_pattern: Transaction at 6:00 UTC falls in off-hours window. | check_new_payee: New payee with moderate amount (\u20ac125.19). | check_phishing_window: Phishing window: direct debit 11.3d after phishing event.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
-    "final": "legit"
+    "final": "fraud"
   },
   {
     "txn_id": "06db3a7f-8746-435c-9736-6fe6f6d54220",
     "amount": 454.06,
-    "triage": "ambiguous",
-    "rule_summary": "check_amount_anomaly: Amount 454.06 is a MAD outlier (z=5.3, median=67, MAD=49) | check_new_payee: New payee with moderate amount (\u20ac454.06).",
-    "priority_rank": 13,
-    "specialist_results": {
-      "velocity": {
-        "agent": "velocity",
-        "risk_level": "high",
-        "confidence": 0.9,
-        "patterns_detected": [
-          "FREQUENCY_SHIFT"
-        ],
-        "reasoning": "The transaction amount (\u20ac454.06) is flagged as a significant outlier compared to the sender's historical median transaction size (\u20ac179.69, MAD=49). This large, anomalous amount, combined with the fact that it is a transfer to a new payee, strongly suggests an account takeover or fraud, especially given the high-risk profile (84yo, high phishing exposure, inconsistent travel history). While there is no immediate burst or card testing, the deviation from established spending norms is severe enough to warrant a high-risk assessment."
-      },
-      "amount": {
-        "agent": "amount",
-        "risk_level": "high",
-        "confidence": 0.7,
-        "patterns_detected": [
-          "STATISTICAL_OUTLIER",
-          "FIRST_LARGE"
-        ],
-        "reasoning": "The transaction amount of \u20ac454.06 is flagged as a significant statistical outlier based on the sender's historical data (MAD outlier, z=5.3). While the amount is not extremely large relative to the total balance (\u20ac27k), it is significantly higher than the sender's average transaction amount (\u20ac259.36 overall, \u20ac524.18 within-system). Furthermore, the profile indicates the user is an elderly, high-risk individual (phishing target) who recently exhibited highly anomalous international travel (Kusapin, Panama), suggesting potential account takeover or social engineering leading to this unusual transfer to a new payee. The automated check confirms the anomaly."
-      },
-      "behavioral": {
-        "agent": "behavioral",
-        "risk_level": "high",
-        "confidence": 0.9,
-        "patterns_detected": [
-          "NEW_PAYEE",
-          "AMOUNT_ANOMALY"
-        ],
-        "reasoning": "The transaction involves a brand new payee ('VNDMR99282') which is a significant behavioral change, as the sender has only 15 unique counterparties over a long history. Furthermore, the amount (\u20ac454.06) is a clear outlier compared to the sender's average transaction amount (\u20ac259.36 overall, \u20ac524.18 within system) and is flagged by the automated system as a MAD outlier. The description 'Emergency fund transfer' for a new payee adds a social engineering layer often seen in fraud. This combination of new payee and high amount anomaly strongly suggests account takeover or coercion, aligning with the high-risk profile noted in the pre-assessment (age, phishing vulnerability, unusual travel)."
-      },
-      "relationship": {
-        "agent": "relationship",
-        "risk_level": "high",
-        "confidence": 0.9,
-        "patterns_detected": [
-          "FAN_OUT"
-        ],
-        "reasoning": "The sender (NNLL-BRTU-7D3-RAV-0) has 15 outgoing edges in the 2-hop graph, indicating a potential FAN_OUT pattern, which is characteristic of a mule payout or distribution scheme. This structural anomaly, combined with the automated signal indicating a high amount anomaly (\u20ac454.06 is a significant outlier relative to the sender's typical transaction profile, as suggested by the high z-score/MAD), strongly suggests fraudulent activity. The recipient (VNDMR99282) is a new payee, further increasing suspicion in conjunction with the high amount and graph structure."
-      },
-      "geographic": {
-        "agent": "geographic",
-        "risk_level": "medium",
-        "confidence": 0.5,
-        "patterns_detected": [
-          "LIFESTYLE_MISMATCH",
-          "MOBILITY_VIOLATION"
-        ],
-        "reasoning": "The transaction is an internal transfer within Italy (implied by IBAN structure and lack of location data suggesting international travel for this specific transaction). The amount (\u20ac454.06) is moderate. The description 'Emergency fund transfer' suggests urgency. The citizen is 84, retired, and has a high phishing risk. While the citizen has shown high mobility previously (visiting Kusapin, Panama, and Port Chester, USA), this specific transaction is local/domestic. The mismatch arises because the citizen's profile notes that the high mobility (like visiting Kusapin) is already uncharacteristic for a pensioner, suggesting potential identity compromise or unusual circumstances. However, since this transaction is a domestic transfer described as 'emergency,' it is plausible if the emergency is local, despite the underlying risk profile being high due to past anomalous travel."
-      }
-    },
-    "verdict": {
-      "transaction_id": "06db3a7f-8746-435c-9736-6fe6f6d54220",
-      "is_fraud": true,
-      "confidence": 0.95,
-      "reasoning": "The transaction meets the criteria for fraud based on specialist consensus (4 out of 5 specialists rated the risk as HIGH). The combination of a new payee, a significant statistical amount anomaly (z=5.3), and the 'Emergency fund transfer' description is a classic social engineering indicator. Given the sender's high-risk profile (84-year-old, high phishing exposure, and uncharacteristic travel history), this transaction is highly likely to be the result of account takeover or coercion."
-    },
+    "triage": "auto_fraud",
+    "rule_summary": "check_amount_anomaly: Amount 454.06 is a MAD outlier (z=5.3, median=67, MAD=49) | check_new_payee: New payee with moderate amount (\u20ac454.06). | check_phishing_window: Phishing window: transfer 13.3d after phishing event.",
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
     "final": "fraud"
   },
   {
     "txn_id": "dc74ee64-95ac-44eb-a2a4-c946d2db8d3a",
     "amount": 200.02,
     "triage": "auto_legit",
-    "rule_summary": "no signals",
+    "rule_summary": "check_phishing_window: Phishing window: withdrawal 13.4d after phishing event.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
@@ -4663,12 +4348,12 @@
   {
     "txn_id": "330591df-feca-48fb-8c81-eba10eae323e",
     "amount": 49.96,
-    "triage": "auto_legit",
-    "rule_summary": "check_phishing_window: Phishing window: withdrawal 6.1d after phishing event.",
+    "triage": "auto_fraud",
+    "rule_summary": "check_phishing_window: PHISHING WINDOW: withdrawal 6.1d after phishing \u2014 likely compromised account.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
-    "final": "legit"
+    "final": "fraud"
   },
   {
     "txn_id": "30fdc101-ea63-4b2c-991b-29f7aef832ca",
@@ -4813,63 +4498,11 @@
   {
     "txn_id": "c5a2deb5-2744-4f20-8ebb-f041a7dbaacd",
     "amount": 781.01,
-    "triage": "ambiguous",
+    "triage": "auto_fraud",
     "rule_summary": "check_amount_anomaly: Amount 781.01 is a MAD outlier (z=8.2, median=75, MAD=58) | check_phishing_window: Routine transfer but only 1.5d after phishing \u2014 possible redirect.",
-    "priority_rank": 9,
-    "specialist_results": {
-      "velocity": {
-        "agent": "velocity",
-        "risk_level": "high",
-        "confidence": 0.8,
-        "patterns_detected": [
-          "FREQUENCY_SHIFT"
-        ],
-        "reasoning": "The transaction amount of \u20ac781.01 is a significant outlier compared to the sender's median transaction size (\u20ac75), which is flagged by the amount anomaly check. Furthermore, the history shows a recurring payment to the same recipient ('HOME28625') for 'Rent payment' (\u20ac765.25 in Dec, \u20ac787.59 in Sep). The current payment (\u20ac781.01) is very close to these established recurring payments, suggesting it might be legitimate rent. However, the pre-assessment flags high risk due to the citizen profile (84yo, high phishing exposure, inconsistent travel history including Kusapin). The timing itself does not show an immediate burst or unusual hours (15:11:55 local time is standard afternoon). Given the high external risk signals (phishing, location anomaly) combined with a large, but contextually plausible, transaction amount, the risk remains high, leaning on the external context rather than the immediate timing pattern."
-      },
-      "amount": {
-        "agent": "amount",
-        "risk_level": "high",
-        "confidence": 0.7,
-        "patterns_detected": [
-          "STATISTICAL_OUTLIER"
-        ],
-        "reasoning": "The transaction amount of 781.01 is flagged as a strong statistical outlier (MAD outlier with z=8.2) compared to the sender's historical average transaction size (Avg: 259.36, Median: 75). Although the amount is not large enough to trigger threshold evasion, the extreme statistical deviation, combined with the high contextual risk factors (age, high phishing exposure, and recent unusual international travel to Kusapin), elevates the risk significantly. The automated anomaly check confirms this is highly unusual for the account history."
-      },
-      "behavioral": {
-        "agent": "behavioral",
-        "risk_level": "high",
-        "confidence": 0.85,
-        "patterns_detected": [
-          "NEW_PAYEE",
-          "DORMANT_REACTIVATION"
-        ],
-        "reasoning": "The transaction amount (781.01) is a significant outlier compared to the sender's average transaction amount (Avg: 259.36, MAD outlier detected). Although the recipient 'HOME28625' is a known counterparty (used for rent payments in Sep and Dec), the current transaction date (Oct 5th) is only 1.5 days after a detected phishing event, suggesting a possible redirect or immediate exploitation following a social engineering attack. Furthermore, the profile indicates the user has been inactive for 28 days (last transaction Sep 7th, current Oct 5th), and this large, anomalous payment occurs immediately upon reactivation, coinciding with the phishing signal. This combination strongly suggests account takeover or coercion."
-      },
-      "relationship": {
-        "agent": "relationship",
-        "risk_level": "high",
-        "confidence": 0.9,
-        "patterns_detected": [
-          "FAN_OUT"
-        ],
-        "reasoning": "The sender (NNLL-BRTU-7D3-RAV-0) has 15 outgoing edges in the 2-hop graph, indicating a potential FAN_OUT structure, which is common for mule payout operations. This is strongly supported by the automated signal indicating a high amount anomaly (781.01 is a MAD outlier) and the medium risk signal linking the transfer to a recent phishing event (1.5 days prior). The recipient (HOME28625) is receiving funds from the sender, and the sender's profile shows highly anomalous travel patterns (visiting Kusapin) inconsistent with their stated profile (84yo retired pensioner in Ravenna), suggesting the account is compromised or being used as a mule. The combination of high anomaly, recent phishing link, and clear graph structure points to high risk."
-      },
-      "geographic": {
-        "agent": "geographic",
-        "risk_level": "low",
-        "confidence": 0.3,
-        "patterns_detected": [
-          "CONSISTENT_PAYMENT_TYPE"
-        ],
-        "reasoning": "The transaction is a domestic transfer (IT IBAN to IT IBAN) for a rent payment ('Rent payment Oct - Casa Tua') of \u20ac781.01. This is a highly routine and expected transaction for a resident paying rent in Italy. Although the citizen profile notes high vulnerability to phishing and unusual international travel (Kusapin, Port Chester), this specific transaction aligns perfectly with the expected behavior of a resident paying recurring housing costs in their home country. The location data shows the last ping was in Ravenna on 2087-10-31, and the transaction timestamp is 2087-10-05, meaning the transaction occurred while the citizen was physically present in Ravenna, consistent with paying local rent. Low risk based on transaction nature."
-      }
-    },
-    "verdict": {
-      "transaction_id": "c5a2deb5-2744-4f20-8ebb-f041a7dbaacd",
-      "is_fraud": true,
-      "confidence": 0.85,
-      "reasoning": "The transaction meets the criteria for fraud based on the specialist consensus (4 out of 5 specialists rated the risk as HIGH). Despite the transaction appearing to be a recurring rent payment, the combination of the sender's high vulnerability profile (84yo, high phishing exposure), the recent phishing event 1.5 days prior, the statistical anomaly of the amount, and the identified FAN_OUT graph structure strongly suggests account takeover or coercion. The high confidence from multiple specialists outweighs the geographic consistency."
-    },
+    "priority_rank": null,
+    "specialist_results": null,
+    "verdict": null,
     "final": "fraud"
   },
   {
@@ -4936,7 +4569,7 @@
     "txn_id": "79c8836d-a28c-439e-8df5-a9427a7df05a",
     "amount": 120.6,
     "triage": "auto_legit",
-    "rule_summary": "no signals",
+    "rule_summary": "check_phishing_window: Phishing window: e-commerce 11.7d after phishing event.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
@@ -4945,12 +4578,12 @@
   {
     "txn_id": "f292bfcd-434c-447e-87c4-a35409314eeb",
     "amount": 282.79,
-    "triage": "auto_legit",
-    "rule_summary": "check_temporal_pattern: Transaction at 4:00 UTC falls in off-hours window. | check_phishing_window: Phishing window: direct debit 4.2d after phishing event.",
+    "triage": "auto_fraud",
+    "rule_summary": "check_temporal_pattern: Transaction at 4:00 UTC falls in off-hours window. | check_phishing_window: PHISHING WINDOW: direct debit 4.2d after phishing \u2014 likely compromised account.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
-    "final": "legit"
+    "final": "fraud"
   },
   {
     "txn_id": "231ff484-dfc5-4cf4-8e1a-020b7990427d",
@@ -5015,18 +4648,18 @@
   {
     "txn_id": "7b7bf6d5-b561-4aa7-9a54-057624d80d6f",
     "amount": 132.85,
-    "triage": "auto_legit",
-    "rule_summary": "check_new_payee: New payee with moderate amount (\u20ac132.85).",
+    "triage": "auto_fraud",
+    "rule_summary": "check_new_payee: New payee with moderate amount (\u20ac132.85). | check_phishing_window: Phishing window: e-commerce 11.4d after phishing event.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
-    "final": "legit"
+    "final": "fraud"
   },
   {
     "txn_id": "325693f8-b43c-4f23-819f-d51b9815711d",
     "amount": 72.53,
     "triage": "auto_legit",
-    "rule_summary": "no signals",
+    "rule_summary": "check_phishing_window: Phishing window: in-person payment 13.0d after phishing event.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
@@ -5095,12 +4728,12 @@
   {
     "txn_id": "94e0e98f-d1a9-459c-be58-f209b1342dbd",
     "amount": 282.06,
-    "triage": "auto_legit",
-    "rule_summary": "check_phishing_window: Phishing window: transfer 4.0d after phishing event.",
+    "triage": "auto_fraud",
+    "rule_summary": "check_phishing_window: PHISHING WINDOW: transfer 4.0d after phishing \u2014 likely compromised account.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
-    "final": "legit"
+    "final": "fraud"
   },
   {
     "txn_id": "5d423d5b-aa55-4b01-86a6-a396c3e90992",
@@ -5156,7 +4789,7 @@
     "txn_id": "94106789-7cf5-4740-be4d-0650ecddf5a2",
     "amount": 66.89,
     "triage": "auto_legit",
-    "rule_summary": "no signals",
+    "rule_summary": "check_phishing_window: Phishing window: in-person payment 10.2d after phishing event.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
@@ -5306,7 +4939,7 @@
     "txn_id": "915c455e-811d-4737-9af8-396f5e145b39",
     "amount": 249.83,
     "triage": "auto_legit",
-    "rule_summary": "no signals",
+    "rule_summary": "check_phishing_window: Phishing window: withdrawal 12.9d after phishing event.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
@@ -5345,12 +4978,12 @@
   {
     "txn_id": "4a9b4426-be7d-4909-8f02-9dd5d88c2001",
     "amount": 250.28,
-    "triage": "auto_legit",
-    "rule_summary": "check_phishing_window: Phishing window: withdrawal 5.9d after phishing event.",
+    "triage": "auto_fraud",
+    "rule_summary": "check_phishing_window: PHISHING WINDOW: withdrawal 5.9d after phishing \u2014 likely compromised account.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
-    "final": "legit"
+    "final": "fraud"
   },
   {
     "txn_id": "14199c6b-ac2e-4573-9631-1b7718975329",
@@ -5406,7 +5039,7 @@
     "txn_id": "249aaa19-cc87-46c3-b574-f3c2a4a1adfa",
     "amount": 93.36,
     "triage": "auto_fraud",
-    "rule_summary": "check_temporal_pattern: Transaction at 0:00 UTC falls in off-hours window. | check_new_payee: New payee with moderate amount (\u20ac93.36). | check_phishing_window: Phishing window: direct debit 5.2d after phishing event.",
+    "rule_summary": "check_temporal_pattern: Transaction at 0:00 UTC falls in off-hours window. | check_new_payee: New payee with moderate amount (\u20ac93.36). | check_phishing_window: PHISHING WINDOW: direct debit 5.2d after phishing \u2014 likely compromised account.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
@@ -5475,12 +5108,12 @@
   {
     "txn_id": "fd1ae29e-1c0a-481b-96c6-dac5e75b7236",
     "amount": 1418.52,
-    "triage": "auto_legit",
-    "rule_summary": "check_amount_anomaly: Amount 1418.52 is a MAD outlier (z=4.9, median=247, MAD=162)",
+    "triage": "auto_fraud",
+    "rule_summary": "check_amount_anomaly: Amount 1418.52 is a MAD outlier (z=4.9, median=247, MAD=162) | check_phishing_window: Phishing window: transfer 11.0d after phishing event.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
-    "final": "legit"
+    "final": "fraud"
   },
   {
     "txn_id": "09523f38-46df-41bd-af0e-c9ea2016dae0",
@@ -5536,7 +5169,7 @@
     "txn_id": "725bec73-0df0-4e05-8304-7623cdfcd62a",
     "amount": 267.85,
     "triage": "auto_fraud",
-    "rule_summary": "check_temporal_pattern: Transaction at 0:00 UTC falls in off-hours window. | check_new_payee: New payee with moderate amount (\u20ac267.85). | check_phishing_window: Phishing window: direct debit 5.9d after phishing event.",
+    "rule_summary": "check_temporal_pattern: Transaction at 0:00 UTC falls in off-hours window. | check_new_payee: New payee with moderate amount (\u20ac267.85). | check_phishing_window: PHISHING WINDOW: direct debit 5.9d after phishing \u2014 likely compromised account.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
@@ -5785,12 +5418,12 @@
   {
     "txn_id": "22119368-1447-48a4-bf1d-1da259dc8280",
     "amount": 107.72,
-    "triage": "auto_legit",
-    "rule_summary": "check_temporal_pattern: Transaction at 2:00 UTC falls in off-hours window. | check_new_payee: New payee with moderate amount (\u20ac107.72).",
+    "triage": "auto_fraud",
+    "rule_summary": "check_temporal_pattern: Transaction at 2:00 UTC falls in off-hours window. | check_new_payee: New payee with moderate amount (\u20ac107.72). | check_phishing_window: Phishing window: direct debit 12.9d after phishing event.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
-    "final": "legit"
+    "final": "fraud"
   },
   {
     "txn_id": "cbec192c-4d77-40fb-ac5b-f50c119ef8d7",
@@ -5935,12 +5568,12 @@
   {
     "txn_id": "a6be5d3c-511c-4332-a935-7b47721c476c",
     "amount": 53.66,
-    "triage": "auto_legit",
-    "rule_summary": "check_temporal_pattern: Transaction at 6:00 UTC falls in off-hours window. | check_new_payee: New payee with moderate amount (\u20ac53.66).",
+    "triage": "auto_fraud",
+    "rule_summary": "check_temporal_pattern: Transaction at 6:00 UTC falls in off-hours window. | check_new_payee: New payee with moderate amount (\u20ac53.66). | check_phishing_window: Phishing window: e-commerce 11.0d after phishing event.",
     "priority_rank": null,
     "specialist_results": null,
     "verdict": null,
-    "final": "legit"
+    "final": "fraud"
   },
   {
     "txn_id": "1509fe9b-caae-49d3-b498-52aa230ac2dc",
